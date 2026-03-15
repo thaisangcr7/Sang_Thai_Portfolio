@@ -317,12 +317,12 @@
     .stat-block {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.25rem 1rem;
+      border-radius: 12px;
+      padding: 0.75rem 0.5rem;
       text-align: center;
     }
     .stat-block__number {
-      font-size: 2rem; font-weight: 700;
+      font-size: 1.4rem; font-weight: 700;
       letter-spacing: -0.02em;
       line-height: 1;
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
@@ -331,10 +331,10 @@
     }
     .stat-block__label {
       font-family: var(--font-mono);
-      font-size: 0.62rem; font-weight: 400;
+      font-size: 0.55rem; font-weight: 400;
       letter-spacing: 0.08em; text-transform: uppercase;
       color: var(--text-muted);
-      margin-top: 0.35rem;
+      margin-top: 0.25rem;
     }
 
     /* == SOCIAL ROW == */
@@ -696,9 +696,9 @@
       .menu__list { gap: 0.1rem; }
       .menu__link { font-size: 0.7rem; padding: 0.4rem 0.55rem; border-radius: 8px; }
       .stats-row { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-      .stat-block { padding: 1rem 0.5rem; }
-      .stat-block__number { font-size: 1.5rem; }
-      .stat-block__label { font-size: 0.55rem; }
+      .stat-block { padding: 0.6rem 0.4rem; }
+      .stat-block__number { font-size: 1.1rem; }
+      .stat-block__label { font-size: 0.5rem; }
       .edu-grid { grid-template-columns: 1fr; }
       .skills-grid { grid-template-columns: 1fr; }
       .project-card { padding: 1.5rem; }
@@ -808,6 +808,22 @@
           entire teams forward.
         </p>
 
+        <h3 class="intro__impact-heading reveal-item">Business Impact</h3>
+        <div class="stats-row reveal-item">
+          <div class="stat-block">
+            <div class="stat-block__number">~90%</div>
+            <div class="stat-block__label">Manual Effort Reduced</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-block__number">~25M</div>
+            <div class="stat-block__label">Records / Month</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-block__number">150+</div>
+            <div class="stat-block__label">Hours Saved per Cycle</div>
+          </div>
+        </div>
+
         <div class="social-row reveal-item">
           <a href="mailto:thaisangcr7@gmail.com" class="social-btn" aria-label="Email">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -824,22 +840,6 @@
         </div>
 
         <a href="#contact" class="cta-btn reveal-item">Let's Connect &rarr;</a>
-
-        <h3 class="intro__impact-heading reveal-item">Business Impact</h3>
-        <div class="stats-row reveal-item">
-          <div class="stat-block">
-            <div class="stat-block__number">~90%</div>
-            <div class="stat-block__label">Manual Effort Reduced</div>
-          </div>
-          <div class="stat-block">
-            <div class="stat-block__number">~25M</div>
-            <div class="stat-block__label">Records / Month</div>
-          </div>
-          <div class="stat-block">
-            <div class="stat-block__number">150+</div>
-            <div class="stat-block__label">Hours Saved per Cycle</div>
-          </div>
-        </div>
       </section>
 
       <!-- == SECTION: PORTFOLIO == -->
