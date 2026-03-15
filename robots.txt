@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://thaisangcr7.github.io/Sang_Thai_Portfolio/sitemap.xml
