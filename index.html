@@ -175,6 +175,20 @@
       font-weight: 400; line-height: 1.2;
     }
 
+    /* == HEADER SCROLL NAME REVEAL == */
+    .header__brand {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 0.5rem;
+      font-family: var(--font-sans);
+      font-size: 0.85rem; font-weight: 600;
+      color: var(--text);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    .header__brand.visible { opacity: 1; pointer-events: auto; }
+    .header__brand-icon { font-size: 1rem; }
+
     /* == NAV MENU == */
     #menu { flex: 1; display: flex; justify-content: center; }
     .menu__list {
@@ -458,6 +472,45 @@
       flex-shrink: 0;
     }
 
+    /* == SECTION: TOOLKIT == */
+    .toolkit-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .tool-card {
+      display: flex; flex-direction: column; align-items: center; gap: 0.65rem;
+      padding: 1.25rem 0.75rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .tool-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .tool-card__icon {
+      width: 40px; height: 40px;
+    }
+    .tool-card__icon img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+    }
+    .tool-card__name {
+      font-size: 0.72rem; font-weight: 500;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    @media (max-width: 767px) {
+      .toolkit-grid { grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+      .tool-card { padding: 1rem 0.5rem; }
+      .tool-card__icon { width: 32px; height: 32px; }
+      .tool-card__name { font-size: 0.65rem; }
+    }
+
     /* == SECTION: RESUME == */
     .resume__sub {
       font-family: var(--font-mono);
@@ -610,6 +663,7 @@
     /* == RESPONSIVE - MOBILE == */
     @media (max-width: 767px) {
       .avatar__info { display: none; }
+      .header__brand { display: none; }
       .menu__list { gap: 0.1rem; }
       .menu__link { font-size: 0.7rem; padding: 0.4rem 0.55rem; border-radius: 8px; }
       .stats-row { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
@@ -687,6 +741,10 @@
       </div>
     </div>
     <nav id="menu">
+      <div class="header__brand" id="header-brand">
+        <span class="header__brand-icon">&#x1F680;</span>
+        <span>Sang Thai</span>
+      </div>
       <ul class="menu__list">
         <li class="menu__item"><a class="menu__link active" href="#home">Home</a></li>
         <li class="menu__item"><a class="menu__link" href="#portfolio">Portfolio</a></li>
@@ -863,6 +921,61 @@
         </div>
       </section>
 
+      <!-- == SECTION: TOOLKIT == -->
+      <section id="toolkit" class="inner" tabindex="-1">
+        <h2 class="section-heading reveal-item">My Toolkit</h2>
+        <div class="toolkit-grid reveal-item">
+          <div class="tool-card">
+            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" alt="Python" loading="lazy" /></div>
+            <span class="tool-card__name">Python</span>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/flask/flask-original.svg" alt="Flask" loading="lazy" /></div>
+            <span class="tool-card__name">Flask</span>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg" alt="JavaScript" loading="lazy" /></div>
+            <span class="tool-card__name">JavaScript</span>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/csharp/csharp-original.svg" alt="C#" loading="lazy" /></div>
+            <span class="tool-card__name">C#</span>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/dotnetcore/dotnetcore-original.svg" alt="ASP.NET Core" loading="lazy" /></div>
+            <span class="tool-card__name">ASP.NET Core</span>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg" alt="HTML5" loading="lazy" /></div>
+            <span class="tool-card__name">HTML5</span>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg" alt="CSS3" loading="lazy" /></div>
+            <span class="tool-card__name">CSS3</span>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/microsoftsqlserver/microsoftsqlserver-original.svg" alt="SQL Server" loading="lazy" /></div>
+            <span class="tool-card__name">SQL Server</span>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg" alt="Docker" loading="lazy" /></div>
+            <span class="tool-card__name">Docker</span>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg" alt="Git" loading="lazy" /></div>
+            <span class="tool-card__name">Git</span>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/socketio/socketio-original.svg" alt="Socket.IO" loading="lazy" /></div>
+            <span class="tool-card__name">Socket.IO</span>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/plotly/plotly-original.svg" alt="Dash / Plotly" loading="lazy" /></div>
+            <span class="tool-card__name">Dash / Plotly</span>
+          </div>
+        </div>
+      </section>
+
       <!-- == SECTION: RESUME == -->
       <section id="resume" class="inner resume" tabindex="-1">
         <h2 class="section-heading reveal-item">Experience &amp; Education</h2>
@@ -1021,7 +1134,7 @@
         if (!cursorVisible) { cursor.classList.add('visible'); cursorVisible = true; }
       });
       document.addEventListener('mouseleave', () => { cursor.classList.remove('visible'); cursorVisible = false; });
-      document.querySelectorAll('a, button, .project-card, .contact-row, .social-btn, .edu-card, .tab-bar__link').forEach(el => {
+      document.querySelectorAll('a, button, .project-card, .contact-row, .social-btn, .edu-card, .tab-bar__link, .tool-card').forEach(el => {
         el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
         el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
       });
@@ -1055,6 +1168,16 @@
     const tabLinks = document.querySelectorAll('.tab-bar__link');
     const allNavLinks = [...navLinks, ...tabLinks];
     const sectionEls = document.querySelectorAll('section[id]');
+
+    /* == HEADER BRAND REVEAL ON SCROLL == */
+    const headerBrand = document.getElementById('header-brand');
+    const homeSection = document.getElementById('home');
+    const brandObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        headerBrand.classList.toggle('visible', !entry.isIntersecting);
+      });
+    }, { threshold: 0.1 });
+    brandObserver.observe(homeSection);
 
     function setActiveSection(id) {
       navLinks.forEach(l => l.classList.remove('active'));
@@ -1127,7 +1250,7 @@
     revealEls.forEach(el => revealObs.observe(el));
 
     /* == STAGGER CHILDREN == */
-    document.querySelectorAll('.stats-row, .social-row, .skills-grid, .edu-grid, .contact-rows').forEach(parent => {
+    document.querySelectorAll('.stats-row, .social-row, .skills-grid, .edu-grid, .contact-rows, .toolkit-grid').forEach(parent => {
       [...parent.children].forEach((child, i) => {
         child.style.transitionDelay = (i * 0.1) + 's';
       });
@@ -1136,5 +1259,9 @@
     /* == DYNAMIC FOOTER YEAR == */
     document.getElementById('footer-year').textContent = new Date().getFullYear();
   </script>
+
+  <!-- Analytics: GoatCounter (privacy-friendly, no cookies) -->
+  <!-- Sign up at https://www.goatcounter.com → replace "sangthai" with your chosen code -->
+  <script data-goatcounter="https://sangthai.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
