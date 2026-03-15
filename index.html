@@ -638,6 +638,9 @@
       -webkit-backdrop-filter: blur(24px) saturate(180%);
       border-top: 1px solid var(--border);
       padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+      /* Fix mobile Safari address-bar resize glitch */
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
     }
     html[data-theme="light"] .tab-bar {
       background: rgba(248,247,255,0.88);
