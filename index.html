@@ -175,10 +175,11 @@
       font-weight: 400; line-height: 1.2;
     }
 
-    /* == HEADER SCROLL NAME REVEAL == */
+    /* == HEADER SCROLL NAME REVEAL (mobile only) == */
     .header__brand {
+      display: none;
       position: absolute; left: 50%; transform: translateX(-50%);
-      display: flex; align-items: center; gap: 0.5rem;
+      align-items: center; gap: 0.5rem;
       font-family: var(--font-sans);
       font-size: 0.85rem; font-weight: 600;
       color: var(--text);
@@ -473,11 +474,21 @@
     }
 
     /* == SECTION: TOOLKIT == */
+    .toolkit-category {
+      margin-top: 2.25rem;
+    }
+    .toolkit-category:first-of-type { margin-top: 1.5rem; }
+    .toolkit-category__label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem; font-weight: 400;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
     .toolkit-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       gap: 1rem;
-      margin-top: 2rem;
     }
     .tool-card {
       display: flex; flex-direction: column; align-items: center; gap: 0.65rem;
@@ -663,7 +674,7 @@
     /* == RESPONSIVE - MOBILE == */
     @media (max-width: 767px) {
       .avatar__info { display: none; }
-      .header__brand { display: none; }
+      .header__brand { display: flex; }
       .menu__list { gap: 0.1rem; }
       .menu__link { font-size: 0.7rem; padding: 0.4rem 0.55rem; border-radius: 8px; }
       .stats-row { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
@@ -924,56 +935,119 @@
       <!-- == SECTION: TOOLKIT == -->
       <section id="toolkit" class="inner" tabindex="-1">
         <h2 class="section-heading reveal-item">My Toolkit</h2>
-        <div class="toolkit-grid reveal-item">
-          <div class="tool-card">
-            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" alt="Python" loading="lazy" /></div>
-            <span class="tool-card__name">Python</span>
-          </div>
-          <div class="tool-card">
-            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/flask/flask-original.svg" alt="Flask" loading="lazy" /></div>
-            <span class="tool-card__name">Flask</span>
-          </div>
-          <div class="tool-card">
-            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg" alt="JavaScript" loading="lazy" /></div>
-            <span class="tool-card__name">JavaScript</span>
-          </div>
-          <div class="tool-card">
-            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/csharp/csharp-original.svg" alt="C#" loading="lazy" /></div>
-            <span class="tool-card__name">C#</span>
-          </div>
-          <div class="tool-card">
-            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/dotnetcore/dotnetcore-original.svg" alt="ASP.NET Core" loading="lazy" /></div>
-            <span class="tool-card__name">ASP.NET Core</span>
-          </div>
-          <div class="tool-card">
-            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg" alt="HTML5" loading="lazy" /></div>
-            <span class="tool-card__name">HTML5</span>
-          </div>
-          <div class="tool-card">
-            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg" alt="CSS3" loading="lazy" /></div>
-            <span class="tool-card__name">CSS3</span>
-          </div>
-          <div class="tool-card">
-            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/microsoftsqlserver/microsoftsqlserver-original.svg" alt="SQL Server" loading="lazy" /></div>
-            <span class="tool-card__name">SQL Server</span>
-          </div>
-          <div class="tool-card">
-            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg" alt="Docker" loading="lazy" /></div>
-            <span class="tool-card__name">Docker</span>
-          </div>
-          <div class="tool-card">
-            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg" alt="Git" loading="lazy" /></div>
-            <span class="tool-card__name">Git</span>
-          </div>
-          <div class="tool-card">
-            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/socketio/socketio-original.svg" alt="Socket.IO" loading="lazy" /></div>
-            <span class="tool-card__name">Socket.IO</span>
-          </div>
-          <div class="tool-card">
-            <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/plotly/plotly-original.svg" alt="Dash / Plotly" loading="lazy" /></div>
-            <span class="tool-card__name">Dash / Plotly</span>
+
+        <!-- Languages -->
+        <div class="toolkit-category reveal-item">
+          <h3 class="toolkit-category__label">Languages</h3>
+          <div class="toolkit-grid">
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" alt="Python" loading="lazy" /></div>
+              <span class="tool-card__name">Python</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/csharp/csharp-original.svg" alt="C#" loading="lazy" /></div>
+              <span class="tool-card__name">C#</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg" alt="JavaScript" loading="lazy" /></div>
+              <span class="tool-card__name">JavaScript</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg" alt="HTML5" loading="lazy" /></div>
+              <span class="tool-card__name">HTML5</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg" alt="CSS3" loading="lazy" /></div>
+              <span class="tool-card__name">CSS3</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/microsoftsqlserver/microsoftsqlserver-original.svg" alt="SQL" loading="lazy" /></div>
+              <span class="tool-card__name">SQL</span>
+            </div>
           </div>
         </div>
+
+        <!-- Frameworks & Libraries -->
+        <div class="toolkit-category reveal-item">
+          <h3 class="toolkit-category__label">Frameworks &amp; Libraries</h3>
+          <div class="toolkit-grid">
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/flask/flask-original.svg" alt="Flask" loading="lazy" /></div>
+              <span class="tool-card__name">Flask</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/dotnetcore/dotnetcore-original.svg" alt=".NET Core" loading="lazy" /></div>
+              <span class="tool-card__name">.NET Core</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/socketio/socketio-original.svg" alt="Socket.IO" loading="lazy" /></div>
+              <span class="tool-card__name">Socket.IO</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/plotly/plotly-original.svg" alt="Dash / Plotly" loading="lazy" /></div>
+              <span class="tool-card__name">Dash / Plotly</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/pandas/pandas-original.svg" alt="Pandas" loading="lazy" /></div>
+              <span class="tool-card__name">Pandas</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data & Automation -->
+        <div class="toolkit-category reveal-item">
+          <h3 class="toolkit-category__label">Data &amp; Automation</h3>
+          <div class="toolkit-grid">
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/microsoftsqlserver/microsoftsqlserver-original.svg" alt="SQL Server" loading="lazy" /></div>
+              <span class="tool-card__name">SQL Server</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/json/json-original.svg" alt="RESTful APIs" loading="lazy" /></div>
+              <span class="tool-card__name">RESTful APIs</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon">
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="8" width="32" height="24" rx="3" stroke="var(--accent)" stroke-width="2"/><path d="M12 16h16M12 21h10M12 26h13" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <span class="tool-card__name">Control-M</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon">
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 12h24v4H8zM8 20h24v4H8zM8 28h24v4H8z" fill="var(--accent)" opacity="0.2" rx="2"/><path d="M10 14h8M10 22h12M10 30h6" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <span class="tool-card__name">Data Pipelines</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tools & Infrastructure -->
+        <div class="toolkit-category reveal-item">
+          <h3 class="toolkit-category__label">Tools &amp; Infrastructure</h3>
+          <div class="toolkit-grid">
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg" alt="Docker" loading="lazy" /></div>
+              <span class="tool-card__name">Docker</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg" alt="Git" loading="lazy" /></div>
+              <span class="tool-card__name">Git</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg" alt="GitHub" loading="lazy" /></div>
+              <span class="tool-card__name">GitHub</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vscode/vscode-original.svg" alt="VS Code" loading="lazy" /></div>
+              <span class="tool-card__name">VS Code</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linux/linux-original.svg" alt="Linux" loading="lazy" /></div>
+              <span class="tool-card__name">Linux</span>
+            </div>
+          </div>
+        </div>
+
       </section>
 
       <!-- == SECTION: RESUME == -->
