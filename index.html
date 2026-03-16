@@ -1750,10 +1750,11 @@
       cfStatus.textContent = '';
       cfStatus.className = 'contact-form__status';
       try {
+        const data = Object.fromEntries(new FormData(contactForm));
         const res = await fetch(contactForm.action, {
           method: 'POST',
-          body: new FormData(contactForm),
-          headers: { 'Accept': 'application/json' }
+          body: JSON.stringify(data),
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
         });
         if (res.ok) {
           cfStatus.textContent = 'Message sent! I\'ll get back to you soon.';
