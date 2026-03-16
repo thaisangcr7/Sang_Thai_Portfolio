@@ -5,6 +5,12 @@
       <stop offset="100%" stop-color="#FF8C42"/>
     </linearGradient>
   </defs>
-  <rect width="32" height="32" rx="8" fill="#0F0E17"/>
+  <style>
+    rect.bg { fill: #0F0E17; }
+    @media (prefers-color-scheme: light) {
+      rect.bg { fill: #F8F7FF; }
+    }
+  </style>
+  <rect class="bg" width="32" height="32" rx="8"/>
   <text x="16" y="22" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700" fill="url(#g)">ST</text>
 </svg>

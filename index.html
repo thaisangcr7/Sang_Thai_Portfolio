@@ -12,8 +12,7 @@
   <meta property="og:description" content="Building systems that actually work. Production automation at Citi, ATLAS platform, and ThriveKid PWA." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://sangthai.dev/" />
-  <!-- To enable social share image: add og-image.png (1200×630) to root, then uncomment: -->
-  <!-- <meta property="og:image" content="https://sangthai.dev/og-image.png" /> -->
+  <meta property="og:image" content="https://sangthai.dev/og-image.png" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="canonical" href="https://sangthai.dev/" />
   <meta name="theme-color" content="#0F0E17" />
@@ -786,6 +785,96 @@
       transform: translateY(0);
     }
 
+    /* == SCROLL PROGRESS BAR == */
+    .scroll-progress {
+      position: fixed; top: 0; left: 0;
+      height: 3px; width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      z-index: 200;
+      transition: width 0.05s linear;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* == BACK TO TOP BUTTON == */
+    .back-to-top {
+      position: fixed;
+      bottom: 2rem; right: 1.5rem;
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      opacity: 0; pointer-events: none;
+      transform: translateY(10px);
+      transition: opacity 0.3s, transform 0.3s, background 0.2s, border-color 0.2s;
+      z-index: 90;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .back-to-top.visible {
+      opacity: 1; pointer-events: auto;
+      transform: translateY(0);
+    }
+    .back-to-top:hover {
+      border-color: var(--accent);
+      background: rgba(255,107,157,0.1);
+    }
+    .back-to-top svg { width: 18px; height: 18px; }
+    @media (max-width: 767px) {
+      .back-to-top { bottom: 5.5rem; right: 1rem; width: 38px; height: 38px; }
+      .back-to-top svg { width: 16px; height: 16px; }
+    }
+
+    /* == LIGHTBOX == */
+    .lightbox-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 300;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+      cursor: zoom-out;
+    }
+    .lightbox-overlay.active {
+      opacity: 1; pointer-events: auto;
+    }
+    .lightbox-overlay img {
+      max-width: 90vw; max-height: 85vh;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      transition: transform 0.3s ease;
+      transform: scale(0.9);
+    }
+    .lightbox-overlay.active img {
+      transform: scale(1);
+    }
+    .lightbox-close {
+      position: absolute; top: 1.5rem; right: 1.5rem;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,0.2); }
+    .lightbox-close svg { width: 20px; height: 20px; }
+
+    /* == HERO STAGGER ANIMATION == */
+    .intro .reveal-item:nth-child(1) { transition-delay: 0.1s; }
+    .intro .reveal-item:nth-child(2) { transition-delay: 0.25s; }
+    .intro .reveal-item:nth-child(3) { transition-delay: 0.4s; }
+    .intro .reveal-item:nth-child(4) { transition-delay: 0.55s; }
+    .intro .reveal-item:nth-child(5) { transition-delay: 0.65s; }
+    .intro .reveal-item:nth-child(6) { transition-delay: 0.75s; }
+    .intro .reveal-item:nth-child(7) { transition-delay: 0.85s; }
+
     /* == RESPONSIVE - TABLET+ == */
     @media (min-width: 768px) {
       header { padding: 0.75rem 2rem; }
@@ -867,6 +956,7 @@
 </head>
 <body>
 
+  <div class="scroll-progress" id="scroll-progress"></div>
   <a href="#content" class="skip-link">Skip to content</a>
   <div id="cursor"></div>
   <div class="gradient-background"></div>
@@ -1048,7 +1138,7 @@
         <h2 class="section-heading reveal-item">About Me</h2>
         <div class="about__text">
           <p class="reveal-item">
-            I'm an Software Developer and Automation Engineer on the Operational Risk
+            I'm a Software Developer and Automation Engineer on the Operational Risk
             team at <strong>Citibank</strong> in Tampa, FL. My background bridges finance and engineering
             &mdash; I came from Wells Fargo and Raymond James, then taught myself to build
             the tools I needed when none existed.
@@ -1356,6 +1446,19 @@
     </ul>
   </nav>
 
+  <!-- == BACK TO TOP == -->
+  <button class="back-to-top" id="back-to-top" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+  </button>
+
+  <!-- == LIGHTBOX OVERLAY == -->
+  <div class="lightbox-overlay" id="lightbox-overlay">
+    <button class="lightbox-close" aria-label="Close lightbox">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <img id="lightbox-img" src="" alt="Screenshot preview" />
+  </div>
+
   <!-- == FOOTER == -->
   <footer>
     <span class="footer__text">&copy; <span id="footer-year">2026</span> Sang Thai &middot; Let's Build Together.</span>
@@ -1484,6 +1587,50 @@
       [...parent.children].forEach((child, i) => {
         child.style.transitionDelay = (i * 0.1) + 's';
       });
+    });
+
+    /* == SCROLL PROGRESS BAR == */
+    const scrollProgress = document.getElementById('scroll-progress');
+    window.addEventListener('scroll', () => {
+      const scrollTop = document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+      scrollProgress.style.width = progress + '%';
+    }, { passive: true });
+
+    /* == BACK TO TOP BUTTON == */
+    const backToTop = document.getElementById('back-to-top');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 400) {
+        backToTop.classList.add('visible');
+      } else {
+        backToTop.classList.remove('visible');
+      }
+    }, { passive: true });
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    /* == SCREENSHOT LIGHTBOX == */
+    const lightboxOverlay = document.getElementById('lightbox-overlay');
+    const lightboxImg = document.getElementById('lightbox-img');
+    document.querySelectorAll('.screenshot-gallery__img').forEach(img => {
+      img.addEventListener('click', () => {
+        lightboxImg.src = img.src;
+        lightboxImg.alt = img.alt;
+        lightboxOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+    function closeLightbox() {
+      lightboxOverlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    lightboxOverlay.addEventListener('click', (e) => {
+      if (e.target === lightboxOverlay || e.target.closest('.lightbox-close')) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
     });
 
     /* == DYNAMIC FOOTER YEAR == */
