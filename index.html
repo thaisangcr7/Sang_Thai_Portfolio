@@ -540,6 +540,44 @@
       transition: background 0.2s, color 0.2s;
     }
     .project-card__link:hover { background: var(--accent); color: #fff; }
+    .project-card__links {
+      display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;
+    }
+    .project-card__link--demo {
+      background: var(--accent); color: #fff;
+    }
+    .project-card__link--demo:hover { background: var(--accent-2); border-color: var(--accent-2); }
+
+    /* Screenshot Gallery */
+    .screenshot-gallery {
+      display: flex; gap: 0.75rem;
+      overflow-x: auto; overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      padding: 0.25rem 0 1rem;
+      margin: 0 -0.5rem 1rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent) transparent;
+    }
+    .screenshot-gallery::-webkit-scrollbar { height: 4px; }
+    .screenshot-gallery::-webkit-scrollbar-track { background: transparent; }
+    .screenshot-gallery::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+    .screenshot-gallery__img {
+      flex: 0 0 auto;
+      width: 220px; height: auto;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      scroll-snap-align: start;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+    }
+    .screenshot-gallery__img:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    @media (max-width: 600px) {
+      .screenshot-gallery__img { width: 180px; }
+    }
 
     /* == SECTION: ABOUT == */
     .about__text p {
@@ -973,8 +1011,14 @@
             </div>
             <span class="status-badge status-dev">In Development</span>
           </div>
-          <!-- Optional: Add a screenshot -->
-          <!-- <img src="images/thrivekid-screenshot.png" alt="ThriveKid app screenshot" class="project-card__img" loading="lazy" /> -->
+          <div class="screenshot-gallery">
+            <img src="images/thrivekid-main.jpeg" alt="ThriveKid main page" class="screenshot-gallery__img" loading="lazy" />
+            <img src="images/thrivekid-main-dark.jpeg" alt="ThriveKid dark mode" class="screenshot-gallery__img" loading="lazy" />
+            <img src="images/thrivekid-main-mid.jpeg" alt="ThriveKid features" class="screenshot-gallery__img" loading="lazy" />
+            <img src="images/thrivekid-children.jpeg" alt="ThriveKid children page" class="screenshot-gallery__img" loading="lazy" />
+            <img src="images/thrivekid-growth-chart.jpeg" alt="ThriveKid growth tracking chart" class="screenshot-gallery__img" loading="lazy" />
+            <img src="images/thrivekid-reports.jpeg" alt="ThriveKid reports and analytics" class="screenshot-gallery__img" loading="lazy" />
+          </div>
           <p class="project-card__desc">
             A Progressive Web App to help parents track and visualize their children's
             growth over time &mdash; reminders, milestones, sleep, feeding reports, and
@@ -992,7 +1036,10 @@
             <span class="tag">Swagger</span>
             <span class="tag">Docker</span>
           </div>
-          <a href="https://github.com/thaisangcr7" target="_blank" rel="noopener noreferrer" class="project-card__link">View on GitHub &rarr;</a>
+          <div class="project-card__links">
+            <a href="https://youtube.com/shorts/Acs9CrLARwk" target="_blank" rel="noopener noreferrer" class="project-card__link project-card__link--demo">Watch Demo &rarr;</a>
+            <a href="https://github.com/thaisangcr7" target="_blank" rel="noopener noreferrer" class="project-card__link">View on GitHub &rarr;</a>
+          </div>
         </div>
       </section>
 
