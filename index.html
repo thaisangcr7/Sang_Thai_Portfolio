@@ -73,29 +73,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* == CUSTOM CURSOR == */
-    @media (hover: hover) and (pointer: fine) {
-      body { cursor: none; }
-      a, button, [role="button"] { cursor: none; }
-    }
-    #cursor {
-      position: fixed; width: 10px; height: 10px;
-      background: var(--accent); border-radius: 50%;
-      pointer-events: none; z-index: 9999;
-      left: -20px; top: -20px;
-      transform: translate(-50%, -50%);
-      transition: width 0.2s ease, height 0.2s ease, opacity 0.2s ease;
-      opacity: 0;
-    }
-    #cursor.visible { opacity: 1; }
-    #cursor.hover {
-      width: 36px; height: 36px;
-      background: rgba(255,107,157,0.15);
-      border: 1.5px solid var(--accent);
-    }
-    @media (hover: none) and (pointer: coarse) {
-      #cursor { display: none !important; }
-    }
+
 
     /* == SKIP LINK (accessibility) == */
     .skip-link {
@@ -1041,13 +1019,13 @@
 
   <div class="scroll-progress" id="scroll-progress"></div>
   <a href="#content" class="skip-link">Skip to content</a>
-  <div id="cursor"></div>
+
   <div class="gradient-background"></div>
 
   <!-- == HEADER / NAVIGATION == -->
   <header id="_navigation">
     <div class="avatar">
-      <div class="avatar__img">S.T</div>
+      <div class="avatar__img">ST</div>
       <div class="avatar__info">
         <div class="avatar__name">Sang Thai</div>
         <div class="avatar__title">Software Developer &middot; Tampa, FL</div>
@@ -1061,9 +1039,9 @@
     <nav id="menu">
       <ul class="menu__list">
         <li class="menu__item"><a class="menu__link active" href="#home">Home</a></li>
-        <li class="menu__item"><a class="menu__link" href="#portfolio">Portfolio</a></li>
-        <li class="menu__item"><a class="menu__link" href="#about">About</a></li>
-        <li class="menu__item"><a class="menu__link" href="#resume">Resume</a></li>
+        <li class="menu__item"><a class="menu__link" href="#portfolio">Projects</a></li>
+        <li class="menu__item"><a class="menu__link" href="#about">About Me</a></li>
+        <li class="menu__item"><a class="menu__link" href="#resume">Experience &amp; Education</a></li>
         <li class="menu__item"><a class="menu__link" href="#contact">Contact</a></li>
       </ul>
     </nav>
@@ -1108,7 +1086,7 @@
         </div>
 
         <div class="social-row reveal-item">
-          <a href="mailto:thaisangcr7@gmail.com" class="social-btn" aria-label="Email">
+          <a href="#contact" class="social-btn" aria-label="Contact">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
           </a>
           <a href="https://linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="LinkedIn">
@@ -1475,15 +1453,7 @@
         </p>
 
         <div class="contact-rows">
-          <a href="mailto:thaisangcr7@gmail.com" class="contact-row reveal-item">
-            <div class="contact-row__icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            </div>
-            <div>
-              <div class="contact-row__label">Email</div>
-              <div class="contact-row__value">thaisangcr7@gmail.com</div>
-            </div>
-          </a>
+
           <a href="https://linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer" class="contact-row reveal-item">
             <div class="contact-row__icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
@@ -1504,7 +1474,7 @@
           </a>
         </div>
 
-        <a href="mailto:thaisangcr7@gmail.com" class="cta-btn reveal-item" style="margin-bottom:2.5rem">Or Email Directly &rarr;</a>
+
 
         <form class="contact-form reveal-item" id="contact-form" action="https://formspree.io/f/mzdjjklg" method="POST">
           <div class="contact-form__row">
@@ -1542,7 +1512,7 @@
       </a></li>
       <li><a class="tab-bar__link" href="#portfolio" data-section="portfolio">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
-        Work
+        Projects
       </a></li>
       <li><a class="tab-bar__link" href="#about" data-section="about">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -1578,21 +1548,7 @@
   </footer>
 
   <script>
-    /* == CUSTOM CURSOR == */
-    const cursor = document.getElementById('cursor');
-    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-      let cursorVisible = false;
-      document.addEventListener('mousemove', e => {
-        cursor.style.left = e.clientX + 'px';
-        cursor.style.top  = e.clientY + 'px';
-        if (!cursorVisible) { cursor.classList.add('visible'); cursorVisible = true; }
-      });
-      document.addEventListener('mouseleave', () => { cursor.classList.remove('visible'); cursorVisible = false; });
-      document.querySelectorAll('a, button, .project-card, .contact-row, .social-btn, .edu-card, .tab-bar__link, .tool-card').forEach(el => {
-        el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
-        el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
-      });
-    }
+
 
     /* == THEME TOGGLE == */
     const themeBtn = document.getElementById('theme-toggle');
