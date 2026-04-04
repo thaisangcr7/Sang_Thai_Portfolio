@@ -473,6 +473,14 @@
       line-height: 1.7; margin-bottom: 1.25rem;
       font-weight: 400;
     }
+    .project-card__bullets {
+      font-size: 0.9rem; color: var(--text-muted);
+      line-height: 1.7; margin-bottom: 1.25rem;
+      font-weight: 400;
+      padding-left: 1.1rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .project-card__bullets li::marker { color: var(--accent); }
     .impact-row {
       display: flex; gap: 1.5rem; flex-wrap: wrap;
       margin-bottom: 1.25rem;
@@ -1161,16 +1169,13 @@
             </div>
             <span class="status-badge status-live">Live &middot; AWS</span>
           </div>
-          <p class="project-card__desc">
-            A production-grade financial data pipeline that ingests live economic
-            indicators (Federal Funds Rate, CPI, Unemployment) from the FRED API,
-            stores them in PostgreSQL via a zero-duplicate upsert pattern, detects
-            anomalies against configurable thresholds, and exposes alerts through a
-            secured FastAPI REST layer &mdash; deployed 24/7 on AWS EC2 via Docker and
-            GitHub Actions CI/CD. Before launch, I ran a self-directed security audit
-            and resolved 6 vulnerabilities including missing auth, exposed secrets,
-            and SSH hardening.
-          </p>
+          <ul class="project-card__desc project-card__bullets">
+            <li>Built and deployed a live financial monitoring system that automatically pulls real U.S. economic data every day and flags unusual changes &mdash; running on a cloud server with zero manual upkeep.</li>
+            <li>Set up a fully automated pipeline: every time code is updated, the system runs its own tests and deploys itself to the live server &mdash; no manual steps, no human error.</li>
+            <li>Identified and fixed 6 security vulnerabilities before launch by auditing the codebase for potential attack points &mdash; including one that could have allowed an outsider to delete the database.</li>
+            <li>Defined the entire cloud server in code, not clicks &mdash; the infrastructure can be rebuilt from scratch in under 2 minutes and is fully documented and repeatable.</li>
+            <li>Maintained zero test failures across 3 months of continuous development.</li>
+          </ul>
           <div class="impact-row">
             <div class="impact-item">
               <span class="impact-item__num">3</span>
