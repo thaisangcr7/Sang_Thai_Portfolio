@@ -1127,13 +1127,15 @@
           <!-- Optional: Add a screenshot -->
           <!-- <img src="images/atlas-screenshot.png" alt="ATLAS dashboard screenshot" class="project-card__img" loading="lazy" /> -->
           <p class="project-card__desc">
-            Centralized Python-based workflow platform I designed and built from scratch
-            at Citi. Runs 4 controls-testing pipelines &mdash; Threshold Validation,
-            Duplicate Detection, Dual Blind Rekey, and GPOC &mdash; processing ~25M
-            records/month with auditable outputs. Modular, config-driven framework
-            with a Flask web UI and Dash visualizations. Reduced ~90% of manual effort
-            per monthly cycle, saving 150+ hours. Codebase is confidential &mdash;
-            architecture and outcomes are mine to share.
+            Built at Citi to catch and escalate payment control failures across 52 global
+            applications &mdash; processing ~25M records monthly and validating roughly
+            $1.5 trillion in payment value every cycle. Designed and built from scratch
+            as the sole developer: a config-driven Python platform running 4 pipeline
+            types &mdash; Threshold Validation, Duplicate Detection, Dual Blind Rekey,
+            and GPOC executive reporting &mdash; each with its own business rules per
+            application. Reduced ~90% of manual effort per monthly cycle, saving 150+
+            hours. The codebase is internal to Citi &mdash; the architecture and outcomes
+            are mine to discuss.
           </p>
           <div class="impact-row">
             <div class="impact-item">
@@ -1170,23 +1172,15 @@
             <span class="status-badge status-live">Live &middot; AWS</span>
           </div>
           <p class="project-card__desc">
-            Every day, the U.S. government publishes data that moves markets &mdash;
-            interest rate decisions, inflation numbers, unemployment reports. Traders
-            watch it. Most people miss it entirely.
-          </p>
-          <p class="project-card__desc">
-            SENTINEL watches it automatically. It pulls real economic data from the
-            Federal Reserve's database every morning, stores it, and flags when
-            something unusual happens &mdash; a spike in inflation, a jump in unemployment,
-            an unexpected rate shift. No news article to read. No spreadsheet to update.
-            Just an alert when the numbers move.
-          </p>
-          <p class="project-card__desc">
-            The system runs 24/7 on a cloud server. Before going live, I audited the
-            entire codebase and resolved 6 security vulnerabilities &mdash; including one
-            that could have let an outsider delete the database. The infrastructure is
-            defined in code: if the server ever goes down, one command rebuilds the
-            whole thing from scratch.
+            A live financial data monitoring service built and deployed on AWS &mdash;
+            ingesting U.S. economic indicators daily via the FRED API, detecting
+            anomalies, and serving alerts through a secured FastAPI layer backed by
+            PostgreSQL. Built specifically to close real gaps: AWS infrastructure
+            provisioned with Terraform so the entire server can be rebuilt from scratch
+            in under 2 minutes, GitHub Actions CI/CD so every push runs tests before
+            touching production, and pytest coverage maintained at 100% pass across
+            3 months of active development. Completed a pre-launch security audit &mdash;
+            6 vulnerabilities identified and resolved before the first public deployment.
           </p>
           <div class="impact-row">
             <div class="impact-item">
@@ -1237,12 +1231,16 @@
             <img src="images/thrivekid-reports.jpeg" alt="ThriveKid reports and analytics" class="screenshot-gallery__img" loading="lazy" />
           </div>
           <p class="project-card__desc">
-            A Progressive Web App to help parents track and visualize their children's
-            growth over time &mdash; reminders, milestones, sleep, feeding reports, and
-            activity suggestions by age. Built with a React frontend on Vercel, RESTful CRUD APIs
-            on Azure with Docker containers, Entity Framework Core, Swagger-documented
-            endpoints, and GitHub Actions CI/CD. My public-facing engineering proof &mdash;
-            the code I can actually show.
+            Built from scratch over 8 months as a first-time parent who couldn't find
+            one app that did everything. ThriveKid is a deployed full-stack PWA &mdash;
+            12 feature modules, JWT authentication with refresh token rotation, a
+            timezone-aware recurring event engine, and WHO percentile growth charts.
+            Clean Architecture across a 3-layer .NET 8 backend, React 19 TypeScript
+            frontend deployed on Vercel, Docker multi-stage builds, and GitHub Actions
+            CI. Went through two full mentor code reviews with a senior engineer &mdash;
+            25+ issues identified, all resolved, including a 13-issue security audit
+            conducted before public launch. The project that taught me what good
+            engineering actually looks like.
           </p>
           <div class="tags">
             <span class="tag">React</span>
@@ -1259,7 +1257,6 @@
           <div class="project-card__links">
             <a href="https://thrive-kid-growth-planner.vercel.app/" target="_blank" rel="noopener noreferrer" class="project-card__link project-card__link--demo">View Live App &rarr;</a>
             <a href="https://youtube.com/shorts/Acs9CrLARwk" target="_blank" rel="noopener noreferrer" class="project-card__link">Watch Demo &rarr;</a>
-            <a href="https://github.com/thaisangcr7" target="_blank" rel="noopener noreferrer" class="project-card__link">View on GitHub &rarr;</a>
           </div>
         </div>
       </section>
@@ -1292,20 +1289,6 @@
             B.S. in Computer Science at WGU (expected Dec 2027) and playing soccer
             whenever I can.
           </p>
-        </div>
-        <div class="skills-grid reveal-item">
-          <span class="skill-item">Python / Flask / Dash</span>
-          <span class="skill-item">Socket.IO / Real-time systems</span>
-          <span class="skill-item">C# / ASP.NET Core</span>
-          <span class="skill-item">React / TypeScript</span>
-          <span class="skill-item">Entity Framework Core</span>
-          <span class="skill-item">RESTful API design</span>
-          <span class="skill-item">Data pipeline architecture</span>
-          <span class="skill-item">SQL / SQL Server / SQLite</span>
-          <span class="skill-item">Pandas / NumPy</span>
-          <span class="skill-item">Docker / Git / Postman</span>
-          <span class="skill-item">Control-M / Genesis</span>
-          <span class="skill-item">Financial operations domain</span>
         </div>
       </section>
 
@@ -1490,8 +1473,8 @@
           <p class="exp-item__desc">
             Designed and built ATLAS from scratch &mdash; a centralized Python-based workflow
             platform with a Flask web UI that runs 4 controls-testing pipelines. Architected
-            a modular, config-driven framework processing ~25M records/month, reducing
-            ~90% of manual effort per monthly cycle.
+            a modular, config-driven framework processing ~25M records/month across 52 global
+            applications, reducing ~90% of manual effort per monthly cycle.
           </p>
         </div>
 
@@ -1503,8 +1486,11 @@
           <div class="exp-item__title">IT Business Analyst &middot; St. Petersburg, FL</div>
           <p class="exp-item__desc">
             Executed SQL-based validation and supported UAT workflows for DTCC data
-            pipelines. Created relational schemas in SQL Server, documented process
-            flows, and gained hands-on exposure to Control-M and Genesis (Jett AI).
+            pipelines &mdash; post-trade settlement data for U.S. securities markets.
+            Designed 4 relational schemas in SQL Server for Valuation Records datasets
+            and built process flows in Visio for stakeholder alignment. Used Control-M
+            for enterprise batch job scheduling and worked with Genesis &mdash; Jett AI's
+            GenAI-powered advisor for Control-M SaaS.
           </p>
         </div>
 
@@ -1515,8 +1501,10 @@
           </div>
           <div class="exp-item__title">Wealth &amp; Investment Management Ops Analyst &middot; Charlotte, NC</div>
           <p class="exp-item__desc">
-            Resolved client onboarding and data issues across legacy and modern
-            platforms, reducing delays and improving quality.
+            Resolved client onboarding and data integrity issues across legacy and
+            modern wealth management platforms. First role out of university &mdash;
+            where I realized operations work at financial institutions runs on data
+            quality, and that I wanted to be the person fixing it at the source.
           </p>
         </div>
 
@@ -1701,10 +1689,9 @@
     /* == TYPEWRITER EFFECT == */
     const typewriterEl = document.getElementById('typewriter-text');
     const phrases = [
-      'Software Developer',
-      'Automation Engineer',
-      'Fintech Systems Builder',
-      'Python & C# Developer'
+      'Software Engineer',
+      'Data Engineering',
+      'Financial Systems'
     ];
     let phraseIdx = 0, charIdx = 0, deleting = false;
     function typewrite() {
