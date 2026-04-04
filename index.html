@@ -1152,6 +1152,56 @@
           <p class="project-card__note">Internal tool &mdash; codebase confidential per Citi policy</p>
         </div>
 
+        <!-- SENTINEL -->
+        <div class="project-card reveal-item">
+          <div class="project-card__header">
+            <div>
+              <div class="project-card__name">SENTINEL</div>
+              <div class="project-card__role">Solo Developer &mdash; Production Data Pipeline</div>
+            </div>
+            <span class="status-badge status-live">Live &middot; AWS</span>
+          </div>
+          <p class="project-card__desc">
+            A production-grade financial data pipeline that ingests live economic
+            indicators (Federal Funds Rate, CPI, Unemployment) from the FRED API,
+            stores them in PostgreSQL via a zero-duplicate upsert pattern, detects
+            anomalies against configurable thresholds, and exposes alerts through a
+            secured FastAPI REST layer &mdash; deployed 24/7 on AWS EC2 via Docker and
+            GitHub Actions CI/CD. Before launch, I ran a self-directed security audit
+            and resolved 6 vulnerabilities including missing auth, exposed secrets,
+            and SSH hardening.
+          </p>
+          <div class="impact-row">
+            <div class="impact-item">
+              <span class="impact-item__num">3</span>
+              <span class="impact-item__label">Live Indicators</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">11</span>
+              <span class="impact-item__label">Tests &middot; 100% Pass</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">6</span>
+              <span class="impact-item__label">Vulns Fixed</span>
+            </div>
+          </div>
+          <div class="tags">
+            <span class="tag">Python</span>
+            <span class="tag">FastAPI</span>
+            <span class="tag">PostgreSQL</span>
+            <span class="tag">SQLAlchemy</span>
+            <span class="tag">Docker</span>
+            <span class="tag">Terraform</span>
+            <span class="tag">AWS EC2</span>
+            <span class="tag">GitHub Actions</span>
+            <span class="tag">pytest</span>
+          </div>
+          <div class="project-card__links">
+            <a href="http://52.23.231.90:8000/docs" target="_blank" rel="noopener noreferrer" class="project-card__link project-card__link--demo">View Live API &rarr;</a>
+            <a href="https://github.com/thaisangcr7/SENTINEL" target="_blank" rel="noopener noreferrer" class="project-card__link">View on GitHub &rarr;</a>
+          </div>
+        </div>
+
         <!-- ThriveKid -->
         <div class="project-card reveal-item">
           <div class="project-card__header">
@@ -1217,10 +1267,13 @@
             per cycle.
           </p>
           <p class="reveal-item">
-            Outside of Citi, I'm building <strong>ThriveKid</strong> &mdash; a React + C#
-            PWA deployed on Vercel and Azure that shows what I can do when the code
-            is mine to share. I'm also finishing a B.S. in Computer Science at WGU
-            (expected Dec 2027) and playing soccer whenever I can.
+            Outside of Citi, I've built <strong>SENTINEL</strong> &mdash; a live financial
+            data pipeline on AWS that ingests real economic indicators, detects
+            anomalies, and serves alerts through a secured FastAPI layer. And
+            <strong>ThriveKid</strong> &mdash; a React + C# PWA on Vercel and Azure.
+            Both are fully deployed and publicly shareable. I'm also finishing a
+            B.S. in Computer Science at WGU (expected Dec 2027) and playing soccer
+            whenever I can.
           </p>
         </div>
         <div class="skills-grid reveal-item">
