@@ -1169,13 +1169,25 @@
             </div>
             <span class="status-badge status-live">Live &middot; AWS</span>
           </div>
-          <ul class="project-card__desc project-card__bullets">
-            <li>Built and deployed a live financial monitoring system that automatically pulls real U.S. economic data every day and flags unusual changes &mdash; running on a cloud server with zero manual upkeep.</li>
-            <li>Set up a fully automated pipeline: every time code is updated, the system runs its own tests and deploys itself to the live server &mdash; no manual steps, no human error.</li>
-            <li>Identified and fixed 6 security vulnerabilities before launch by auditing the codebase for potential attack points &mdash; including one that could have allowed an outsider to delete the database.</li>
-            <li>Defined the entire cloud server in code, not clicks &mdash; the infrastructure can be rebuilt from scratch in under 2 minutes and is fully documented and repeatable.</li>
-            <li>Maintained zero test failures across 3 months of continuous development.</li>
-          </ul>
+          <p class="project-card__desc">
+            Every day, the U.S. government publishes data that moves markets &mdash;
+            interest rate decisions, inflation numbers, unemployment reports. Traders
+            watch it. Most people miss it entirely.
+          </p>
+          <p class="project-card__desc">
+            SENTINEL watches it automatically. It pulls real economic data from the
+            Federal Reserve's database every morning, stores it, and flags when
+            something unusual happens &mdash; a spike in inflation, a jump in unemployment,
+            an unexpected rate shift. No news article to read. No spreadsheet to update.
+            Just an alert when the numbers move.
+          </p>
+          <p class="project-card__desc">
+            The system runs 24/7 on a cloud server. Before going live, I audited the
+            entire codebase and resolved 6 security vulnerabilities &mdash; including one
+            that could have let an outsider delete the database. The infrastructure is
+            defined in code: if the server ever goes down, one command rebuilds the
+            whole thing from scratch.
+          </p>
           <div class="impact-row">
             <div class="impact-item">
               <span class="impact-item__num">3</span>
@@ -1345,6 +1357,10 @@
               <span class="tool-card__name">Flask</span>
             </div>
             <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/fastapi/fastapi-original.svg" alt="FastAPI" loading="lazy" /></div>
+              <span class="tool-card__name">FastAPI</span>
+            </div>
+            <div class="tool-card">
               <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/dotnetcore/dotnetcore-original.svg" alt=".NET Core" loading="lazy" /></div>
               <span class="tool-card__name">.NET Core</span>
             </div>
@@ -1384,6 +1400,14 @@
               <span class="tool-card__name">SQL Server</span>
             </div>
             <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/postgresql/postgresql-original.svg" alt="PostgreSQL" loading="lazy" /></div>
+              <span class="tool-card__name">PostgreSQL</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/sqlalchemy/sqlalchemy-original.svg" alt="SQLAlchemy" loading="lazy" /></div>
+              <span class="tool-card__name">SQLAlchemy</span>
+            </div>
+            <div class="tool-card">
               <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/sqlite/sqlite-original.svg" alt="SQLite" loading="lazy" /></div>
               <span class="tool-card__name">SQLite</span>
             </div>
@@ -1413,6 +1437,18 @@
             <div class="tool-card">
               <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg" alt="Docker" loading="lazy" /></div>
               <span class="tool-card__name">Docker</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-plain-wordmark.svg" alt="AWS" loading="lazy" /></div>
+              <span class="tool-card__name">AWS</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/terraform/terraform-original.svg" alt="Terraform" loading="lazy" /></div>
+              <span class="tool-card__name">Terraform</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/githubactions/githubactions-original.svg" alt="GitHub Actions" loading="lazy" /></div>
+              <span class="tool-card__name">GitHub Actions</span>
             </div>
             <div class="tool-card">
               <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg" alt="Git" loading="lazy" /></div>
