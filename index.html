@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sang Thai &mdash; Software Developer &amp; Automation Engineer</title>
+  <title>Sang Thai &mdash; Data Engineer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
-  <meta name="description" content="Sang Thai &mdash; Software Developer &amp; Automation Engineer building production-grade automation infrastructure at the intersection of financial ops and software engineering." />
-  <meta property="og:title" content="Sang Thai &mdash; Software Developer &amp; Automation Engineer" />
+  <meta name="description" content="Sang Thai &mdash; Data Engineer building reliable pipelines, automating workflows, and turning raw data into decisions." />
+  <meta property="og:title" content="Sang Thai &mdash; Data Engineer" />
   <meta property="og:description" content="Building systems that actually work. Production automation at Citi, ATLAS platform, and ThriveKid PWA." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://sangthai.dev/" />
@@ -1036,7 +1036,7 @@
       <div class="avatar__img">ST</div>
       <div class="avatar__info">
         <div class="avatar__name">Sang Thai</div>
-        <div class="avatar__title">Software Developer &middot; Tampa, FL</div>
+        <div class="avatar__title">Data Engineer &middot; Tampa, FL</div>
       </div>
     </div>
     <div class="header__brand" id="header-brand">
@@ -1073,8 +1073,8 @@
         </div>
         <p class="intro__bio reveal-item">
           Finance major turned self-taught engineer. One CS class in my final
-          semester changed everything &mdash; now I build production systems
-          at Citi that move entire teams forward.
+          semester changed everything &mdash; now I build data pipelines and
+          production systems at Citi that move entire teams forward.
         </p>
 
         <h3 class="intro__impact-heading reveal-item">Business Impact</h3>
@@ -1210,6 +1210,53 @@
           <div class="project-card__links">
             <a href="http://52.23.231.90:8000/docs" target="_blank" rel="noopener noreferrer" class="project-card__link project-card__link--demo">View Live API &rarr;</a>
             <a href="https://github.com/thaisangcr7/SENTINEL" target="_blank" rel="noopener noreferrer" class="project-card__link">View on GitHub &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Automated Portfolio Analytics Pipeline -->
+        <div class="project-card reveal-item">
+          <div class="project-card__header">
+            <div>
+              <div class="project-card__name">Portfolio Analytics Pipeline</div>
+              <div class="project-card__role">Solo Developer &mdash; End-to-End Data Engineering Project</div>
+            </div>
+            <span class="status-badge status-live">Live &middot; Local</span>
+          </div>
+          <img src="images/portfolio_analysis.png" alt="Portfolio Analytics Dashboard" class="project-card__img">
+          <p class="project-card__desc">
+            A fully automated ELT pipeline that ingests daily stock prices from Yahoo Finance,
+            transforms them through a medallion architecture using dbt, orchestrates every step
+            with Apache Airflow, and serves a live Metabase dashboard &mdash; all running inside Docker.
+            Every weekday at 6 PM the pipeline triggers automatically: raw prices land in PostgreSQL,
+            dbt rebuilds the star schema across 3 data layers (Bronze &rarr; Silver &rarr; Gold),
+            26 data quality tests validate the output, and the dashboard updates itself.
+            Built to demonstrate the full data engineering lifecycle from ingestion to visualization.
+          </p>
+          <div class="impact-row">
+            <div class="impact-item">
+              <span class="impact-item__num">5</span>
+              <span class="impact-item__label">dbt Models</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">26</span>
+              <span class="impact-item__label">Data Quality Tests</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">1,260</span>
+              <span class="impact-item__label">Rows Transformed</span>
+            </div>
+          </div>
+          <div class="tags">
+            <span class="tag">Python</span>
+            <span class="tag">dbt Core</span>
+            <span class="tag">Apache Airflow</span>
+            <span class="tag">PostgreSQL</span>
+            <span class="tag">Docker</span>
+            <span class="tag">Metabase</span>
+            <span class="tag">SQL</span>
+          </div>
+          <div class="project-card__links">
+            <a href="https://github.com/thaisangcr7/Automated-Portfolio-Analytics-Pipeline" target="_blank" rel="noopener noreferrer" class="project-card__link">View on GitHub &rarr;</a>
           </div>
         </div>
 
@@ -1703,9 +1750,9 @@
     /* == TYPEWRITER EFFECT == */
     const typewriterEl = document.getElementById('typewriter-text');
     const phrases = [
-      'Software Engineer',
-      'Data Engineering',
-      'Financial Systems'
+      'Data Engineer',
+      'Pipeline Builder',
+      'Always Learning'
     ];
     let phraseIdx = 0, charIdx = 0, deleting = false;
     function typewrite() {
