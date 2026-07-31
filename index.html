@@ -698,6 +698,27 @@
       font-size: 0.68rem; letter-spacing: 0.06em;
       color: var(--text-muted);
     }
+    .edu-card__desc {
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--text-muted);
+      margin: 0.6rem 0 0.75rem;
+    }
+    .edu-card__links {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .edu-card__link {
+      font-family: var(--font-mono);
+      font-size: 0.65rem; letter-spacing: 0.04em;
+      padding: 0.3rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .edu-card__link:hover { border-color: rgba(255,107,157,0.4); color: var(--text); }
     .edu-card__badge {
       display: inline-block;
       font-family: var(--font-mono);
@@ -1441,8 +1462,8 @@
               <span class="tool-card__name">Hugging Face</span>
             </div>
             <div class="tool-card">
-              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/pytorch/pytorch-original.svg" alt="PyTorch" loading="lazy" /></div>
-              <span class="tool-card__name">PyTorch</span>
+              <div class="tool-card__icon"><img src="https://cdn.simpleicons.org/scikitlearn" alt="scikit-learn" loading="lazy" /></div>
+              <span class="tool-card__name">scikit-learn</span>
             </div>
           </div>
         </div>
@@ -1730,6 +1751,24 @@
             <div class="edu-card__degree">B.S. Finance &mdash; May 2023</div>
             <div class="edu-card__meta">GPA: 3.63</div>
             <span class="edu-card__badge">Completed</span>
+          </div>
+
+          <div class="edu-card reveal-item">
+            <div class="edu-card__school">Springboard</div>
+            <div class="edu-card__degree">Data Science Career Track</div>
+            <p class="edu-card__desc">
+              Self-funded, mentor-led curriculum taken alongside my finance degree:
+              hands-on coursework with 1:1 industry mentor oversight, ~20 case studies,
+              and two capstone projects. Covered Python, SQL, statistical inference,
+              data wrangling and visualization, and supervised machine learning
+              &mdash; regression, tree ensembles, clustering, and time series.
+            </p>
+            <div class="edu-card__links">
+              <a class="edu-card__link" href="https://github.com/thaisangcr7/Capstone_2" target="_blank" rel="noopener">Capstone 2 &mdash; Santander &rarr;</a>
+              <a class="edu-card__link" href="https://github.com/thaisangcr7/Capstone_1_Resort" target="_blank" rel="noopener">Capstone 1 &mdash; Big Mountain &rarr;</a>
+            </div>
+            <div class="edu-card__meta">2023 &middot; Coursework and both capstones completed</div>
+            <span class="edu-card__badge">Coursework Completed</span>
           </div>
 
         </div>
