@@ -1173,6 +1173,62 @@
           <p class="project-card__note">Internal tool &mdash; codebase confidential per Citi policy</p>
         </div>
 
+        <!-- credit-rag -->
+        <div class="project-card reveal-item">
+          <div class="project-card__header">
+            <div>
+              <div class="project-card__name">credit-rag</div>
+              <div class="project-card__role">Solo Developer &mdash; AI Document Extraction Service</div>
+            </div>
+            <span class="status-badge status-live">Live &middot; Docker</span>
+          </div>
+          <p class="project-card__desc">
+            A retrieval-augmented extraction service that reads a 200+ page commercial
+            credit agreement and returns the key terms &mdash; borrower, facility amount,
+            maturity, pricing, covenants, events of default &mdash; as structured data.
+            The hard part isn&rsquo;t getting an answer from a language model; it&rsquo;s knowing
+            whether to trust it. Every value comes back with the page and the exact
+            sentence it was taken from, and each citation is verified in code against
+            the retrieved text, so an unsupported answer is downgraded to &ldquo;not found&rdquo;
+            rather than invented. Search runs in two passes &mdash; vector similarity over
+            pgvector/HNSW, narrowed by a cross-encoder re-ranker running locally &mdash; and
+            ingestion is queued through Kafka with an idempotent worker, so uploading
+            the same document twice is safe. Accuracy is measured, not assumed: an
+            evaluation harness scores results against hand-labeled answer keys, and was
+            used to lift accuracy on a real SEC filing from 57% to 71% &mdash; and to
+            disprove a change that turned out to make no difference at all.
+          </p>
+          <div class="impact-row">
+            <div class="impact-item">
+              <span class="impact-item__num">229</span>
+              <span class="impact-item__label">Page Filing Evaluated</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">100%</span>
+              <span class="impact-item__label">Values Cited or Abstained</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">64</span>
+              <span class="impact-item__label">Tests &middot; CI Green</span>
+            </div>
+          </div>
+          <div class="tags">
+            <span class="tag">Python</span>
+            <span class="tag">FastAPI</span>
+            <span class="tag">RAG</span>
+            <span class="tag">pgvector</span>
+            <span class="tag">Claude API</span>
+            <span class="tag">Kafka</span>
+            <span class="tag">Redis</span>
+            <span class="tag">Docker</span>
+            <span class="tag">Kubernetes</span>
+            <span class="tag">Angular</span>
+          </div>
+          <div class="project-card__links">
+            <a href="https://github.com/thaisangcr7/credit-rag" target="_blank" rel="noopener noreferrer" class="project-card__link">View on GitHub &rarr;</a>
+          </div>
+        </div>
+
         <!-- SENTINEL -->
         <div class="project-card reveal-item">
           <div class="project-card__header">
