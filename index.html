@@ -1219,27 +1219,23 @@
             <img src="images/avocado-limits.jpg" alt="The end of the same briefing: a delivery-capacity section with two charts, followed by a LIMITS note in which the report states what its own data cannot support." class="screenshot-gallery__img" loading="lazy" />
           </div>
           <p class="project-card__desc">
-            Most &ldquo;chat with your documents&rdquo; tools retrieve a paragraph and
-            paraphrase it. Avocado does that &mdash; every answer carries the sources it
-            came from &mdash; but when the question is analytical it writes pandas, runs it
-            in a locked-down container, and returns the computed number next to the
-            program that produced it. One path is explainable, the other verifiable, and
-            the interface tells you which one you got.
+            A question-answering workspace for a team&rsquo;s own files. Upload documents
+            and spreadsheets, ask in plain English, and every answer comes back one of
+            two ways: <strong>quoted</strong>, with the source documents listed
+            underneath it, or <strong>computed</strong> &mdash; Avocado writes Python, runs
+            it against your data in a locked-down container, and shows you the code
+            behind the number.
           </p>
           <p class="project-card__desc">
-            What I care most about is where it stops. Asked about a $60 taxi it answers
-            from the expense policy, then volunteers that the policy never mentions taxis
-            at all. Asked for an executive summary it profiles every spreadsheet in the
-            workspace and renders a briefing &mdash; headline verdict, KPI strip, per-section
-            status, computed charts &mdash; and closes by naming what its own data cannot
-            support.
+            It is careful about what it does not know. Asked whether a $60 taxi needs a
+            receipt, it answers from the expense policy &mdash; then points out that the
+            policy never mentions taxis. Ask for an executive summary and it charts every
+            spreadsheet in the workspace, then lists what its own data cannot support.
           </p>
           <p class="project-card__desc">
-            The sandbox is what I would defend in review: no network, a read-only
-            filesystem, all Linux capabilities dropped, a non-root user, and hard memory
-            and CPU caps &mdash; applied unconditionally rather than per request, since a
-            caller that can set its own limits can set none. The API never holds the
-            Docker socket; a separate runner does, with no database and no model access.
+            Generated code runs with no network, a read-only filesystem, and hard memory
+            and CPU caps &mdash; applied to every run, never set per request. Every query is
+            scoped to one workspace in SQL, so no team can read another&rsquo;s data.
           </p>
           <div class="impact-row">
             <div class="impact-item">
