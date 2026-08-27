@@ -1280,20 +1280,25 @@
             <span class="status-badge status-live">Open source &middot; Docker</span>
           </div>
           <p class="project-card__desc">
-            A retrieval-augmented extraction service that reads a 200+ page commercial
-            credit agreement and returns the key terms &mdash; borrower, facility amount,
-            maturity, pricing, covenants, events of default &mdash; as structured data.
-            The hard part isn&rsquo;t getting an answer from a language model; it&rsquo;s knowing
-            whether to trust it. Every value comes back with the page and the exact
-            sentence it was taken from, and each citation is verified in code against
-            the retrieved text, so an unsupported answer is downgraded to &ldquo;not found&rdquo;
-            rather than invented. Search runs in two passes &mdash; vector similarity over
-            pgvector/HNSW, narrowed by a cross-encoder re-ranker running locally &mdash; and
-            ingestion is queued through Kafka with an idempotent worker, so uploading
-            the same document twice is safe. Accuracy is measured, not assumed: an
-            evaluation harness scores results against hand-labeled answer keys, and was
-            used to lift accuracy on a real SEC filing from 57% to 71% &mdash; and to
-            disprove a change that turned out to make no difference at all.
+            A service that reads a 200-page commercial credit agreement and returns the
+            terms a credit team actually needs &mdash; borrower, facility amount, maturity,
+            pricing, covenants, events of default &mdash; as structured data. Every value
+            arrives <strong>cited</strong>, with the page and the exact sentence it came
+            from. Each citation is then checked in code against the source text, so
+            anything that cannot be traced comes back <strong>not found</strong> rather
+            than invented.
+          </p>
+          <p class="project-card__desc">
+            Search runs in two passes: vector similarity over pgvector to gather
+            candidates, then a cross-encoder re-ranker running locally to narrow them.
+            Ingestion is queued through Kafka with an idempotent worker, so uploading the
+            same document twice is safe.
+          </p>
+          <p class="project-card__desc">
+            Accuracy is measured, not assumed. An evaluation harness scores answers
+            against hand-labeled keys &mdash; it took a real SEC filing from 57% to 71%, and
+            it also disproved a change I expected to help, which turned out to make no
+            difference at all.
           </p>
           <div class="impact-row">
             <div class="impact-item">
