@@ -1340,26 +1340,33 @@
               <div class="project-card__name">SENTINEL</div>
               <div class="project-card__role">Solo Developer &mdash; Production Data Pipeline</div>
             </div>
-            <span class="status-badge status-live">Live &middot; AWS</span>
+            <span class="status-badge status-live">Open source &middot; Terraform</span>
           </div>
           <p class="project-card__desc">
             A monitoring service that tracks three U.S. economic indicators &mdash; the
             federal funds rate, CPI and unemployment &mdash; pulling them daily from the
             FRED API, storing them in PostgreSQL, and raising an alert when a value moves
-            further than its configured threshold. It is deployed and running on AWS.
+            further than its configured threshold.
           </p>
           <p class="project-card__desc">
-            I built it to close gaps I knew I had rather than to add another project.
-            The infrastructure is defined in Terraform, so the server can be rebuilt from
-            scratch instead of being a machine nobody dares touch. Deploys are gated on
-            the test suite &mdash; a failing push never reaches production. And I ran a
-            security audit before the first public deployment, which found six issues I
-            fixed before anyone else could see them.
+            I built it to close gaps I knew I had rather than to add another project. The
+            whole environment is defined in Terraform &mdash; EC2 instance, firewall rules,
+            key pair &mdash; so it stands up from nothing with one command instead of being
+            a machine nobody dares touch. Deploys are gated on the test suite: the deploy
+            job declares a dependency on the tests, so a failing push cannot reach
+            production. And I ran a security audit before the first public deployment,
+            which found six issues I fixed before anyone else could see them.
+          </p>
+          <p class="project-card__desc">
+            It ran live on AWS for five months. I took it down deliberately: the
+            infrastructure code is the artefact worth keeping, and leaving a t2.micro
+            running to serve a demo nobody is querying is a bill, not a portfolio piece.
+            <code>terraform apply</code> brings it back.
           </p>
           <div class="impact-row">
             <div class="impact-item">
               <span class="impact-item__num">3</span>
-              <span class="impact-item__label">Live Indicators</span>
+              <span class="impact-item__label">FRED Series Tracked</span>
             </div>
             <div class="impact-item">
               <span class="impact-item__num">Gated</span>
@@ -1382,7 +1389,6 @@
             <span class="tag">pytest</span>
           </div>
           <div class="project-card__links">
-            <a href="http://52.23.231.90:8000/docs" target="_blank" rel="noopener noreferrer" class="project-card__link project-card__link--demo">View Live API &rarr;</a>
             <a href="https://github.com/thaisangcr7/SENTINEL" target="_blank" rel="noopener noreferrer" class="project-card__link">View on GitHub &rarr;</a>
           </div>
         </div>
@@ -1394,7 +1400,7 @@
               <div class="project-card__name">Portfolio Analytics Pipeline</div>
               <div class="project-card__role">Solo Developer &mdash; End-to-End Data Engineering Project</div>
             </div>
-            <span class="status-badge status-live">Live &middot; Local</span>
+            <span class="status-badge status-live">Open source &middot; Docker</span>
           </div>
           <img src="images/portfolio_analysis.png" alt="Portfolio Analytics Dashboard" class="project-card__img">
           <p class="project-card__desc">
@@ -1514,11 +1520,11 @@
             <strong>credit-rag</strong> reads 200-page credit agreements and returns
             structured terms with every value traced to the sentence it came from &mdash;
             verified in code, not taken on trust. Before those came
-            <strong>SENTINEL</strong>, a financial data pipeline on AWS that ingests real
-            economic indicators and serves anomaly alerts through a secured FastAPI layer,
-            and <strong>ThriveKid</strong>, a React and C# PWA my own family uses. Avocado
-            and credit-rag are open source; SENTINEL and ThriveKid are deployed and
-            clickable. I'm also pursuing an M.S. in Artificial Intelligence in Business
+            <strong>SENTINEL</strong>, a financial data pipeline whose AWS environment is
+            defined entirely in Terraform, and <strong>ThriveKid</strong>, a React and C#
+            PWA my own family uses. Avocado, credit-rag and SENTINEL are open source;
+            ThriveKid is deployed and clickable.
+            I'm also pursuing an M.S. in Artificial Intelligence in Business
             &amp; Enterprise Integration at the University of South Florida (expected
             December 2027) and playing soccer whenever I can.
           </p>
