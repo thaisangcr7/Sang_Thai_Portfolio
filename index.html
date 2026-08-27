@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sang Thai &mdash; Data Engineer</title>
+  <title>Sang Thai &mdash; AI / Backend Engineer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
-  <meta name="description" content="Sang Thai &mdash; Data Engineer building reliable pipelines, automating workflows, and turning raw data into decisions." />
-  <meta property="og:title" content="Sang Thai &mdash; Data Engineer" />
+  <meta name="description" content="Sang Thai &mdash; AI / Backend Engineer. I build retrieval and analysis systems that cite their sources or show the code behind the number, plus the automation and data pipelines behind them." />
+  <meta property="og:title" content="Sang Thai &mdash; AI / Backend Engineer" />
   <meta property="og:description" content="Building systems that actually work. Production automation at Citi, the Avocado analysis copilot, and a credit-agreement extractor that cites every value it returns." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://sangthai.dev/" />
@@ -1077,7 +1077,7 @@
       <div class="avatar__img">ST</div>
       <div class="avatar__info">
         <div class="avatar__name">Sang Thai</div>
-        <div class="avatar__title">Data Engineer &middot; Tampa, FL</div>
+        <div class="avatar__title">AI / Backend Engineer &middot; Tampa, FL</div>
       </div>
     </div>
     <div class="header__brand" id="header-brand">
@@ -1114,8 +1114,9 @@
         </div>
         <p class="intro__bio reveal-item">
           Finance major turned self-taught engineer. One CS class in my final
-          semester changed everything &mdash; now I build data pipelines and
-          production systems at Citi that move entire teams forward.
+          semester changed everything &mdash; now I build systems that answer from
+          real documents and data and show their work, and the production
+          automation behind them at Citi.
         </p>
 
         <h3 class="intro__impact-heading reveal-item">Business Impact</h3>
@@ -1210,7 +1211,7 @@
               <div class="project-card__name">Avocado</div>
               <div class="project-card__role">Solo Developer &mdash; Team Knowledge &amp; Analysis Copilot</div>
             </div>
-            <span class="status-badge status-live">Live &middot; Docker</span>
+            <span class="status-badge status-live">Open source &middot; Docker</span>
           </div>
           <div class="screenshot-gallery screenshot-gallery--wide">
             <img src="images/avocado-cited.jpg" alt="Avocado answering two policy questions. Each answer lists the source documents it drew from, and the second one notes that the expense policy never mentions taxis." class="screenshot-gallery__img" loading="lazy" />
@@ -1218,35 +1219,27 @@
             <img src="images/avocado-limits.jpg" alt="The end of the same briefing: a delivery-capacity section with two charts, followed by a LIMITS note in which the report states what its own data cannot support." class="screenshot-gallery__img" loading="lazy" />
           </div>
           <p class="project-card__desc">
-            Most &ldquo;chat with your documents&rdquo; tools retrieve a paragraph and paraphrase
-            it. Avocado does that &mdash; every answer carries the sources it came from &mdash;
-            but when the question is analytical it writes pandas, runs it in a
-            locked-down container, and returns the computed number next to the program
-            that produced it. One path is explainable, the other is verifiable, and the
-            interface always tells you which one you got. In the screenshots above it
-            answers a policy question no keyword index would match, then volunteers,
-            unprompted, that the policy never actually mentions taxis &mdash; the part I
-            care most about, because knowing where a document stops is worth more than a
-            confident guess. Ask it for an executive summary and it profiles every
-            spreadsheet in the workspace and renders a briefing: a headline verdict, a
-            KPI strip, per-theme sections each carrying an on-course or off-course
-            status, and computed charts. Every headline figure there is a computation,
-            not the model&rsquo;s phrasing. It closes with a limits note saying what its own
-            data cannot support &mdash; that support and hiring have no time series in this
-            view, that project capacity has no prior-year baseline &mdash; which is the
-            rarest thing a generated report can do: argue with itself in public. The
-            sandbox is what I would defend in review: every
-            execution runs with no network, a read-only filesystem, all Linux
-            capabilities dropped, a non-root user, and hard memory, CPU and process
-            caps &mdash; applied unconditionally rather than per request, since a caller
-            that can name its own limits can name unlimited ones. The API never holds
-            the Docker socket; a separate runner does, and that runner has no database
-            and no model access, so compromising the API does not mean owning the host.
-            Tenant isolation is a SQL predicate at the repository layer rather than a
-            filter in application code, because filtering after loading would mean the
-            rows had already crossed the boundary. It seeds a real 110,064-row dataset
-            instead of an invented one &mdash; a file made up to be computed over does not
-            test the claim that it computes.
+            Most &ldquo;chat with your documents&rdquo; tools retrieve a paragraph and
+            paraphrase it. Avocado does that &mdash; every answer carries the sources it
+            came from &mdash; but when the question is analytical it writes pandas, runs it
+            in a locked-down container, and returns the computed number next to the
+            program that produced it. One path is explainable, the other verifiable, and
+            the interface tells you which one you got.
+          </p>
+          <p class="project-card__desc">
+            What I care most about is where it stops. Asked about a $60 taxi it answers
+            from the expense policy, then volunteers that the policy never mentions taxis
+            at all. Asked for an executive summary it profiles every spreadsheet in the
+            workspace and renders a briefing &mdash; headline verdict, KPI strip, per-section
+            status, computed charts &mdash; and closes by naming what its own data cannot
+            support.
+          </p>
+          <p class="project-card__desc">
+            The sandbox is what I would defend in review: no network, a read-only
+            filesystem, all Linux capabilities dropped, a non-root user, and hard memory
+            and CPU caps &mdash; applied unconditionally rather than per request, since a
+            caller that can set its own limits can set none. The API never holds the
+            Docker socket; a separate runner does, with no database and no model access.
           </p>
           <div class="impact-row">
             <div class="impact-item">
@@ -1288,7 +1281,7 @@
               <div class="project-card__name">credit-rag</div>
               <div class="project-card__role">Solo Developer &mdash; AI Document Extraction Service</div>
             </div>
-            <span class="status-badge status-live">Live &middot; Docker</span>
+            <span class="status-badge status-live">Open source &middot; Docker</span>
           </div>
           <p class="project-card__desc">
             A retrieval-augmented extraction service that reads a 200+ page commercial
@@ -1503,13 +1496,20 @@
             per cycle.
           </p>
           <p class="reveal-item">
-            Outside of Citi, I've built <strong>SENTINEL</strong> &mdash; a live financial
-            data pipeline on AWS that ingests real economic indicators, detects
-            anomalies, and serves alerts through a secured FastAPI layer. And
-            <strong>ThriveKid</strong> &mdash; a React + C# PWA on Vercel and Azure.
-            Both are fully deployed and publicly shareable. I'm also pursuing an
-            M.S. in Artificial Intelligence in Business &amp; Enterprise Integration at the University
-            of South Florida (expected December 2027) and playing soccer whenever I can.
+            Outside Citi I've been building the systems I most want to work on.
+            <strong>Avocado</strong> is a team knowledge and analysis copilot: it answers
+            from your own documents with the sources attached, or writes and runs code in
+            an isolated sandbox and shows you the program behind the number.
+            <strong>credit-rag</strong> reads 200-page credit agreements and returns
+            structured terms with every value traced to the sentence it came from &mdash;
+            verified in code, not taken on trust. Before those came
+            <strong>SENTINEL</strong>, a financial data pipeline on AWS that ingests real
+            economic indicators and serves anomaly alerts through a secured FastAPI layer,
+            and <strong>ThriveKid</strong>, a React and C# PWA my own family uses. Avocado
+            and credit-rag are open source; SENTINEL and ThriveKid are deployed and
+            clickable. I'm also pursuing an M.S. in Artificial Intelligence in Business
+            &amp; Enterprise Integration at the University of South Florida (expected
+            December 2027) and playing soccer whenever I can.
           </p>
         </div>
         <div class="skills-grid reveal-item">
@@ -2023,8 +2023,8 @@
     /* == TYPEWRITER EFFECT == */
     const typewriterEl = document.getElementById('typewriter-text');
     const phrases = [
-      'Data Engineer',
-      'Pipeline Builder',
+      'AI / Backend Engineer',
+      'Retrieval & Analysis Systems',
       'Always Learning'
     ];
     let phraseIdx = 0, charIdx = 0, deleting = false;
