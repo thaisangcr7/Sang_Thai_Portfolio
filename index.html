@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sang Thai &mdash; AI / Backend Engineer</title>
+  <title>Sang Thai &mdash; Data &amp; AI Engineer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
-  <meta name="description" content="Sang Thai &mdash; AI / Backend Engineer. I build retrieval and analysis systems that cite their sources or show the code behind the number, plus the automation and data pipelines behind them." />
-  <meta property="og:title" content="Sang Thai &mdash; AI / Backend Engineer" />
-  <meta property="og:description" content="Building systems that actually work. Production automation at Citi, the Avocado analysis copilot, and a credit-agreement extractor that cites every value it returns." />
+  <meta name="description" content="Sang Thai &mdash; Data &amp; AI Engineer in Tampa Bay. Python, SQL and ETL pipelines in financial services, and AI products that cite their sources: Avenotes, a live AI meeting assistant, plus open-source RAG and data engineering work." />
+  <meta property="og:title" content="Sang Thai &mdash; Data &amp; AI Engineer" />
+  <meta property="og:description" content="Data pipelines and AI systems that show their work: controls-testing automation at Citi, Avenotes (a live AI meeting assistant), and open-source RAG and data engineering projects." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://sangthai.dev/" />
   <meta property="og:image" content="https://sangthai.dev/og-image.png" />
@@ -1077,7 +1077,7 @@
       <div class="avatar__img">ST</div>
       <div class="avatar__info">
         <div class="avatar__name">Sang Thai</div>
-        <div class="avatar__title">AI / Backend Engineer &middot; Tampa, FL</div>
+        <div class="avatar__title">Data &amp; AI Engineer &middot; Tampa, FL</div>
       </div>
     </div>
     <div class="header__brand" id="header-brand">
@@ -1088,9 +1088,10 @@
     <nav id="menu">
       <ul class="menu__list">
         <li class="menu__item"><a class="menu__link active" href="#home">Home</a></li>
-        <li class="menu__item"><a class="menu__link" href="#portfolio">Projects</a></li>
         <li class="menu__item"><a class="menu__link" href="#about">About Me</a></li>
-        <li class="menu__item"><a class="menu__link" href="#resume">Experience &amp; Education</a></li>
+        <li class="menu__item"><a class="menu__link" href="#resume">Experience</a></li>
+        <li class="menu__item"><a class="menu__link" href="#portfolio">Projects</a></li>
+        <li class="menu__item"><a class="menu__link" href="#education">Education</a></li>
         <li class="menu__item"><a class="menu__link" href="#contact">Contact</a></li>
       </ul>
     </nav>
@@ -1114,24 +1115,25 @@
         </div>
         <p class="intro__bio reveal-item">
           Finance major turned self-taught engineer. One CS class in my final
-          semester changed everything &mdash; now I build systems that answer from
-          real documents and data and show their work, and the production
-          automation behind them at Citi.
+          semester changed everything &mdash; now I build data pipelines and AI
+          systems that answer from real documents and data and show their work:
+          controls-testing automation at Citi, and Avenotes, a live AI meeting
+          assistant I launched on my own.
         </p>
 
         <h3 class="intro__impact-heading reveal-item">Business Impact</h3>
         <div class="stats-row reveal-item">
           <div class="stat-block">
-            <div class="stat-block__number">~90%</div>
-            <div class="stat-block__label">Manual Effort Reduced</div>
+            <div class="stat-block__number">&lt;5 hrs</div>
+            <div class="stat-block__label">Monthly Testing, Down from ~100</div>
           </div>
           <div class="stat-block">
             <div class="stat-block__number">~25M</div>
             <div class="stat-block__label">Records / Month</div>
           </div>
           <div class="stat-block">
-            <div class="stat-block__number">150+</div>
-            <div class="stat-block__label">Hours Saved per Cycle</div>
+            <div class="stat-block__number">52</div>
+            <div class="stat-block__label">Apps in the Testing Program</div>
           </div>
         </div>
 
@@ -1153,354 +1155,8 @@
         <a href="#contact" class="cta-btn reveal-item">Let's Connect &rarr;</a>
       </section>
 
-      <!-- == SECTION: PORTFOLIO == -->
-      <section id="portfolio" class="inner inner-first portfolio" tabindex="-1">
-        <h2 class="section-heading reveal-item">Projects</h2>
-
-        <!-- ATLAS -->
-        <div class="project-card reveal-item">
-          <div class="project-card__header">
-            <div>
-              <div class="project-card__name">ATLAS</div>
-              <div class="project-card__role">Sole Application Developer &mdash; Citi, Operational Risk</div>
-            </div>
-            <span class="status-badge status-live">Live &middot; Internal</span>
-          </div>
-          <!-- Optional: Add a screenshot -->
-          <!-- <img src="images/atlas-screenshot.png" alt="ATLAS dashboard screenshot" class="project-card__img" loading="lazy" /> -->
-          <p class="project-card__desc">
-            A controls-testing platform that catches and escalates payment control
-            failures across 52 of Citi&rsquo;s global payment applications &mdash; checking
-            ~25M records and roughly $1.5 trillion in payment value every cycle. I
-            designed and built it alone: a config-driven Python system running four
-            pipeline types &mdash; Threshold Validation, Duplicate Detection, Dual Blind
-            Rekey, and GPOC executive reporting &mdash; each with its own business rules
-            per application. It replaced a manual process that took over 150 hours a
-            cycle and cut roughly 90% of that effort. The code is internal to Citi; the
-            architecture and the outcomes are mine to discuss.
-          </p>
-          <div class="impact-row">
-            <div class="impact-item">
-              <span class="impact-item__num">~90%</span>
-              <span class="impact-item__label">Effort Reduced</span>
-            </div>
-            <div class="impact-item">
-              <span class="impact-item__num">~25M</span>
-              <span class="impact-item__label">Records / Mo</span>
-            </div>
-            <div class="impact-item">
-              <span class="impact-item__num">150+</span>
-              <span class="impact-item__label">Hrs Saved / Cycle</span>
-            </div>
-          </div>
-          <div class="tags">
-            <span class="tag">Python</span>
-            <span class="tag">Flask</span>
-            <span class="tag">Dash</span>
-            <span class="tag">Socket.IO</span>
-            <span class="tag">Pandas</span>
-            <span class="tag">Data Pipelines</span>
-          </div>
-          <p class="project-card__note">Internal tool &mdash; codebase confidential per Citi policy</p>
-        </div>
-
-        <!-- Avocado -->
-        <div class="project-card reveal-item">
-          <div class="project-card__header">
-            <div>
-              <div class="project-card__name">Avocado</div>
-              <div class="project-card__role">Solo Developer &mdash; Team Knowledge &amp; Analysis Copilot</div>
-            </div>
-            <span class="status-badge status-live">Open source &middot; Docker</span>
-          </div>
-          <div class="screenshot-gallery screenshot-gallery--wide">
-            <img src="images/avocado-cited.jpg" alt="Avocado answering &lsquo;what policies does this Space define?&rsquo; with seven source chips, noting that two of the three policies are titles with no content, and ending with what is missing from the sources." class="screenshot-gallery__img" loading="lazy" />
-            <img src="images/avocado-briefing.jpg" alt="A Workspace Executive Briefing: headline verdict, a six-tile KPI strip with status colours, a revenue section marked on course, and computed charts." class="screenshot-gallery__img" loading="lazy" />
-            <img src="images/avocado-tools.jpg" alt="The tools and integrations panel, each capability a switch showing what it costs in context before it is enabled." class="screenshot-gallery__img" loading="lazy" />
-            <img src="images/avocado-workspace.jpg" alt="The workspace ready to ask: twelve documents indexed, five spreadsheets available for analysis, and suggested questions matched to what was uploaded." class="screenshot-gallery__img" loading="lazy" />
-          </div>
-          <p class="project-card__desc">
-            A question-answering workspace for a team&rsquo;s own files. Upload documents
-            and spreadsheets, ask in plain English, and every answer comes back one of
-            two ways: <strong>quoted</strong>, with the source documents listed
-            underneath it, or <strong>computed</strong> &mdash; Avocado writes Python, runs
-            it against your data in a locked-down container, and shows you the code
-            behind the number.
-          </p>
-          <p class="project-card__desc">
-            It is careful about what it does not know. Asked what policies a workspace
-            defines, it lists the three it found, flags that two of them are titles with
-            nothing behind them, and closes with what is missing &mdash; the actual rules,
-            effective dates and scope are not in these documents. Ask for an executive
-            summary and it charts every spreadsheet in the workspace, then ends the same
-            way.
-          </p>
-          <p class="project-card__desc">
-            Capabilities are switches rather than magic: each integration shows what it
-            will cost in context before anyone turns it on. The sandbox is the part I
-            would defend in review. Generated code runs with
-            no network, a read-only filesystem, and hard memory and CPU caps &mdash; applied
-            to every run, never set per request, because a caller that can choose its own
-            limits can choose none. Every query is scoped to one workspace in SQL, so no
-            team can read another&rsquo;s data.
-          </p>
-          <div class="impact-row">
-            <div class="impact-item">
-              <span class="impact-item__num">757</span>
-              <span class="impact-item__label">Tests &middot; CI Green</span>
-            </div>
-            <div class="impact-item">
-              <span class="impact-item__num">110,064</span>
-              <span class="impact-item__label">Row Dataset, Computed In Full</span>
-            </div>
-            <div class="impact-item">
-              <span class="impact-item__num">Zero</span>
-              <span class="impact-item__label">Network Access In The Sandbox</span>
-            </div>
-          </div>
-          <div class="tags">
-            <span class="tag">Python</span>
-            <span class="tag">FastAPI</span>
-            <span class="tag">SQLAlchemy</span>
-            <span class="tag">PostgreSQL</span>
-            <span class="tag">pgvector</span>
-            <span class="tag">RAG</span>
-            <span class="tag">Claude API</span>
-            <span class="tag">Redis</span>
-            <span class="tag">Docker</span>
-            <span class="tag">React</span>
-            <span class="tag">TypeScript</span>
-            <span class="tag">Tailwind</span>
-          </div>
-          <div class="project-card__links">
-            <a href="https://youtu.be/FfyPeduV1Sg" target="_blank" rel="noopener noreferrer" class="project-card__link project-card__link--demo">Watch Demo &rarr;</a>
-            <a href="https://github.com/thaisangcr7/avocado" target="_blank" rel="noopener noreferrer" class="project-card__link">View on GitHub &rarr;</a>
-          </div>
-        </div>
-
-        <!-- credit-rag -->
-        <div class="project-card reveal-item">
-          <div class="project-card__header">
-            <div>
-              <div class="project-card__name">credit-rag</div>
-              <div class="project-card__role">Solo Developer &mdash; AI Document Extraction Service</div>
-            </div>
-            <span class="status-badge status-live">Open source &middot; Docker</span>
-          </div>
-          <p class="project-card__desc">
-            A service that reads a 200-page commercial credit agreement and returns the
-            terms a credit team actually needs &mdash; borrower, facility amount, maturity,
-            pricing, covenants, events of default &mdash; as structured data. Every value
-            arrives <strong>cited</strong>, with the page and the exact sentence it came
-            from. Each citation is then checked in code against the source text, so
-            anything that cannot be traced comes back <strong>not found</strong> rather
-            than invented.
-          </p>
-          <p class="project-card__desc">
-            Search runs in two passes: vector similarity over pgvector to gather
-            candidates, then a cross-encoder re-ranker running locally to narrow them.
-            Ingestion is queued through Kafka with an idempotent worker, so uploading the
-            same document twice is safe.
-          </p>
-          <p class="project-card__desc">
-            Accuracy is measured, not assumed. An evaluation harness scores answers
-            against hand-labeled keys &mdash; it took a real SEC filing from 57% to 71%, and
-            it also disproved a change I expected to help, which turned out to make no
-            difference at all.
-          </p>
-          <div class="impact-row">
-            <div class="impact-item">
-              <span class="impact-item__num">229</span>
-              <span class="impact-item__label">Page Filing Evaluated</span>
-            </div>
-            <div class="impact-item">
-              <span class="impact-item__num">100%</span>
-              <span class="impact-item__label">Values Cited or Abstained</span>
-            </div>
-            <div class="impact-item">
-              <span class="impact-item__num">64</span>
-              <span class="impact-item__label">Tests &middot; CI Green</span>
-            </div>
-          </div>
-          <div class="tags">
-            <span class="tag">Python</span>
-            <span class="tag">FastAPI</span>
-            <span class="tag">RAG</span>
-            <span class="tag">pgvector</span>
-            <span class="tag">Claude API</span>
-            <span class="tag">Kafka</span>
-            <span class="tag">Redis</span>
-            <span class="tag">Docker</span>
-            <span class="tag">Kubernetes</span>
-            <span class="tag">Angular</span>
-          </div>
-          <div class="project-card__links">
-            <a href="https://github.com/thaisangcr7/credit-rag" target="_blank" rel="noopener noreferrer" class="project-card__link">View on GitHub &rarr;</a>
-          </div>
-        </div>
-
-        <!-- SENTINEL -->
-        <div class="project-card reveal-item">
-          <div class="project-card__header">
-            <div>
-              <div class="project-card__name">SENTINEL</div>
-              <div class="project-card__role">Solo Developer &mdash; Production Data Pipeline</div>
-            </div>
-            <span class="status-badge status-live">Open source &middot; Terraform</span>
-          </div>
-          <p class="project-card__desc">
-            A monitoring service that tracks three U.S. economic indicators &mdash; the
-            federal funds rate, CPI and unemployment &mdash; pulling them daily from the
-            FRED API, storing them in PostgreSQL, and raising an alert when a value moves
-            further than its configured threshold.
-          </p>
-          <p class="project-card__desc">
-            I built it to close gaps I knew I had rather than to add another project. The
-            whole environment is defined in Terraform &mdash; EC2 instance, firewall rules,
-            key pair &mdash; so it stands up from nothing with one command instead of being
-            a machine nobody dares touch. Deploys are gated on the test suite: the deploy
-            job declares a dependency on the tests, so a failing push cannot reach
-            production. And I ran a security audit before the first public deployment,
-            which found six issues I fixed before anyone else could see them.
-          </p>
-          <p class="project-card__desc">
-            It ran live on AWS for five months. I took it down deliberately: the
-            infrastructure code is the artefact worth keeping, and leaving a t2.micro
-            running to serve a demo nobody is querying is a bill, not a portfolio piece.
-            <code>terraform apply</code> brings it back.
-          </p>
-          <div class="impact-row">
-            <div class="impact-item">
-              <span class="impact-item__num">3</span>
-              <span class="impact-item__label">FRED Series Tracked</span>
-            </div>
-            <div class="impact-item">
-              <span class="impact-item__num">Gated</span>
-              <span class="impact-item__label">Deploys Blocked By A Failed Test</span>
-            </div>
-            <div class="impact-item">
-              <span class="impact-item__num">6</span>
-              <span class="impact-item__label">Vulns Fixed</span>
-            </div>
-          </div>
-          <div class="tags">
-            <span class="tag">Python</span>
-            <span class="tag">FastAPI</span>
-            <span class="tag">PostgreSQL</span>
-            <span class="tag">SQLAlchemy</span>
-            <span class="tag">Docker</span>
-            <span class="tag">Terraform</span>
-            <span class="tag">AWS EC2</span>
-            <span class="tag">GitHub Actions</span>
-            <span class="tag">pytest</span>
-          </div>
-          <div class="project-card__links">
-            <a href="https://github.com/thaisangcr7/SENTINEL" target="_blank" rel="noopener noreferrer" class="project-card__link">View on GitHub &rarr;</a>
-          </div>
-        </div>
-
-        <!-- Automated Portfolio Analytics Pipeline -->
-        <div class="project-card reveal-item">
-          <div class="project-card__header">
-            <div>
-              <div class="project-card__name">Portfolio Analytics Pipeline</div>
-              <div class="project-card__role">Solo Developer &mdash; End-to-End Data Engineering Project</div>
-            </div>
-            <span class="status-badge status-live">Open source &middot; Docker</span>
-          </div>
-          <img src="images/portfolio_analysis.png" alt="Portfolio Analytics Dashboard" class="project-card__img">
-          <p class="project-card__desc">
-            An ELT pipeline that turns daily stock prices into a dashboard without anyone
-            touching it. Every weekday at 6 PM Airflow starts the run: prices land in
-            PostgreSQL from Yahoo Finance, dbt rebuilds a star schema across three layers
-            (Bronze &rarr; Silver &rarr; Gold), 26 data quality tests check the output, and
-            the Metabase dashboard picks up the result. The whole stack runs in Docker.
-          </p>
-          <p class="project-card__desc">
-            I built it to learn how data actually moves inside a team that does this
-            properly, so it follows the medallion pattern rather than the shortest path
-            from source to chart.
-          </p>
-          <div class="impact-row">
-            <div class="impact-item">
-              <span class="impact-item__num">5</span>
-              <span class="impact-item__label">dbt Models</span>
-            </div>
-            <div class="impact-item">
-              <span class="impact-item__num">26</span>
-              <span class="impact-item__label">Data Quality Tests</span>
-            </div>
-            <div class="impact-item">
-              <span class="impact-item__num">Weekdays</span>
-              <span class="impact-item__label">Unattended 6 PM Run</span>
-            </div>
-          </div>
-          <div class="tags">
-            <span class="tag">Python</span>
-            <span class="tag">dbt Core</span>
-            <span class="tag">Apache Airflow</span>
-            <span class="tag">PostgreSQL</span>
-            <span class="tag">Docker</span>
-            <span class="tag">Metabase</span>
-            <span class="tag">SQL</span>
-          </div>
-          <div class="project-card__links">
-            <a href="https://github.com/thaisangcr7/Automated-Portfolio-Analytics-Pipeline" target="_blank" rel="noopener noreferrer" class="project-card__link">View on GitHub &rarr;</a>
-          </div>
-        </div>
-
-        <!-- ThriveKid -->
-        <div class="project-card reveal-item">
-          <div class="project-card__header">
-            <div>
-              <div class="project-card__name">ThriveKid</div>
-              <div class="project-card__role">Solo Developer &mdash; PWA Side Project</div>
-            </div>
-            <span class="status-badge status-live">Live</span>
-          </div>
-          <div class="screenshot-gallery">
-            <img src="images/thrivekid-main.jpeg" alt="ThriveKid main page" class="screenshot-gallery__img" loading="lazy" />
-            <img src="images/Main_dark.jpeg" alt="ThriveKid dark mode" class="screenshot-gallery__img" loading="lazy" />
-            <img src="images/thrivekid-main-mid.jpeg" alt="ThriveKid features" class="screenshot-gallery__img" loading="lazy" />
-            <img src="images/thrivekid-children.jpeg" alt="ThriveKid children page" class="screenshot-gallery__img" loading="lazy" />
-            <img src="images/thrivekid-growth-chart.jpeg" alt="ThriveKid growth tracking chart" class="screenshot-gallery__img" loading="lazy" />
-            <img src="images/thrivekid-reports.jpeg" alt="ThriveKid reports and analytics" class="screenshot-gallery__img" loading="lazy" />
-          </div>
-          <p class="project-card__desc">
-            A full-stack PWA that helps parents track and support a child&rsquo;s
-            development: 12 feature modules, JWT authentication with refresh token
-            rotation, a timezone-aware recurring event engine, and WHO percentile growth
-            charts. I built it as a first-time parent who could not find one app that did
-            all of it.
-          </p>
-          <p class="project-card__desc">
-            Clean Architecture across a 3-layer .NET 8 backend, a React 19 TypeScript
-            frontend on Vercel, Docker multi-stage builds and GitHub Actions CI. It went
-            through two full code reviews with a senior engineer &mdash; 25+ issues raised
-            and resolved, including a 13-issue security audit before launch. This is the
-            project that taught me what good engineering actually looks like.
-          </p>
-          <div class="tags">
-            <span class="tag">React</span>
-            <span class="tag">C#</span>
-            <span class="tag">ASP.NET Core</span>
-            <span class="tag">Entity Framework Core</span>
-            <span class="tag">RESTful API</span>
-            <span class="tag">Swagger</span>
-            <span class="tag">Docker</span>
-            <span class="tag">GitHub Actions</span>
-            <span class="tag">Vercel</span>
-            <span class="tag">Azure</span>
-          </div>
-          <div class="project-card__links">
-            <a href="https://thrive-kid-growth-planner.vercel.app/" target="_blank" rel="noopener noreferrer" class="project-card__link project-card__link--demo">View Live App &rarr;</a>
-            <a href="https://youtube.com/shorts/Acs9CrLARwk" target="_blank" rel="noopener noreferrer" class="project-card__link">Watch Demo &rarr;</a>
-          </div>
-        </div>
-      </section>
-
       <!-- == SECTION: ABOUT == -->
-      <section id="about" class="inner about" tabindex="-1">
+      <section id="about" class="inner inner-first about" tabindex="-1">
         <h2 class="section-heading reveal-item">About Me</h2>
         <div class="about__text">
           <p class="reveal-item">
@@ -1511,28 +1167,28 @@
           </p>
           <p class="reveal-item">
             That pivot took me from <strong>Wells Fargo</strong> to <strong>Raymond James</strong>
-            to <strong>Citibank</strong>, where I now build automation infrastructure for the
-            Operational Risk team. Along the way I created <strong>ATLAS</strong> &mdash;
-            a Python-based platform I designed and built from scratch as the sole
-            developer. It runs 4 controls-testing pipelines processing ~25M
-            records/month, cutting ~90% of manual effort and saving 150+ hours
-            per cycle.
+            to <strong>Citibank</strong>, where I build automation for the Operational Risk
+            team. There I designed and built <strong>ATLAS</strong> on my own &mdash; a
+            config-driven Python platform for a 52-application payment controls testing
+            program that cut monthly testing from ~100 hours of manual work to under 5.
           </p>
           <p class="reveal-item">
             Outside Citi I've been building the systems I most want to work on.
-            <strong>Avocado</strong> is a team knowledge and analysis copilot: it answers
+            <strong>Avenotes</strong> is a live AI meeting assistant with paid plans that I
+            launched on my own. <strong>Avocado</strong> is a team knowledge and analysis copilot: it answers
             from your own documents with the sources attached, or writes and runs code in
             an isolated sandbox and shows you the program behind the number.
             <strong>credit-rag</strong> reads 200-page credit agreements and returns
             structured terms with every value traced to the sentence it came from &mdash;
             verified in code, not taken on trust. Before those came
             <strong>SENTINEL</strong>, a financial data pipeline whose AWS environment is
-            defined entirely in Terraform, and <strong>ThriveKid</strong>, a React and C#
+            defined entirely in Terraform, <strong>LAYERS</strong>, a statistical benchmark
+            of anti-money-laundering detectors, and <strong>ThriveKid</strong>, a React and C#
             PWA my own family uses. Avocado, credit-rag and SENTINEL are open source;
             ThriveKid is deployed and clickable.
             I'm also pursuing an M.S. in Artificial Intelligence in Business
-            &amp; Enterprise Integration at the University of South Florida (expected
-            December 2027) and playing soccer whenever I can.
+            &amp; Digital Transformation at the University of South Florida (expected
+            Summer 2027) and playing soccer whenever I can.
           </p>
         </div>
         <div class="skills-grid reveal-item">
@@ -1568,8 +1224,12 @@
           <h3 class="toolkit-category__label">AI &amp; Retrieval</h3>
           <div class="toolkit-grid">
             <div class="tool-card">
-              <div class="tool-card__icon"><img src="https://cdn.simpleicons.org/anthropic" alt="Anthropic Claude" loading="lazy" /></div>
-              <span class="tool-card__name">Claude API</span>
+              <div class="tool-card__icon"><img src="https://cdn.simpleicons.org/anthropic" alt="Anthropic API (Claude)" loading="lazy" /></div>
+              <span class="tool-card__name">Anthropic API</span>
+            </div>
+            <div class="tool-card">
+              <div class="tool-card__icon"><img src="https://cdn.simpleicons.org/ollama" alt="Ollama" loading="lazy" /></div>
+              <span class="tool-card__name">Ollama</span>
             </div>
             <div class="tool-card">
               <div class="tool-card__icon"><img src="https://cdn.simpleicons.org/huggingface" alt="Hugging Face" loading="lazy" /></div>
@@ -1580,8 +1240,8 @@
               <span class="tool-card__name">scikit-learn</span>
             </div>
             <div class="tool-card">
-              <div class="tool-card__icon"><img src="https://cdn.simpleicons.org/deepgram" alt="Deepgram speech-to-text" loading="lazy" /></div>
-              <span class="tool-card__name">Deepgram</span>
+              <div class="tool-card__icon"><img src="https://cdn.simpleicons.org/deepgram" alt="Deepgram speech-to-text API" loading="lazy" /></div>
+              <span class="tool-card__name">Deepgram API</span>
             </div>
           </div>
         </div>
@@ -1797,20 +1457,12 @@
               <span class="tool-card__name">Postman</span>
             </div>
             <div class="tool-card">
-              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/kubernetes/kubernetes-original.svg" alt="Kubernetes" loading="lazy" /></div>
-              <span class="tool-card__name">Kubernetes</span>
-            </div>
-            <div class="tool-card">
               <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/pytest/pytest-original.svg" alt="pytest" loading="lazy" /></div>
               <span class="tool-card__name">pytest</span>
             </div>
             <div class="tool-card">
               <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/playwright/playwright-original.svg" alt="Playwright" loading="lazy" /></div>
               <span class="tool-card__name">Playwright</span>
-            </div>
-            <div class="tool-card">
-              <div class="tool-card__icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nginx/nginx-original.svg" alt="Nginx" loading="lazy" /></div>
-              <span class="tool-card__name">Nginx</span>
             </div>
             <div class="tool-card">
               <div class="tool-card__icon"><img src="https://cdn.simpleicons.org/vitest" alt="Vitest" loading="lazy" /></div>
@@ -1843,21 +1495,35 @@
 
       <!-- == SECTION: RESUME == -->
       <section id="resume" class="inner resume" tabindex="-1">
-        <h2 class="section-heading reveal-item">Experience &amp; Education</h2>
+        <h2 class="section-heading reveal-item">Experience</h2>
 
-        <h3 class="resume__sub reveal-item">Experience</h3>
+        <div class="exp-item reveal-item">
+          <div class="exp-item__header">
+            <span class="exp-item__company">Avenotes</span>
+            <span class="exp-item__date">Aug 2026 &mdash; Present</span>
+          </div>
+          <div class="exp-item__title">Founder &amp; AI Engineer &middot; Remote</div>
+          <p class="exp-item__desc">
+            Launched a live AI meeting assistant with paid plans, built and shipped on my
+            own: real-time Deepgram transcription feeding the Anthropic API for live
+            answers, recaps and cited answers across past meetings, on FastAPI, React and
+            TypeScript, and Supabase Postgres, with Stripe billing.
+          </p>
+        </div>
 
         <div class="exp-item reveal-item">
           <div class="exp-item__header">
             <span class="exp-item__company">Citibank, N.A.</span>
             <span class="exp-item__date">Aug 2024 &mdash; Present</span>
           </div>
-          <div class="exp-item__title">Sole Software Developer &middot; Operational Risk &middot; Tampa, FL</div>
+          <div class="exp-item__title">Operational Risk Analyst (Data &amp; Automation focus) &middot; Tampa, FL</div>
           <p class="exp-item__desc">
-            Designed and built ATLAS from scratch &mdash; a centralized Python-based workflow
-            platform with a Flask web UI that runs 4 controls-testing pipelines. Architected
-            a modular, config-driven framework processing ~25M records/month across 52 global
-            applications, reducing ~90% of manual effort per monthly cycle.
+            Designed and built ATLAS on my own, outside my analyst role &mdash; a config-driven
+            Python and Flask platform that automates payment-control tests for a
+            52-application testing program, cutting monthly testing from ~100 hours to under 5.
+            Rebuilt a 6&ndash;8 hour weekly Power Query report as a Python pipeline that runs in
+            under 10 minutes, and cut row-matching errors in weekly remediation forecasts
+            from ~5% to 0% with a Polars pipeline gated by 112 tests.
           </p>
         </div>
 
@@ -1880,29 +1546,475 @@
         <div class="exp-item reveal-item">
           <div class="exp-item__header">
             <span class="exp-item__company">Wells Fargo</span>
-            <span class="exp-item__date">Jun 2023 &mdash; Nov 2023</span>
+            <span class="exp-item__date">Jun 2023 &mdash; Dec 2023</span>
           </div>
           <div class="exp-item__title">Wealth &amp; Investment Management Ops Analyst &middot; Charlotte, NC</div>
           <p class="exp-item__desc">
-            Resolved client onboarding and data integrity issues across legacy and
-            modern wealth management platforms. First role out of university &mdash;
+            Updated client documentation to resolve onboarding and data issues across
+            legacy and modern wealth management platforms. First role out of university &mdash;
             where I realized operations work at financial institutions runs on data
             quality, and that I wanted to be the person fixing it at the source.
           </p>
         </div>
 
-        <h3 class="resume__sub reveal-item">Education</h3>
+      </section>
+
+      <!-- == SECTION: PORTFOLIO == -->
+      <section id="portfolio" class="inner portfolio" tabindex="-1">
+        <h2 class="section-heading reveal-item">Projects</h2>
+
+        <!-- Avenotes -->
+        <div class="project-card reveal-item">
+          <div class="project-card__header">
+            <div>
+              <div class="project-card__name">Avenotes</div>
+              <div class="project-card__role">Founder &amp; AI Engineer &mdash; Live AI Meeting Assistant</div>
+            </div>
+            <span class="status-badge status-live">Live &middot; Paid plans</span>
+          </div>
+          <p class="project-card__desc">
+            A meeting assistant that listens while the meeting is still happening and
+            answers in the moment. Speech streams through the Deepgram API with speaker
+            labels; the Anthropic API turns it into live answers, recaps, and answers
+            across past meetings that name the meetings they came from.
+          </p>
+          <p class="project-card__desc">
+            I launched it on my own, with paid plans. Margin is protected in code: each
+            plan has a usage allowance and a daily spend breaker caps total model cost,
+            and paid access is granted only by a signature-verified Stripe webhook. The
+            backend is FastAPI on Render, the frontend React and TypeScript on Vercel, and
+            the data lives in Supabase Postgres with row-level security. pytest and
+            Playwright end-to-end suites run in CI, which gates every backend deploy.
+          </p>
+          <div class="tags">
+            <span class="tag">Python</span>
+            <span class="tag">FastAPI</span>
+            <span class="tag">Anthropic API</span>
+            <span class="tag">Deepgram API</span>
+            <span class="tag">React</span>
+            <span class="tag">TypeScript</span>
+            <span class="tag">Supabase</span>
+            <span class="tag">PostgreSQL</span>
+            <span class="tag">Stripe API</span>
+            <span class="tag">Playwright</span>
+          </div>
+          <div class="project-card__links">
+            <a href="https://avenotes.ai" target="_blank" rel="noopener noreferrer" class="project-card__link project-card__link--demo">Visit avenotes.ai &rarr;</a>
+          </div>
+        </div>
+
+        <!-- ATLAS -->
+        <div class="project-card reveal-item">
+          <div class="project-card__header">
+            <div>
+              <div class="project-card__name">ATLAS</div>
+              <div class="project-card__role">Designed &amp; Built Solo &mdash; Citi, Operational Risk</div>
+            </div>
+            <span class="status-badge status-live">Internal &middot; Citi</span>
+          </div>
+          <!-- Optional: Add a screenshot -->
+          <!-- <img src="images/atlas-screenshot.png" alt="ATLAS dashboard screenshot" class="project-card__img" loading="lazy" /> -->
+          <p class="project-card__desc">
+            A controls-testing platform for a 52-application global payments testing
+            program at Citi, checking ~25M records a month. I designed and built it
+            alone, outside my analyst role: a config-driven Python system that runs
+            Threshold Validation, Duplicate Detection and Dual Blind Rekey tests, each
+            with its own business rules per application. Shared modules ingest Excel,
+            CSV and JSON files, validate them and export the results, and a new
+            application onboards through a JSON config entry. Monthly testing went from
+            ~100 hours of manual work to under 5, and the output is audit evidence for
+            Citi&rsquo;s Manager Control Assessment. The code is internal to Citi; the
+            architecture and the outcomes are mine to discuss.
+          </p>
+          <div class="impact-row">
+            <div class="impact-item">
+              <span class="impact-item__num">&lt;5 hrs</span>
+              <span class="impact-item__label">Monthly Testing, Was ~100</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">~25M</span>
+              <span class="impact-item__label">Records / Mo</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">52</span>
+              <span class="impact-item__label">Apps in Program</span>
+            </div>
+          </div>
+          <div class="tags">
+            <span class="tag">Python</span>
+            <span class="tag">Flask</span>
+            <span class="tag">Dash</span>
+            <span class="tag">Socket.IO</span>
+            <span class="tag">Pandas</span>
+            <span class="tag">Data Pipelines</span>
+          </div>
+          <p class="project-card__note">Internal tool &mdash; codebase confidential per Citi policy</p>
+        </div>
+
+        <!-- Avocado -->
+        <div class="project-card reveal-item">
+          <div class="project-card__header">
+            <div>
+              <div class="project-card__name">Avocado</div>
+              <div class="project-card__role">Solo Developer &mdash; Team Knowledge &amp; Analysis Copilot</div>
+            </div>
+            <span class="status-badge status-live">Open source &middot; Docker</span>
+          </div>
+          <div class="screenshot-gallery screenshot-gallery--wide">
+            <img src="images/avocado-cited.jpg" alt="Avocado answering &lsquo;what policies does this Space define?&rsquo; with seven source chips, noting that two of the three policies are titles with no content, and ending with what is missing from the sources." class="screenshot-gallery__img" loading="lazy" />
+            <img src="images/avocado-briefing.jpg" alt="A Workspace Executive Briefing: headline verdict, a six-tile KPI strip with status colours, a revenue section marked on course, and computed charts." class="screenshot-gallery__img" loading="lazy" />
+            <img src="images/avocado-tools.jpg" alt="The tools and integrations panel, each capability a switch showing what it costs in context before it is enabled." class="screenshot-gallery__img" loading="lazy" />
+            <img src="images/avocado-workspace.jpg" alt="The workspace ready to ask: twelve documents indexed, five spreadsheets available for analysis, and suggested questions matched to what was uploaded." class="screenshot-gallery__img" loading="lazy" />
+          </div>
+          <p class="project-card__desc">
+            A question-answering workspace for a team&rsquo;s own files. Upload documents
+            and spreadsheets, ask in plain English, and every answer comes back one of
+            two ways: <strong>quoted</strong>, with the source documents listed
+            underneath it, or <strong>computed</strong> &mdash; Avocado writes Python, runs
+            it against your data in a locked-down container, and shows you the code
+            behind the number.
+          </p>
+          <p class="project-card__desc">
+            It is careful about what it does not know. Asked what policies a workspace
+            defines, it lists the three it found, flags that two of them are titles with
+            nothing behind them, and closes with what is missing &mdash; the actual rules,
+            effective dates and scope are not in these documents. Ask for an executive
+            summary and it charts every spreadsheet in the workspace, then ends the same
+            way.
+          </p>
+          <p class="project-card__desc">
+            Capabilities are switches rather than magic: each integration shows what it
+            will cost in context before anyone turns it on. The sandbox is the part I
+            would defend in review. Generated code runs with
+            no network, a read-only filesystem, and hard memory and CPU caps &mdash; applied
+            to every run, never set per request, because a caller that can choose its own
+            limits can choose none. Every query is scoped to one workspace in SQL, so no
+            team can read another&rsquo;s data.
+          </p>
+          <div class="impact-row">
+            <div class="impact-item">
+              <span class="impact-item__num">757</span>
+              <span class="impact-item__label">Tests &middot; CI Green</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">110,064</span>
+              <span class="impact-item__label">Row Dataset, Computed In Full</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">Zero</span>
+              <span class="impact-item__label">Network Access In The Sandbox</span>
+            </div>
+          </div>
+          <div class="tags">
+            <span class="tag">Python</span>
+            <span class="tag">FastAPI</span>
+            <span class="tag">SQLAlchemy</span>
+            <span class="tag">PostgreSQL</span>
+            <span class="tag">pgvector</span>
+            <span class="tag">RAG</span>
+            <span class="tag">Anthropic API</span>
+            <span class="tag">OpenAI API</span>
+            <span class="tag">Ollama</span>
+            <span class="tag">MCP</span>
+            <span class="tag">Redis</span>
+            <span class="tag">Docker</span>
+            <span class="tag">React</span>
+            <span class="tag">TypeScript</span>
+            <span class="tag">Tailwind</span>
+          </div>
+          <div class="project-card__links">
+            <a href="https://youtu.be/FfyPeduV1Sg" target="_blank" rel="noopener noreferrer" class="project-card__link project-card__link--demo">Watch Demo &rarr;</a>
+            <a href="https://github.com/thaisangcr7/avocado" target="_blank" rel="noopener noreferrer" class="project-card__link">View on GitHub &rarr;</a>
+          </div>
+        </div>
+
+        <!-- credit-rag -->
+        <div class="project-card reveal-item">
+          <div class="project-card__header">
+            <div>
+              <div class="project-card__name">credit-rag</div>
+              <div class="project-card__role">Solo Developer &mdash; AI Document Extraction Service</div>
+            </div>
+            <span class="status-badge status-live">Open source &middot; Docker</span>
+          </div>
+          <p class="project-card__desc">
+            A service that reads a 200-page commercial credit agreement and returns the
+            terms a credit team actually needs &mdash; borrower, facility amount, maturity,
+            pricing, covenants, events of default &mdash; as structured data. Every value
+            arrives <strong>cited</strong>, with the page and the exact sentence it came
+            from. Each citation is then checked in code against the source text, so
+            anything that cannot be traced comes back <strong>not found</strong> rather
+            than invented.
+          </p>
+          <p class="project-card__desc">
+            Search runs in two passes: vector similarity over pgvector to gather
+            candidates, then a cross-encoder re-ranker running locally to narrow them.
+            Ingestion is queued through Kafka with an idempotent worker, so uploading the
+            same document twice is safe.
+          </p>
+          <p class="project-card__desc">
+            Accuracy is measured, not assumed. An evaluation harness scores answers
+            against hand-labeled keys &mdash; it took a real SEC filing from 57% to 71%, and
+            it also disproved a change I expected to help, which turned out to make no
+            difference at all.
+          </p>
+          <div class="impact-row">
+            <div class="impact-item">
+              <span class="impact-item__num">229</span>
+              <span class="impact-item__label">Page Filing Evaluated</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">100%</span>
+              <span class="impact-item__label">Values Cited or Abstained</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">64</span>
+              <span class="impact-item__label">Tests &middot; CI Green</span>
+            </div>
+          </div>
+          <div class="tags">
+            <span class="tag">Python</span>
+            <span class="tag">FastAPI</span>
+            <span class="tag">RAG</span>
+            <span class="tag">pgvector</span>
+            <span class="tag">Anthropic API</span>
+            <span class="tag">Kafka</span>
+            <span class="tag">Redis</span>
+            <span class="tag">Docker</span>
+            <span class="tag">Docling</span>
+            <span class="tag">Angular</span>
+          </div>
+          <div class="project-card__links">
+            <a href="https://github.com/thaisangcr7/credit-rag" target="_blank" rel="noopener noreferrer" class="project-card__link">View on GitHub &rarr;</a>
+          </div>
+        </div>
+
+        <!-- LAYERS -->
+        <div class="project-card reveal-item">
+          <div class="project-card__header">
+            <div>
+              <div class="project-card__name">LAYERS</div>
+              <div class="project-card__role">Solo Developer &mdash; Anti-Money-Laundering Detection Benchmark</div>
+            </div>
+            <span class="status-badge status-live">Private repo &middot; On request</span>
+          </div>
+          <p class="project-card__desc">
+            A statistical comparison of two anti-money-laundering detectors &mdash; a
+            rule-based baseline and a graph-based method &mdash; on IBM&rsquo;s synthetic AML
+            dataset: 5 million transactions across 515,000 accounts. The question is not
+            which number is bigger but whether the difference is real, so every metric
+            comes with a bootstrap confidence interval, AUC is compared with DeLong
+            tests, and p-values are corrected across metrics.
+          </p>
+          <p class="project-card__desc">
+            The honest answer is unflattering to both. At a matched flag rate the graph
+            method catches 48% of laundering against 29% for the rules, yet both flag
+            hundreds of innocent transactions for every real one. The stack is built
+            like production: PostgreSQL with least-privilege roles, a job queue and
+            worker, a FastAPI API, a React and D3 network view, non-root Docker images,
+            and CI with pip-audit, Bandit and 209 tests.
+          </p>
+          <div class="impact-row">
+            <div class="impact-item">
+              <span class="impact-item__num">5M</span>
+              <span class="impact-item__label">Transactions Scored</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">48% vs 29%</span>
+              <span class="impact-item__label">Recall at a Matched Flag Rate</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">209</span>
+              <span class="impact-item__label">Tests &middot; CI Green</span>
+            </div>
+          </div>
+          <div class="tags">
+            <span class="tag">Python</span>
+            <span class="tag">PostgreSQL</span>
+            <span class="tag">NetworkX</span>
+            <span class="tag">scikit-learn</span>
+            <span class="tag">SciPy</span>
+            <span class="tag">FastAPI</span>
+            <span class="tag">React</span>
+            <span class="tag">D3.js</span>
+            <span class="tag">Docker</span>
+          </div>
+        </div>
+
+        <!-- SENTINEL -->
+        <div class="project-card reveal-item">
+          <div class="project-card__header">
+            <div>
+              <div class="project-card__name">SENTINEL</div>
+              <div class="project-card__role">Solo Developer &mdash; Production Data Pipeline</div>
+            </div>
+            <span class="status-badge status-live">Open source &middot; Terraform</span>
+          </div>
+          <p class="project-card__desc">
+            A monitoring service that tracks three U.S. economic indicators &mdash; the
+            federal funds rate, CPI and unemployment &mdash; pulling them daily from the
+            FRED API, storing them in PostgreSQL, and raising an alert when a value moves
+            further than its configured threshold.
+          </p>
+          <p class="project-card__desc">
+            I built it to close gaps I knew I had rather than to add another project. The
+            whole environment is defined in Terraform &mdash; EC2 instance, firewall rules,
+            key pair &mdash; so it stands up from nothing with one command instead of being
+            a machine nobody dares touch. Deploys are gated on the test suite: the deploy
+            job declares a dependency on the tests, so a failing push cannot reach
+            production. And I ran a security audit before the first public deployment,
+            which found six issues I fixed before anyone else could see them.
+          </p>
+          <p class="project-card__desc">
+            It ran live on AWS for five months. I took it down deliberately: the
+            infrastructure code is the artefact worth keeping, and leaving a t2.micro
+            running to serve a demo nobody is querying is a bill, not a portfolio piece.
+            <code>terraform apply</code> brings it back.
+          </p>
+          <div class="impact-row">
+            <div class="impact-item">
+              <span class="impact-item__num">3</span>
+              <span class="impact-item__label">FRED Series Tracked</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">Gated</span>
+              <span class="impact-item__label">Deploys Blocked By A Failed Test</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">6</span>
+              <span class="impact-item__label">Vulns Fixed</span>
+            </div>
+          </div>
+          <div class="tags">
+            <span class="tag">Python</span>
+            <span class="tag">FastAPI</span>
+            <span class="tag">PostgreSQL</span>
+            <span class="tag">SQLAlchemy</span>
+            <span class="tag">Docker</span>
+            <span class="tag">Terraform</span>
+            <span class="tag">AWS EC2</span>
+            <span class="tag">GitHub Actions</span>
+            <span class="tag">pytest</span>
+          </div>
+          <div class="project-card__links">
+            <a href="https://github.com/thaisangcr7/SENTINEL" target="_blank" rel="noopener noreferrer" class="project-card__link">View on GitHub &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Automated Portfolio Analytics Pipeline -->
+        <div class="project-card reveal-item">
+          <div class="project-card__header">
+            <div>
+              <div class="project-card__name">Portfolio Analytics Pipeline</div>
+              <div class="project-card__role">Solo Developer &mdash; End-to-End Data Engineering Project</div>
+            </div>
+            <span class="status-badge status-live">Open source &middot; Docker</span>
+          </div>
+          <img src="images/portfolio_analysis.png" alt="Portfolio Analytics Dashboard" class="project-card__img">
+          <p class="project-card__desc">
+            An ELT pipeline that turns daily stock prices into a dashboard without anyone
+            touching it. Every weekday at 6 PM Airflow starts the run: prices land in
+            PostgreSQL from Yahoo Finance, dbt rebuilds a star schema across three layers
+            (Bronze &rarr; Silver &rarr; Gold), 26 data quality tests check the output, and
+            the Metabase dashboard picks up the result. The whole stack runs in Docker.
+          </p>
+          <p class="project-card__desc">
+            I built it to learn how data actually moves inside a team that does this
+            properly, so it follows the medallion pattern rather than the shortest path
+            from source to chart.
+          </p>
+          <div class="impact-row">
+            <div class="impact-item">
+              <span class="impact-item__num">5</span>
+              <span class="impact-item__label">dbt Models</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">26</span>
+              <span class="impact-item__label">Data Quality Tests</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">Weekdays</span>
+              <span class="impact-item__label">Unattended 6 PM Run</span>
+            </div>
+          </div>
+          <div class="tags">
+            <span class="tag">Python</span>
+            <span class="tag">dbt Core</span>
+            <span class="tag">Apache Airflow</span>
+            <span class="tag">PostgreSQL</span>
+            <span class="tag">Docker</span>
+            <span class="tag">Metabase</span>
+            <span class="tag">SQL</span>
+          </div>
+          <div class="project-card__links">
+            <a href="https://github.com/thaisangcr7/Automated-Portfolio-Analytics-Pipeline" target="_blank" rel="noopener noreferrer" class="project-card__link">View on GitHub &rarr;</a>
+          </div>
+        </div>
+
+        <!-- ThriveKid -->
+        <div class="project-card reveal-item">
+          <div class="project-card__header">
+            <div>
+              <div class="project-card__name">ThriveKid</div>
+              <div class="project-card__role">Full-Stack Developer &mdash; PWA Side Project</div>
+            </div>
+            <span class="status-badge status-live">Live</span>
+          </div>
+          <div class="screenshot-gallery">
+            <img src="images/thrivekid-main.jpeg" alt="ThriveKid main page" class="screenshot-gallery__img" loading="lazy" />
+            <img src="images/Main_dark.jpeg" alt="ThriveKid dark mode" class="screenshot-gallery__img" loading="lazy" />
+            <img src="images/thrivekid-main-mid.jpeg" alt="ThriveKid features" class="screenshot-gallery__img" loading="lazy" />
+            <img src="images/thrivekid-children.jpeg" alt="ThriveKid children page" class="screenshot-gallery__img" loading="lazy" />
+            <img src="images/thrivekid-growth-chart.jpeg" alt="ThriveKid growth tracking chart" class="screenshot-gallery__img" loading="lazy" />
+            <img src="images/thrivekid-reports.jpeg" alt="ThriveKid reports and analytics" class="screenshot-gallery__img" loading="lazy" />
+          </div>
+          <p class="project-card__desc">
+            A full-stack PWA that helps parents track and support a child&rsquo;s
+            development: 12 feature modules, JWT authentication with refresh token
+            rotation, a timezone-aware recurring event engine, and WHO percentile growth
+            charts. I built it as a first-time parent who could not find one app that did
+            all of it.
+          </p>
+          <p class="project-card__desc">
+            Clean Architecture across a 3-layer .NET 8 backend, a React 19 TypeScript
+            frontend on Vercel, Docker multi-stage builds and GitHub Actions CI. It went
+            through two full code reviews with a senior engineer &mdash; 25+ issues raised
+            and resolved, including a 13-issue security audit before launch. This is the
+            project that taught me what good engineering actually looks like.
+          </p>
+          <div class="tags">
+            <span class="tag">React</span>
+            <span class="tag">C#</span>
+            <span class="tag">ASP.NET Core</span>
+            <span class="tag">Entity Framework Core</span>
+            <span class="tag">RESTful API</span>
+            <span class="tag">Swagger</span>
+            <span class="tag">Docker</span>
+            <span class="tag">GitHub Actions</span>
+            <span class="tag">Vercel</span>
+            <span class="tag">Azure</span>
+          </div>
+          <div class="project-card__links">
+            <a href="https://thrive-kid-growth-planner.vercel.app/" target="_blank" rel="noopener noreferrer" class="project-card__link project-card__link--demo">View Live App &rarr;</a>
+            <a href="https://youtube.com/shorts/Acs9CrLARwk" target="_blank" rel="noopener noreferrer" class="project-card__link">Watch Demo &rarr;</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- == SECTION: EDUCATION == -->
+      <section id="education" class="inner resume" tabindex="-1">
+        <h2 class="section-heading reveal-item">Education</h2>
 
         <div class="edu-grid">
           <div class="edu-card reveal-item">
             <div class="edu-card__school">University of South Florida</div>
-            <div class="edu-card__degree">M.S. Artificial Intelligence in Business &amp; Enterprise Integration &mdash; Candidate</div>
-            <div class="edu-card__meta">Expected December 2027</div>
+            <div class="edu-card__degree">M.S. Artificial Intelligence in Business &amp; Digital Transformation &mdash; Candidate</div>
+            <div class="edu-card__meta">Expected Summer 2027</div>
             <span class="edu-card__badge">In Progress</span>
           </div>
           <div class="edu-card reveal-item">
             <div class="edu-card__school">University of South Florida</div>
-            <div class="edu-card__degree">B.S. Finance &mdash; May 2023</div>
+            <div class="edu-card__degree">B.S. Finance, Cum Laude &mdash; May 2023</div>
             <div class="edu-card__meta">GPA: 3.63</div>
             <span class="edu-card__badge">Completed</span>
           </div>
@@ -1932,7 +2044,7 @@
       <section id="contact" class="inner contact" tabindex="-1">
         <h2 class="contact__title reveal-item">Let's build<br>something <em>real.</em></h2>
         <p class="contact__sub reveal-item">
-          Open to engineering roles, dev-adjacent opportunities, and builders who ship.
+          Open to Data Engineer and AI / LLM Engineer roles &mdash; Tampa Bay or remote.
         </p>
 
         <div class="contact-rows">
@@ -1993,10 +2105,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
         Home
       </a></li>
-      <li><a class="tab-bar__link" href="#portfolio" data-section="portfolio">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
-        Projects
-      </a></li>
       <li><a class="tab-bar__link" href="#about" data-section="about">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
         About
@@ -2004,6 +2112,10 @@
       <li><a class="tab-bar__link" href="#resume" data-section="resume">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         Career
+      </a></li>
+      <li><a class="tab-bar__link" href="#portfolio" data-section="portfolio">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+        Projects
       </a></li>
       <li><a class="tab-bar__link" href="#contact" data-section="contact">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -2090,8 +2202,8 @@
     /* == TYPEWRITER EFFECT == */
     const typewriterEl = document.getElementById('typewriter-text');
     const phrases = [
-      'AI / Backend Engineer',
-      'Retrieval & Analysis Systems',
+      'Data & AI Engineer',
+      'Data Pipelines & LLM Systems',
       'Always Learning'
     ];
     let phraseIdx = 0, charIdx = 0, deleting = false;
