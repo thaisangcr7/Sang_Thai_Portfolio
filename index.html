@@ -443,6 +443,18 @@
       transition: box-shadow 0.3s;
     }
     .project-card__img:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+    .project-card__figure {
+      margin: 0 0 1.25rem;
+    }
+    .project-card__figure .project-card__img {
+      margin-bottom: 0.6rem;
+    }
+    .project-card__caption {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
     .project-card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -1763,6 +1775,16 @@
             it also disproved a change I expected to help, which turned out to make no
             difference at all.
           </p>
+          <figure class="project-card__figure">
+            <img src="images/creditrag-extraction.png"
+                 alt="credit-rag extraction results: eight attribute cards, each showing the extracted value above the page number and exact sentence it was quoted from"
+                 class="project-card__img" loading="lazy" />
+            <figcaption class="project-card__caption">
+              Extraction run against the synthetic demo agreement &mdash; a fixed regression
+              document, not the SEC filing. Every value carries the page and the sentence it
+              came from; anything unsupported is abstained rather than guessed.
+            </figcaption>
+          </figure>
           <div class="impact-row">
             <div class="impact-item">
               <span class="impact-item__num">229</span>
