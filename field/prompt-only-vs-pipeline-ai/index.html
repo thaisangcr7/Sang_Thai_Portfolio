@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light')})();</script>
+  <title>Prompt-only vs pipeline + AI: code computes, AI explains &mdash; AI Space Field</title>
+  <meta name="description" content="Upload a big spreadsheet to an AI chat and the totals can change between runs. Here's the backend pipeline that keeps the numbers the same, with the AI still doing the part it's great at." />
+  <link rel="canonical" href="https://sangthai.dev/field/prompt-only-vs-pipeline-ai/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Prompt-only vs pipeline + AI: code computes, AI explains" />
+  <meta property="og:description" content="Same file. Same answer? Only if code does the math. The full pipeline, with an interactive diagram and sources." />
+  <meta property="og:url" content="https://sangthai.dev/field/prompt-only-vs-pipeline-ai/" />
+  <meta property="og:image" content="https://sangthai.dev/field/prompt-only-vs-pipeline-ai/media/og.jpg" />
+  <meta property="article:published_time" content="2026-10-21" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#F8F7FF" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/field.css" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="progress" aria-hidden="true"><span></span></div>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="../../" aria-label="Sang Thai, home">
+        <span class="brand__avatar" aria-hidden="true">ST</span>
+        <span>Sang Thai<span class="brand__sub">AI SPACE FIELD</span></span>
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a href="../../#home">Home</a>
+        <a href="../../#about">About</a>
+        <a href="../../#resume">Experience</a>
+        <a href="../../#portfolio">Projects</a>
+        <a href="../" aria-current="page">AI Space Field</a>
+        <a href="../../#contact">Contact</a>
+      </nav>
+      <div class="header-actions">
+        <a class="back-home" href="../">All breakdowns</a>
+        <button class="icon-btn" type="button" data-theme-toggle aria-label="Switch theme">
+          <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <section class="post-head">
+        <div class="crumbs"><a href="../">AI Space Field</a><span aria-hidden="true">/</span><span>Architecture</span></div>
+        <h1>Prompt-only vs pipeline + AI: code computes, AI explains</h1>
+        <p class="dek">It's tempting to upload a big spreadsheet to an AI chat and ask for a dashboard. It's fast. The catch: run it again and the totals can change. Here's the setup that keeps the number the same tomorrow.</p>
+        <div class="meta">
+          <span class="pill">Oct 21, 2026</span>
+          <a class="pill" href="#diagram">Interactive diagram ↓</a>
+          <a class="pill" href="#sources">Sources ↓</a>
+          <a class="pill" href="https://www.linkedin.com/in/sang-thai/recent-activity/all/" target="_blank" rel="noopener noreferrer">Discussed on LinkedIn ↗</a>
+        </div>
+      </section>
+
+      <div class="intro-grid" id="tldr">
+        <div class="panel tldr">
+          <span class="kicker">The short version</span>
+          <ul>
+            <li>An LLM is great at reading, writing and explaining. It is <strong>not a calculator you can audit</strong>.</li>
+            <li>Ask it to total a big file twice and you may get two different answers, even when it writes code for you.</li>
+            <li>The fix: a backend pipeline does the math. Then the AI explains numbers that are already checked. <strong>Code computes, AI explains.</strong></li>
+          </ul>
+        </div>
+        <figure class="panel video" style="margin:0">
+          <video controls playsinline preload="none" poster="media/cover.jpg" width="1080" height="1350">
+            <source src="media/post-23.mp4" type="video/mp4" />
+          </video>
+          <figcaption>The 25-second version (no sound)</figcaption>
+        </figure>
+      </div>
+
+      <!-- ===== DIAGRAM ===== -->
+      <figure class="diagram" id="diagram" data-mode="pipe" aria-labelledby="diagram-cap">
+        <div class="diagram__bar">
+          <span class="diagram__title" id="diagram-cap">Fig 1 · Same file. Same answer?</span>
+          <div class="diagram__tools">
+            <div class="seg" role="group" aria-label="Show path">
+              <button type="button" data-mode-btn="pipe" data-note="Pipeline + AI: code does the math, then the AI explains it.">Pipeline + AI</button>
+              <button type="button" data-mode-btn="prompt" data-note="Prompt-only: fast, but the answer can change between runs.">Prompt-only</button>
+            </div>
+            <button type="button" class="tool-btn" data-fullscreen><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Full screen</span></button>
+          </div>
+        </div>
+
+        <div class="diagram__stage">
+          <p class="diagram__title" data-mode-note aria-live="polite" style="text-align:center;margin:0 0 30px"></p>
+          <div class="lane__label" style="max-width:940px;margin:0 auto 18px">Pipeline + AI</div>
+          <div class="flow">
+            <button type="button" class="node" style="--c:1;--r:1;--o:1" data-node data-path="pipe" data-num="01" data-title="File" data-desc="The big spreadsheet. The same file goes in every time.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h8M12 11v8"/></svg>File</button>
+            <div class="arrow" style="--c:2;--r:1;--o:2" data-path="pipe" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:3;--r:1;--o:3" data-node data-path="pipe" data-num="02" data-title="Load" data-desc="Load the file the same way every time. No guessing about which rows, sheets or columns count.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Load</button>
+            <div class="arrow" style="--c:4;--r:1;--o:4" data-path="pipe" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:5;--r:1;--o:5" data-node data-path="pipe" data-num="03" data-title="Validate" data-desc="Missing columns, duplicates and wrong types get caught before anything else runs. If the file is broken, you find out here, not in the dashboard.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 13l2 2 4-4"/></svg>Validate</button>
+            <div class="arrow arrow--down" style="--c:5;--r:2;--o:6" data-path="pipe" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+
+            <button type="button" class="node" style="--c:5;--r:3;--o:7" data-node data-path="pipe" data-num="04" data-title="Store" data-desc="Keep the clean, checked data, so every step after this reads exactly the same thing.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-6 9 6"/><rect x="4" y="9" width="16" height="11" rx="1"/><path d="M4 13h16M4 17h16M9.5 9v11M14.5 9v11"/></svg>Store</button>
+            <div class="arrow arrow--left" style="--c:4;--r:3;--o:8" data-path="pipe" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:3;--r:3;--o:9" data-node data-path="pipe" data-num="05" data-title="Compute" data-desc="Do the math in code. Same input, same output, every run. This is the step you can audit.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Compute</button>
+            <div class="arrow arrow--left" style="--c:2;--r:3;--o:10" data-path="pipe" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:1;--r:3;--o:11" data-node data-path="pipe" data-num="06" data-title="Serve (API)" data-desc="Serve the results through an API, so the dashboard, the AI and anything else all read the same checked numbers.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M9 10.5h.01M12 10.5h.01M15 10.5h.01"/></svg>Serve (API)</button>
+            <div class="arrow arrow--down" style="--c:1;--r:4;--o:12" data-path="pipe" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+
+            <button type="button" class="node node--ai" style="--c:1;--r:5;--o:13" data-node data-path="pipe" data-num="07" data-title="AI explains" data-desc="Now the AI does what it's great at: it summarizes, charts and answers questions, on numbers that are already checked.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2 7 7 2-7 2-2 7-2-7-7-2 7-2z"/></svg>AI explains</button>
+            <div class="arrow" style="--c:2;--r:5;--o:14" data-path="pipe" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:3;--r:5;--o:15" data-node data-path="pipe" data-num="08" data-title="Dashboard" data-desc="People see a number they can make a decision on, and it'll be the same number tomorrow.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 16v-4M12 16V8M16 16v-6"/></svg>Dashboard</button>
+            <div class="arrow" style="--c:4;--r:5;--o:16" data-path="pipe" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:5;--r:5;--o:17" data-node data-path="pipe" data-num="09" data-title="Monitor" data-desc="The same input should always give the same answer. If it doesn't, you hear about it before anyone uses the number.">
+              <span class="node__badge">same answer</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Monitor</button>
+          </div>
+
+          <div class="lane" data-path="prompt">
+            <div class="lane__label">Prompt-only shortcut</div>
+            <div class="lane__row">
+              <button type="button" class="node node--ghost" style="--c:1;--o:1" data-node data-num="A" data-title="Same file" data-desc="The exact same spreadsheet, uploaded straight into a chat.">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h8M12 11v8"/></svg>Same file</button>
+              <div class="arrow" style="--c:2;--o:2" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+              <button type="button" class="node node--ghost" style="--c:3;--o:3" data-node data-num="B" data-title="AI chat" data-desc="Upload it and ask for a dashboard. For a quick one-time look, that's fine. For a number someone will make a decision on, it isn't.">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M9 10.5h.01M12 10.5h.01M15 10.5h.01"/></svg>AI chat</button>
+              <div class="arrow" style="--c:4;--o:4" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+              <button type="button" class="node node--ghost" style="--c:5;--o:5;min-height:0;padding:14px" data-node data-num="C" data-title="Run it again" data-desc="Run it again and the totals can change. The chat can write different code each run, read only part of the file, or guess what a column means and guess wrong.">
+                <span class="runs" style="width:100%">
+                  <span class="run">Run 1 <b>different code?</b></span>
+                  <span class="run">Run 2 <b>part of the file?</b></span>
+                  <span class="run">Run 3 <b>wrong column?</b></span>
+                </span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="diagram__detail" aria-live="polite">
+          <span class="num" data-detail-num>01</span>
+          <div>
+            <h3 data-detail-title>File</h3>
+            <p data-detail-text></p>
+          </div>
+        </div>
+        <div class="diagram__hint">Tap any box to see what it does. Switch between the two paths above.</div>
+      </figure>
+
+      <div class="post-body">
+        <article class="prose">
+          <h2 id="why">Why the totals change</h2>
+          <p>An LLM is great at reading, writing and explaining. It is not a calculator you can audit.</p>
+          <p>Ask it to total a big file twice and you may get two different answers. Even when the chat writes code for you, it can write <strong>different code each run</strong>. Sometimes it only reads <strong>part of the file</strong>. Sometimes it <strong>guesses what a column means</strong>, and guesses wrong.</p>
+          <div class="callout">
+            <span class="kicker">The line</span>
+            For a quick one-time look, prompt-only is fine. For a number someone will make a decision on, it isn't.
+          </div>
+
+          <h2 id="pipeline">The fix is old-fashioned: a pipeline</h2>
+          <ol>
+            <li><strong>Load</strong> the file the same way every time.</li>
+            <li><strong>Validate</strong> it. Missing columns, duplicates and wrong types get caught before anything else runs.</li>
+            <li><strong>Store</strong> the clean data, then <strong>compute</strong> the numbers in code. Same input, same output, every run.</li>
+            <li><strong>Serve</strong> the results through an API. Then the AI explains: it summarizes, charts and answers questions on numbers that are already checked.</li>
+            <li><strong>Monitor</strong> it. The same input should always give the same answer. If it doesn't, you hear about it before anyone uses the number.</li>
+          </ol>
+
+          <h2 id="compare">Side by side</h2>
+          <div class="compare">
+            <div>
+              <h3>Prompt-only</h3>
+              <span class="flowline">file → AI chat → answer</span>
+              Fast, but the answer can change.
+            </div>
+            <div>
+              <h3>Pipeline + AI</h3>
+              <span class="flowline">file → load → validate → store → compute → API → AI explains</span>
+              A bit more setup, and the answer is the same tomorrow.
+            </div>
+          </div>
+          <p>The AI still does the part it's great at. It just isn't the thing doing the math.</p>
+          <p><strong>My rule: code computes, AI explains.</strong> Where do you draw that line in your work? Tell me on <a href="https://www.linkedin.com/in/sang-thai/recent-activity/all/" target="_blank" rel="noopener noreferrer">LinkedIn</a>.</p>
+
+          <section class="sources" id="sources" aria-labelledby="sources-h">
+            <h2 id="sources-h">Further reading</h2>
+            <p class="note">The post is an explainer in my own words. These go deeper on the two halves of it.</p>
+            <ol>
+              <li><a href="https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/" target="_blank" rel="noopener noreferrer">Defeating Nondeterminism in LLM Inference</a> <span class="src-meta">Horace He · Thinking Machines Lab · Sep 2025 · why the same prompt can come back different, even at temperature 0</span></li>
+              <li><a href="https://pandera.readthedocs.io/en/stable/" target="_blank" rel="noopener noreferrer">Pandera documentation</a> <span class="src-meta">Open-source Python data validation for dataframes · one way to do the Validate step in code</span></li>
+            </ol>
+          </section>
+        </article>
+
+        <aside class="toc">
+          <nav class="panel" aria-label="On this page">
+            <span class="kicker">On this page</span>
+            <a href="#tldr">The short version</a>
+            <a href="#diagram">The two paths</a>
+            <a href="#why">Why the totals change</a>
+            <a href="#pipeline">The pipeline, step by step</a>
+            <a href="#compare">Side by side</a>
+            <a href="#sources">Further reading</a>
+          </nav>
+          <div class="panel cta">
+            <h3>Talk about it on LinkedIn</h3>
+            <p>This breakdown started as a LinkedIn post. Questions and pushback live there.</p>
+            <a href="https://www.linkedin.com/in/sang-thai/recent-activity/all/" target="_blank" rel="noopener noreferrer"><strong>Open the conversation ↗</strong></a>
+          </div>
+        </aside>
+      </div>
+
+      <div class="post-end">
+        <a class="panel" href="../">
+          <span class="kicker">AI Space Field</span>
+          <h3>← All breakdowns</h3>
+          <p>Plain-English AI and data architecture, diagrams included.</p>
+        </a>
+        <a class="panel" href="../bi-ready-vs-ai-ready/">
+          <span class="kicker">Previous breakdown</span>
+          <h3>BI-ready vs AI-ready: does your architecture have a way back?</h3>
+          <p>Same data. Different architecture. One arrow changes three things.</p>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>&copy; 2026 Sang Thai · <a href="../../">sangthai.dev</a></span>
+      <span class="mono">Every source linked. No hype.</span>
+    </div>
+  </footer>
+
+  <script src="../assets/field.js" defer></script>
+</body>
+</html>
