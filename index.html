@@ -487,6 +487,7 @@
     }
     .status-live { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
     .status-dev  { background: rgba(255,107,157,0.12); color: var(--accent); border: 1px solid rgba(255,107,157,0.2); }
+    .status-muted { background: rgba(139,137,168,0.12); color: var(--text-muted); border: 1px solid rgba(139,137,168,0.25); }
     .project-card__name {
       font-size: 1.35rem; font-weight: 700;
       letter-spacing: -0.02em;
@@ -886,6 +887,7 @@
     .contact-form__status--error { color: var(--accent); }
     @media (max-width: 480px) {
       .contact-form__row { flex-direction: column; gap: 0; }
+      .project-card__header { flex-direction: column-reverse; gap: 0.5rem; }
     }
 
     /* == FOOTER == */
@@ -1132,7 +1134,7 @@
         </div>
         <p class="intro__bio reveal-item">
           AI and data engineer with 3+ years in financial services at Citi,
-          Raymond James and Wells Fargo. I build production data pipelines and AI
+          Raymond James and Wells Fargo. I build production-grade data pipelines and AI
           systems that show their work &mdash; ATLAS, the controls-testing platform I
           designed and built at Citi, and Avenotes, the live AI meeting assistant
           I founded.
@@ -1141,16 +1143,16 @@
         <h3 class="intro__impact-heading reveal-item">Business Impact</h3>
         <div class="stats-row reveal-item">
           <div class="stat-block">
-            <div class="stat-block__number">&lt;5 hrs</div>
-            <div class="stat-block__label">Monthly Testing, Down from ~100</div>
+            <div class="stat-block__number">100 &rarr; &lt;5 hrs</div>
+            <div class="stat-block__label">Monthly Testing</div>
           </div>
           <div class="stat-block">
-            <div class="stat-block__number">~25M</div>
-            <div class="stat-block__label">Records / Month</div>
+            <div class="stat-block__number">$1.5T</div>
+            <div class="stat-block__label">Monthly Payment Value Tested</div>
           </div>
           <div class="stat-block">
-            <div class="stat-block__number">52</div>
-            <div class="stat-block__label">Apps in the Testing Program</div>
+            <div class="stat-block__number">50+</div>
+            <div class="stat-block__label">Apps in the Program</div>
           </div>
         </div>
 
@@ -1181,27 +1183,29 @@
             services. I came to engineering through finance, and that is still my edge:
             I know what it takes for a pipeline to pass audit, not just run. At
             <strong>Wells Fargo</strong> I worked on client and data issues across wealth
-            platforms; at <strong>Raymond James</strong> I wrote the Oracle SQL that
-            reconciled securities data against DTCC records.
+            platforms; at <strong>Raymond James</strong> I validated DTCC securities data
+            with Oracle SQL reconciliation queries for operations and audit.
           </p>
           <p class="reveal-item">
-            Since 2024 I've been at <strong>Citigroup</strong>, building automation for the
-            Operational Risk team. There I designed and built <strong>ATLAS</strong> on my own &mdash; a
-            config-driven Python platform for a 52-application payment controls testing
-            program that cut monthly testing from ~100 hours of manual work to under 5.
+            Since 2024 I've been a Data &amp; AI Engineer at <strong>Citigroup</strong>, in Global
+            Processing Risk Oversight. There I designed and built <strong>ATLAS</strong> end to end &mdash; a
+            production-grade, config-driven Python platform for a 50+ application payment
+            controls program that cut monthly testing from about 100 hours to under 5.
+            Its code and documentation now belong to another team after a reorg.
           </p>
           <p class="reveal-item">
             Outside Citi I've been building the systems I most want to work on.
             <strong>Avenotes</strong> is a live AI meeting assistant with paid plans that I
             launched on my own. <strong>Avocado</strong> is a team knowledge and analysis copilot: it answers
             from your own documents with the sources attached, or writes and runs code in
-            an isolated sandbox and shows you the program behind the number.
+            an isolated sandbox and shows you the program behind the number, with
+            tenant isolation checked by 9 cross-tenant tests.
             <strong>credit-rag</strong> reads 200-page credit agreements and returns
             structured terms with every value traced to the sentence it came from &mdash;
             verified in code, not taken on trust. Before those came
             <strong>SENTINEL</strong>, a financial data pipeline whose AWS environment is
             defined entirely in Terraform, <strong>LAYERS</strong>, a statistical benchmark
-            of anti-money-laundering detectors, and <strong>ThriveKid</strong>, a React and C#
+            of anti-money-laundering detectors on synthetic data, and <strong>ThriveKid</strong>, a React and C#
             PWA my own family uses. Avocado, credit-rag and SENTINEL are open source;
             ThriveKid is deployed and clickable.
             Alongside full-time work I'm completing an M.S. in Artificial Intelligence in
@@ -1517,47 +1521,54 @@
 
         <div class="exp-item reveal-item">
           <div class="exp-item__header">
+            <span class="exp-item__company">Citigroup</span>
+            <span class="exp-item__date">Aug 2024 &mdash; Present</span>
+          </div>
+          <div class="exp-item__title">Data &amp; AI Engineer &middot; Global Processing Risk Oversight &middot; Tampa, FL</div>
+          <p class="exp-item__desc">
+            Designed and built ATLAS end to end, a production-grade Python platform that automates
+            approval-threshold, duplicate-payment and dual-blind-rekey control tests, cutting
+            monthly testing from about 100 hours to under 5 and adding full-population tests
+            on about $1.5T in monthly payment value. Rebuilt the weekly Manager&rsquo;s Control
+            Assessment (MCA) snapshot from undocumented Power Query into a Python and Parquet
+            pipeline with a live Flask/HTML/JavaScript dashboard, reconciled row by row,
+            cutting 6&ndash;8 hours to minutes. Rewrote weekly remediation forecasts in Polars
+            (4 min to 38 s, 112 Pytest tests), fixing a lookup that understated open issues
+            by about 30%. Also fixed a silent parsing bug that under-flagged high-value
+            payments, replaced a manual deck build with weekly HTML decks for senior
+            managers and executives, and use GitHub Copilot daily to write and test Python.
+          </p>
+        </div>
+
+        <div class="exp-item reveal-item">
+          <div class="exp-item__header">
             <span class="exp-item__company">Avenotes</span>
             <span class="exp-item__date">Aug 2026 &mdash; Present</span>
           </div>
           <div class="exp-item__title">Founder &amp; AI Engineer &middot; Remote</div>
           <p class="exp-item__desc">
-            Launched a live AI meeting assistant with paid plans, built and shipped on my
-            own: real-time Deepgram transcription feeding the Anthropic API for live
-            answers, recaps and cited answers across past meetings, on FastAPI, React and
-            TypeScript, and Supabase Postgres, with Stripe billing.
+            Run a live AI meeting assistant with paid plans that answers questions in the
+            moment and searches past meetings. Designed and built it end to end: a real-time
+            Python pipeline (Deepgram, Claude) for live answers and recaps, per-plan usage
+            limits and a daily spending cap, on a React/TypeScript, FastAPI, Supabase and
+            Stripe stack.
           </p>
         </div>
 
         <div class="exp-item reveal-item">
           <div class="exp-item__header">
-            <span class="exp-item__company">Citigroup</span>
-            <span class="exp-item__date">Aug 2024 &mdash; Present</span>
-          </div>
-          <div class="exp-item__title">Operational Risk Analyst (Data &amp; Automation focus) &middot; Tampa, FL</div>
-          <p class="exp-item__desc">
-            Designed and built ATLAS on my own, outside my analyst role &mdash; a config-driven
-            Python and Flask platform that automates payment-control tests for a
-            52-application testing program, cutting monthly testing from ~100 hours to under 5.
-            Rebuilt a 6&ndash;8 hour weekly Power Query report as a Python pipeline that runs in
-            under 10 minutes, and cut row-matching errors in weekly remediation forecasts
-            from ~5% to 0% with a Polars pipeline gated by 112 tests.
-          </p>
-        </div>
-
-        <div class="exp-item reveal-item">
-          <div class="exp-item__header">
-            <span class="exp-item__company">Raymond James Financial</span>
+            <span class="exp-item__company">Raymond James</span>
             <span class="exp-item__date">Jan 2024 &mdash; Jul 2024</span>
           </div>
           <div class="exp-item__title">IT Business Analyst &middot; St. Petersburg, FL</div>
           <p class="exp-item__desc">
-            Executed SQL-based validation and supported UAT workflows for DTCC data
-            pipelines &mdash; post-trade settlement data for U.S. securities markets.
-            Designed 4 relational schemas in SQL Server for Valuation Records datasets
-            and built process flows in Visio for stakeholder alignment. Used Control-M
-            for enterprise batch job scheduling and worked with Genesis &mdash; Jett AI's
-            GenAI-powered advisor for Control-M SaaS.
+            Validated DTCC securities data with Oracle SQL reconciliation queries
+            (source-to-target joins, control totals, and null, duplicate and
+            referential-integrity checks) for operations and audit, and delivered
+            audit-ready class-action settlement extracts used by external auditors.
+            Created four SQL Server tables to store valuation records for the
+            reconciliation platform, monitored Control-M batch jobs, and supported
+            releases through UAT, ServiceNow and Genesis, the internal deployment tool.
           </p>
         </div>
 
@@ -1566,7 +1577,7 @@
             <span class="exp-item__company">Wells Fargo</span>
             <span class="exp-item__date">Jun 2023 &mdash; Dec 2023</span>
           </div>
-          <div class="exp-item__title">Wealth &amp; Investment Management Ops Analyst &middot; Charlotte, NC</div>
+          <div class="exp-item__title">Operations Analyst &middot; Wealth &amp; Investment Management &middot; Charlotte, NC</div>
           <p class="exp-item__desc">
             Updated client documentation to resolve onboarding and data issues across
             legacy and modern wealth management platforms &mdash; the role that showed me
@@ -1592,7 +1603,7 @@
           </div>
           <div class="screenshot-gallery screenshot-gallery--wide">
             <img src="images/avenotes-hero.jpg" alt="Avenotes during a live meeting: a question is asked and Avenotes gives the bottom line, what matters and the next move from the meeting transcript." class="screenshot-gallery__img" loading="lazy" />
-            <img src="images/avenotes-memory.jpg" alt="Asking 'what did we decide last time?' mid-meeting: Avenotes answers from past meetings, citing the meeting and recap each point came from." class="screenshot-gallery__img" loading="lazy" />
+            <img src="images/avenotes-memory.jpg" alt="Asking 'what did we decide last time?' mid-meeting: Avenotes searches past meetings and names the meeting and recap each point came from." class="screenshot-gallery__img" loading="lazy" />
           </div>
           <p class="project-card__desc">
             A meeting assistant that listens while the meeting is still happening and
@@ -1630,36 +1641,36 @@
           <div class="project-card__header">
             <div>
               <div class="project-card__name">ATLAS</div>
-              <div class="project-card__role">Designed &amp; Built Solo &mdash; Citi, Operational Risk</div>
+              <div class="project-card__role">Data &amp; AI Engineer &mdash; Citi, Global Processing Risk Oversight</div>
             </div>
-            <span class="status-badge status-live">Internal &middot; Citi</span>
+            <span class="status-badge status-muted">Internal &middot; Handed off</span>
           </div>
           <!-- Optional: Add a screenshot -->
           <!-- <img src="images/atlas-screenshot.png" alt="ATLAS dashboard screenshot" class="project-card__img" loading="lazy" /> -->
           <p class="project-card__desc">
-            A controls-testing platform for a 52-application global payments testing
-            program at Citi, checking ~25M records a month. I designed and built it
-            alone, outside my analyst role: a config-driven Python system that runs
-            Threshold Validation, Duplicate Detection and Dual Blind Rekey tests, each
-            with its own business rules per application. Shared modules ingest Excel,
-            CSV and JSON files, validate them and export the results, and a new
-            application onboards through a JSON config entry. Monthly testing went from
-            ~100 hours of manual work to under 5, and the output is audit evidence for
-            Citi&rsquo;s Manager Control Assessment. The code is internal to Citi; the
-            architecture and the outcomes are mine to discuss.
+            I designed and built ATLAS end to end, a production-grade Python platform for a
+            50+ application payment-controls program at Citi. It automates
+            approval-threshold, duplicate-payment and dual-blind-rekey control tests,
+            each with its own business rules per application. Shared modules ingest,
+            validate and export Excel, CSV and JSON files, and each new application
+            needs only a JSON config entry plus template scripts. Monthly testing went
+            from about 100 hours to under 5, and full-population tests now cover about
+            $1.5T in monthly payment value on top of the manual monthly samples. After
+            a reorg, ATLAS is now owned by another team. The code is internal to Citi;
+            the architecture and the outcomes are mine to discuss.
           </p>
           <div class="impact-row">
             <div class="impact-item">
-              <span class="impact-item__num">&lt;5 hrs</span>
-              <span class="impact-item__label">Monthly Testing, Was ~100</span>
+              <span class="impact-item__num">100 &rarr; &lt;5 hrs</span>
+              <span class="impact-item__label">Monthly Testing</span>
             </div>
             <div class="impact-item">
-              <span class="impact-item__num">~25M</span>
-              <span class="impact-item__label">Records / Mo</span>
+              <span class="impact-item__num">$1.5T</span>
+              <span class="impact-item__label">Monthly Payment Value Tested</span>
             </div>
             <div class="impact-item">
-              <span class="impact-item__num">52</span>
-              <span class="impact-item__label">Apps in Program</span>
+              <span class="impact-item__num">50+</span>
+              <span class="impact-item__label">Apps in the Program</span>
             </div>
           </div>
           <div class="tags">
@@ -1678,7 +1689,7 @@
           <div class="project-card__header">
             <div>
               <div class="project-card__name">Avocado</div>
-              <div class="project-card__role">Solo Developer &mdash; Team Knowledge &amp; Analysis Copilot</div>
+              <div class="project-card__role">Designer &amp; Developer &mdash; Team Knowledge &amp; Analysis Copilot</div>
             </div>
             <span class="status-badge status-live">Open source &middot; Docker</span>
           </div>
@@ -1710,17 +1721,20 @@
             would defend in review. Generated code runs with
             no network, a read-only filesystem, and hard memory and CPU caps &mdash; applied
             to every run, never set per request, because a caller that can choose its own
-            limits can choose none. Every query is scoped to one workspace in SQL, so no
-            team can read another&rsquo;s data.
+            limits can choose none, and 16 container-escape tests attack it to prove it.
+            Role-based access and tenant isolation are enforced in code, checked by 9
+            cross-tenant tests, so no team can read another&rsquo;s data. Tools are called
+            over MCP, and a model router works across LLM providers (Anthropic, OpenAI,
+            Ollama).
           </p>
           <div class="impact-row">
             <div class="impact-item">
-              <span class="impact-item__num">757</span>
-              <span class="impact-item__label">Tests &middot; CI Green</span>
+              <span class="impact-item__num">9</span>
+              <span class="impact-item__label">Cross-Tenant Tests</span>
             </div>
             <div class="impact-item">
-              <span class="impact-item__num">110,064</span>
-              <span class="impact-item__label">Row Dataset, Computed In Full</span>
+              <span class="impact-item__num">16</span>
+              <span class="impact-item__label">Container-Escape Tests</span>
             </div>
             <div class="impact-item">
               <span class="impact-item__num">Zero</span>
@@ -1755,7 +1769,7 @@
           <div class="project-card__header">
             <div>
               <div class="project-card__name">credit-rag</div>
-              <div class="project-card__role">Solo Developer &mdash; AI Document Extraction Service</div>
+              <div class="project-card__role">Designer &amp; Developer &mdash; AI Document Extraction Service</div>
             </div>
             <span class="status-badge status-live">Open source &middot; Docker</span>
           </div>
@@ -1776,7 +1790,8 @@
           </p>
           <p class="project-card__desc">
             Accuracy is measured, not assumed. An evaluation harness scores answers
-            against hand-labeled keys &mdash; it took a real SEC filing from 57% to 71%, and
+            against hand-labeled keys &mdash; on a real SEC filing, accuracy measured 71%, up
+            from a 57% baseline, and
             it also disproved a change I expected to help, which turned out to make no
             difference at all.
           </p>
@@ -1792,16 +1807,16 @@
           </figure>
           <div class="impact-row">
             <div class="impact-item">
+              <span class="impact-item__num">71%</span>
+              <span class="impact-item__label">Accuracy Measured</span>
+            </div>
+            <div class="impact-item">
+              <span class="impact-item__num">57%</span>
+              <span class="impact-item__label">Baseline It Beat</span>
+            </div>
+            <div class="impact-item">
               <span class="impact-item__num">229</span>
               <span class="impact-item__label">Page Filing Evaluated</span>
-            </div>
-            <div class="impact-item">
-              <span class="impact-item__num">100%</span>
-              <span class="impact-item__label">Values Cited or Abstained</span>
-            </div>
-            <div class="impact-item">
-              <span class="impact-item__num">64</span>
-              <span class="impact-item__label">Tests &middot; CI Green</span>
             </div>
           </div>
           <div class="tags">
@@ -1826,14 +1841,15 @@
           <div class="project-card__header">
             <div>
               <div class="project-card__name">LAYERS</div>
-              <div class="project-card__role">Solo Developer &mdash; Anti-Money-Laundering Detection Benchmark</div>
+              <div class="project-card__role">Designer &amp; Developer &mdash; AML Detection Benchmark on Synthetic Data</div>
             </div>
             <span class="status-badge status-live">Private repo &middot; On request</span>
           </div>
           <p class="project-card__desc">
             A statistical comparison of two anti-money-laundering detectors &mdash; a
             rule-based baseline and a graph-based method &mdash; on IBM&rsquo;s synthetic AML
-            dataset: 5 million transactions across 515,000 accounts. The question is not
+            dataset (HI-Small): 5 million simulated transactions across 515,000 accounts.
+            It is a research benchmark on synthetic data, not production AML work. The question is not
             which number is bigger but whether the difference is real, so every metric
             comes with a bootstrap confidence interval, AUC is compared with DeLong
             tests, and p-values are corrected across metrics.
@@ -1878,9 +1894,9 @@
           <div class="project-card__header">
             <div>
               <div class="project-card__name">SENTINEL</div>
-              <div class="project-card__role">Solo Developer &mdash; Production Data Pipeline</div>
+              <div class="project-card__role">Designer &amp; Developer &mdash; Financial Data API on AWS</div>
             </div>
-            <span class="status-badge status-live">Open source &middot; Terraform</span>
+            <span class="status-badge status-muted">Retired &middot; ran ~5 months on AWS</span>
           </div>
           <p class="project-card__desc">
             A monitoring service that tracks three U.S. economic indicators &mdash; the
@@ -1898,7 +1914,7 @@
             which found six issues I fixed before anyone else could see them.
           </p>
           <p class="project-card__desc">
-            It ran live on AWS for five months. I took it down deliberately: the
+            It ran on AWS EC2 for about five months, until August 2026. I took it down deliberately: the
             infrastructure code is the artefact worth keeping, and leaving a t2.micro
             running to serve a demo nobody is querying is a bill, not a portfolio piece.
             <code>terraform apply</code> brings it back.
@@ -1938,9 +1954,9 @@
           <div class="project-card__header">
             <div>
               <div class="project-card__name">Portfolio Analytics Pipeline</div>
-              <div class="project-card__role">Solo Developer &mdash; End-to-End Data Engineering Project</div>
+              <div class="project-card__role">Designer &amp; Developer &mdash; End-to-End Data Engineering Project</div>
             </div>
-            <span class="status-badge status-live">Open source &middot; Docker</span>
+            <span class="status-badge status-live">Runs locally &middot; Docker</span>
           </div>
           <img src="images/portfolio_analysis.png" alt="Portfolio Analytics Dashboard" class="project-card__img">
           <p class="project-card__desc">
