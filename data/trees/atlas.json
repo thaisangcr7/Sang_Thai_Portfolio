@@ -1,0 +1,877 @@
+{
+ "id": "atlas",
+ "name": "ATLAS",
+ "tagline": "Config-driven controls testing and reporting platform for 50+ payment apps",
+ "views": [
+  {
+   "id": "today",
+   "label": "Today"
+  },
+  {
+   "id": "proposal",
+   "label": "My vision: full access + budget"
+  }
+ ],
+ "note": "Public-level view. ATLAS code is internal to Citi, so no app names, systems, people or internal figures appear here. The second view is my own vision of where ATLAS could go with full access and budget.",
+ "children": [
+  {
+   "id": "inputs",
+   "title": "Inputs",
+   "kind": "input",
+   "summary": "Everything arrives as files: payment extracts from 50+ apps, risk and control reports, and reference data.",
+   "detail": "Today the data layer is shared folders, so each cycle starts with collecting files. The newest file in each folder is detected automatically.",
+   "tech": [
+    "Excel",
+    "CSV",
+    "JSON",
+    "SharePoint / OneDrive"
+   ],
+   "children": [
+    {
+     "id": "in-payments",
+     "title": "Payment extracts",
+     "kind": "input",
+     "summary": "Monthly transaction files from each payment application in the testing program.",
+     "metric": "50+ apps"
+    },
+    {
+     "id": "in-risk",
+     "title": "Risk + control reports",
+     "kind": "input",
+     "summary": "Weekly risk, control, issue and assessment extracts that feed the MCA pipelines.",
+     "detail": "Ten large report files are read in parallel each week."
+    },
+    {
+     "id": "in-ref",
+     "title": "Reference data",
+     "kind": "input",
+     "summary": "Approval-threshold matrices, staff directory with approver grades, client and business mappings."
+    },
+    {
+     "id": "in-prior",
+     "title": "Prior snapshots",
+     "kind": "input",
+     "summary": "Last week's outputs, so every run can show what is new, carried over or resolved."
+    },
+    {
+     "id": "in-detect",
+     "title": "Newest-file detection",
+     "kind": "process",
+     "summary": "Finds the latest Excel/CSV in each input folder so nobody has to rename files."
+    }
+   ]
+  },
+  {
+   "id": "config",
+   "title": "Config layer",
+   "kind": "tool",
+   "summary": "Each app is a JSON entry plus two template scripts, so adding an app doesn't touch platform code.",
+   "detail": "Business rules and per-app settings live in config instead of being hard-coded. A hot-reload endpoint picks up config changes without a restart.",
+   "tech": [
+    "JSON config",
+    "Python templates"
+   ],
+   "flags": [
+    "tool"
+   ],
+   "children": [
+    {
+     "id": "cfg-app",
+     "title": "One entry per app",
+     "kind": "tool",
+     "summary": "Name, folders, test types and rules per application, registered in one config file."
+    },
+    {
+     "id": "cfg-templates",
+     "title": "Processing + validation templates",
+     "kind": "process",
+     "summary": "Every app gets a processing script and a validation script started from a template."
+    },
+    {
+     "id": "cfg-remap",
+     "title": "Column remaps",
+     "kind": "process",
+     "summary": "When a source renames a column, the fix is a one-line remap in JSON, not new code."
+    },
+    {
+     "id": "cfg-reload",
+     "title": "Hot reload",
+     "kind": "security",
+     "summary": "Reload config without restarting, behind two layers of auth.",
+     "flags": [
+      "security"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cleaning",
+   "title": "Cleaning layers",
+   "kind": "process",
+   "flow": true,
+   "summary": "Raw files go through ingest, standardize, validate, transform and output layers, like bronze to silver to gold.",
+   "detail": "Same input plus same rules gives the same output every time. Record counts are logged at every step so a drop can be traced to the exact step.",
+   "tech": [
+    "pandas",
+    "Polars",
+    "calamine",
+    "PyArrow",
+    "Parquet"
+   ],
+   "children": [
+    {
+     "id": "cl-ingest",
+     "title": "1 · Ingest",
+     "kind": "process",
+     "summary": "Reads big Excel files fast (Rust-backed reader, parallel threads) and caches them to Parquet.",
+     "detail": "A same-day rerun skips the re-read.",
+     "tech": [
+      "calamine",
+      "ThreadPoolExecutor",
+      "Parquet"
+     ]
+    },
+    {
+     "id": "cl-standardize",
+     "title": "2 · Standardize",
+     "kind": "process",
+     "summary": "Renames columns, splits IDs, converts amounts to USD, normalizes business names and status values."
+    },
+    {
+     "id": "cl-validate",
+     "title": "3 · Validate",
+     "kind": "test",
+     "summary": "Fails fast on missing required columns; catches bad amounts that would silently turn into zero.",
+     "detail": "That zero-amount check came from a real bug: formatted amounts were coerced to 0 and under-flagged high-value payments.",
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "cl-dedupe",
+     "title": "4 · Dedupe + keys",
+     "kind": "process",
+     "summary": "Removes duplicate records and builds derived keys so sources can be joined safely."
+    },
+    {
+     "id": "cl-join",
+     "title": "5 · Join + enrich",
+     "kind": "process",
+     "summary": "Left joins controls to issues and mappings, then adds risk categories and flags.",
+     "detail": "Swapping a first-match lookup for a proper left join fixed issues being understated by about 30%."
+    },
+    {
+     "id": "cl-filter",
+     "title": "6 · Scope filters",
+     "kind": "process",
+     "summary": "Keeps only in-scope payments: value-date window, app scope and exclusion rules."
+    },
+    {
+     "id": "cl-output",
+     "title": "7 · Output + reset",
+     "kind": "output",
+     "summary": "Writes CSV, Excel, Parquet, JSON and ZIP, then clears caches so stale data never leaks into next week.",
+     "detail": "Parquet files come out about 60-70% smaller than the Excel originals."
+    }
+   ]
+  },
+  {
+   "id": "rules",
+   "title": "Rules engine",
+   "kind": "process",
+   "summary": "Applies each control's business rules to the full population of payments, not a sample.",
+   "detail": "The team designed the controls; ATLAS runs them on every payment, every month, on top of the manual monthly samples.",
+   "flags": [
+    "test"
+   ],
+   "metric": "$1.5T / month",
+   "children": [
+    {
+     "id": "r-threshold",
+     "title": "Approval threshold",
+     "kind": "test",
+     "summary": "Large payments need an approver with a high enough grade, checked against each app's own matrix.",
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "r-dup",
+     "title": "Duplicate payment",
+     "kind": "test",
+     "summary": "Every potential duplicate (same amount, payee, date, originator) must be released or cancelled.",
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "r-dbr",
+     "title": "Dual blind rekey",
+     "kind": "test",
+     "summary": "Two people key the same payment; mismatch rates map to pass, review or fail bands.",
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "r-effect",
+     "title": "Control effectiveness",
+     "kind": "process",
+     "summary": "Rates each control effective or deficient from testing results, open issues and loss events."
+    },
+    {
+     "id": "r-flip",
+     "title": "Projected flips",
+     "kind": "process",
+     "summary": "Finds the single issues that, once fixed, would flip a control back to effective."
+    },
+    {
+     "id": "r-forecast",
+     "title": "Weeks-to-target forecast",
+     "kind": "process",
+     "summary": "Projects when a business reaches its effectiveness target from its week-over-week pace."
+    }
+   ]
+  },
+  {
+   "id": "pipelines",
+   "title": "Pipelines",
+   "kind": "process",
+   "summary": "37 registered pipelines, each its own script set, run from one orchestrator.",
+   "metric": "37 pipelines",
+   "children": [
+    {
+     "id": "p-ppc",
+     "title": "Payment control tests",
+     "kind": "process",
+     "summary": "Threshold, duplicate and rekey testing across the payment apps, rolled into a monthly matrix.",
+     "metric": "100 → <5 hrs"
+    },
+    {
+     "id": "p-mca",
+     "title": "MCA weekly snapshot",
+     "kind": "process",
+     "summary": "Replaced 17 undocumented Power Query steps with an 11-step Python pipeline.",
+     "metric": "6-8 hrs → minutes",
+     "detail": "Ran side by side with the old process and was reconciled row by row before cutover."
+    },
+    {
+     "id": "p-p2g",
+     "title": "Remediation forecast",
+     "kind": "process",
+     "summary": "Weekly Polars pipeline: snapshot, classify issues, project effectiveness, diff vs last week, build decks.",
+     "metric": "4 min → 38 s",
+     "tech": [
+      "Polars",
+      "xlsxwriter"
+     ]
+    },
+    {
+     "id": "p-threshold",
+     "title": "Threshold analysis",
+     "kind": "process",
+     "summary": "Cross-app threshold analysis written out as a set of CSV reports."
+    },
+    {
+     "id": "p-dbrtrend",
+     "title": "Rekey trends",
+     "kind": "process",
+     "summary": "Monthly trend report that classifies rekey mismatches by type."
+    },
+    {
+     "id": "p-kpi",
+     "title": "Payment KPI metrics",
+     "kind": "process",
+     "summary": "Monthly payment KPI pipeline that chains many scripts into one run."
+    },
+    {
+     "id": "p-staff",
+     "title": "Staff utilities",
+     "kind": "process",
+     "summary": "Consolidates staff data used for approver checks."
+    }
+   ]
+  },
+  {
+   "id": "orchestration",
+   "title": "Orchestrator",
+   "kind": "infra",
+   "summary": "A Flask web app where you click Run and watch the pipeline's logs stream live.",
+   "detail": "Each run is a separate subprocess, so one failing pipeline can't take down the app.",
+   "tech": [
+    "Flask",
+    "Socket.IO",
+    "Python 3.12"
+   ],
+   "children": [
+    {
+     "id": "o-factory",
+     "title": "App factory + blueprints",
+     "kind": "infra",
+     "summary": "Flask app factory with blueprints and a service layer (script, chart, data services)."
+    },
+    {
+     "id": "o-run",
+     "title": "Run API",
+     "kind": "infra",
+     "summary": "Run, cancel and status endpoints per app."
+    },
+    {
+     "id": "o-subprocess",
+     "title": "Subprocess isolation",
+     "kind": "security",
+     "summary": "Processing then validation run as child processes, isolated from the web app.",
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "o-live",
+     "title": "Live logs",
+     "kind": "ui",
+     "summary": "Socket.IO streams start, log, finish and result events to the browser as the run happens."
+    },
+    {
+     "id": "o-watchdog",
+     "title": "Watchdog",
+     "kind": "infra",
+     "summary": "Checks the server every few minutes and restarts it if it stops."
+    },
+    {
+     "id": "o-auth",
+     "title": "Login",
+     "kind": "security",
+     "summary": "The dashboard sits behind authentication on the internal network.",
+     "flags": [
+      "security"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dashboards",
+   "title": "Dashboards",
+   "kind": "ui",
+   "summary": "Several live dashboards on top of the pipeline outputs, plus decks for senior managers.",
+   "tech": [
+    "Flask",
+    "Plotly Dash",
+    "HTML / JS"
+   ],
+   "children": [
+    {
+     "id": "d-home",
+     "title": "Script orchestrator",
+     "kind": "ui",
+     "summary": "Cards for every pipeline with Input, Output and Run buttons, grouped by category."
+    },
+    {
+     "id": "d-mca",
+     "title": "MCA dashboard",
+     "kind": "ui",
+     "summary": "Effective vs deficient, risk tiers, deficiency drivers, trends and a week-over-week comparison."
+    },
+    {
+     "id": "d-kpi",
+     "title": "KPI analytics",
+     "kind": "ui",
+     "summary": "Payment KPI trends over monthly snapshots."
+    },
+    {
+     "id": "d-threshold",
+     "title": "Threshold dashboard",
+     "kind": "ui",
+     "summary": "Threshold test results and review across apps."
+    },
+    {
+     "id": "d-staff",
+     "title": "Staff consolidation",
+     "kind": "ui",
+     "summary": "Staff and approver data in one view."
+    },
+    {
+     "id": "d-decks",
+     "title": "Weekly HTML decks",
+     "kind": "output",
+     "summary": "Self-contained decks per business and bank-wide, built automatically every week.",
+     "metric": "13 decks / week"
+    }
+   ]
+  },
+  {
+   "id": "outputs",
+   "title": "Outputs",
+   "kind": "output",
+   "summary": "Each consumer gets the format it needs: Excel for analysts, Parquet for code, JSON for dashboards.",
+   "children": [
+    {
+     "id": "out-evidence",
+     "title": "Test evidence",
+     "kind": "output",
+     "summary": "Monthly matrix and exception lists used as control-testing evidence."
+    },
+    {
+     "id": "out-history",
+     "title": "Historical trends",
+     "kind": "store",
+     "summary": "Monthly consolidated outputs kept as history for trend reporting."
+    },
+    {
+     "id": "out-audit",
+     "title": "Audit logs",
+     "kind": "security",
+     "summary": "Run logs kept alongside outputs.",
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "out-diff",
+     "title": "New / carried / resolved",
+     "kind": "output",
+     "summary": "Week-over-week diff of issues on a stable key."
+    }
+   ]
+  },
+  {
+   "id": "quality",
+   "title": "Testing + quality",
+   "kind": "test",
+   "summary": "Production-grade: pipelines have pytest suites and were reconciled against the old process before cutover.",
+   "flags": [
+    "test"
+   ],
+   "children": [
+    {
+     "id": "q-pytest",
+     "title": "pytest suites",
+     "kind": "test",
+     "summary": "The remediation forecast alone has 112 tests, including regression tests for every bug fixed.",
+     "metric": "112 tests",
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "q-parallel",
+     "title": "Parallel run",
+     "kind": "test",
+     "summary": "Old and new processes ran side by side for weeks; final row counts had to match the inputs.",
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "q-counts",
+     "title": "Count logging",
+     "kind": "test",
+     "summary": "Record counts at every step, added after a trailing-space bug hid rows from a filter.",
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "q-copilot",
+     "title": "AI-assisted dev",
+     "kind": "tool",
+     "summary": "GitHub Copilot used daily to write and test Python.",
+     "flags": [
+      "ai",
+      "tool"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pr-platform",
+   "title": "Managed data platform",
+   "kind": "store",
+   "status": "proposal",
+   "summary": "Replace shared folders with a governed historical data layer the team can query, not just files.",
+   "detail": "The foundation everything else depends on. Requirements first, then pick the technology (database, warehouse or lakehouse).",
+   "children": [
+    {
+     "id": "pp-ingest",
+     "title": "Controlled ingestion",
+     "kind": "input",
+     "status": "proposal",
+     "summary": "Pull from source systems on a schedule instead of requesting and moving files by hand."
+    },
+    {
+     "id": "pp-contracts",
+     "title": "Data contracts",
+     "kind": "test",
+     "status": "proposal",
+     "summary": "Each source documents schema, owner, frequency, IDs and allowed values.",
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "pp-validate",
+     "title": "Validation layer",
+     "kind": "test",
+     "status": "proposal",
+     "summary": "Check required fields, types, allowed values, keys and duplicates before any transform runs.",
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "pp-medallion",
+     "title": "Bronze → silver → gold",
+     "kind": "store",
+     "status": "proposal",
+     "summary": "Raw, cleaned and business-ready layers with historical snapshots and stable IDs."
+    },
+    {
+     "id": "pp-lineage",
+     "title": "Lineage + catalog",
+     "kind": "store",
+     "status": "proposal",
+     "summary": "Trace any number back to its source file, transform step, rule version and period."
+    },
+    {
+     "id": "pp-registry",
+     "title": "Business-rule registry",
+     "kind": "tool",
+     "status": "proposal",
+     "summary": "Rules move out of prompts and people's heads into versioned config."
+    }
+   ]
+  },
+  {
+   "id": "pr-ai",
+   "title": "AI layer",
+   "kind": "ai",
+   "status": "proposal",
+   "summary": "Code calculates and validates every number first; AI explains it and answers questions about it.",
+   "detail": "Deterministic systems set the facts, ML finds patterns, generative AI explains, and people keep the decisions.",
+   "flags": [
+    "ai",
+    "agent"
+   ],
+   "children": [
+    {
+     "id": "pa-insight",
+     "title": "Executive insight layer",
+     "kind": "ai",
+     "status": "proposal",
+     "summary": "AI gets validated metrics and biggest movements and writes the commentary. No more spreadsheet math in a chat.",
+     "flags": [
+      "ai"
+     ]
+    },
+    {
+     "id": "pa-qa",
+     "title": "History Q&A assistant",
+     "kind": "agent",
+     "status": "proposal",
+     "summary": "Turns a question into a controlled query over the history layer, then explains the answer.",
+     "detail": "Answers follow-up questions in the meeting instead of sending the team back to the files.",
+     "flags": [
+      "ai",
+      "agent",
+      "tool"
+     ]
+    },
+    {
+     "id": "pa-rag",
+     "title": "Policy RAG assistant",
+     "kind": "ai",
+     "status": "proposal",
+     "summary": "Combines the factual result with the current policy or control definition, retrieved with owner, version and date.",
+     "flags": [
+      "ai"
+     ]
+    },
+    {
+     "id": "pa-anomaly",
+     "title": "Anomaly triage",
+     "kind": "ai",
+     "status": "proposal",
+     "summary": "Statistics and unsupervised ML flag unusual control behavior; AI summarizes why; a person decides.",
+     "flags": [
+      "ai"
+     ]
+    },
+    {
+     "id": "pa-mcp",
+     "title": "MCP access channel",
+     "kind": "tool",
+     "status": "proposal",
+     "summary": "Models reach data only through governed tool connections that respect permissions.",
+     "flags": [
+      "tool",
+      "security"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pr-security",
+   "title": "Security + governance",
+   "kind": "security",
+   "status": "proposal",
+   "summary": "AI inherits access rules instead of going around them, and every data activity has one owner.",
+   "flags": [
+    "security"
+   ],
+   "children": [
+    {
+     "id": "ps-rbac",
+     "title": "SSO + role-based access",
+     "kind": "security",
+     "status": "proposal",
+     "summary": "Company sign-in, least-privilege roles and data classification.",
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "ps-noleak",
+     "title": "No leak through retrieval",
+     "kind": "security",
+     "status": "proposal",
+     "summary": "If you can't open a dataset or policy, the assistant can't show it to you either.",
+     "flags": [
+      "security",
+      "ai"
+     ]
+    },
+    {
+     "id": "ps-raci",
+     "title": "RACI + data owners",
+     "kind": "security",
+     "status": "proposal",
+     "summary": "Named owners and stewards; the person doing a change isn't the only one signing off.",
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "ps-sla",
+     "title": "Quality SLAs",
+     "kind": "test",
+     "status": "proposal",
+     "summary": "A measurable 'good enough' per dataset, close to 100% for anything regulator-facing.",
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "ps-secrets",
+     "title": "Secrets vault",
+     "kind": "security",
+     "status": "proposal",
+     "summary": "Credentials move into a managed secrets store.",
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "ps-human",
+     "title": "Human accountability",
+     "kind": "security",
+     "status": "proposal",
+     "summary": "Material risk calls stay with qualified people; AI output is never the final decision.",
+     "flags": [
+      "security",
+      "ai"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pr-ops",
+   "title": "Ops at scale",
+   "kind": "infra",
+   "status": "proposal",
+   "summary": "Scheduled, parallel, monitored and deployed through CI/CD instead of clicked by hand.",
+   "children": [
+    {
+     "id": "po-schedule",
+     "title": "Scheduling + run history",
+     "kind": "infra",
+     "status": "proposal",
+     "summary": "Pipelines run on a schedule with a run-history table and pre-flight checks.",
+     "tech": [
+      "APScheduler",
+      "SQLite"
+     ]
+    },
+    {
+     "id": "po-workers",
+     "title": "Workers + DAGs",
+     "kind": "infra",
+     "status": "proposal",
+     "summary": "Parallel workers and dependency-aware DAGs with retries and alerts.",
+     "tech": [
+      "Celery",
+      "Redis",
+      "Airflow"
+     ]
+    },
+    {
+     "id": "po-notify",
+     "title": "Notifications",
+     "kind": "output",
+     "status": "proposal",
+     "summary": "Exception lists and run results pushed to the team automatically."
+    },
+    {
+     "id": "po-containers",
+     "title": "Containers + CI/CD",
+     "kind": "infra",
+     "status": "proposal",
+     "summary": "Containerized deploys with automated tests gating every change.",
+     "flags": [
+      "test"
+     ],
+     "tech": [
+      "Docker",
+      "OpenShift",
+      "CI/CD"
+     ]
+    },
+    {
+     "id": "po-monitor",
+     "title": "Monitoring",
+     "kind": "infra",
+     "status": "proposal",
+     "summary": "Central logs and dashboards for pipeline health.",
+     "tech": [
+      "Splunk",
+      "Grafana"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pr-rollout",
+   "title": "Phased rollout",
+   "kind": "tool",
+   "status": "proposal",
+   "flow": true,
+   "summary": "Level by level: prove each layer before the next one is allowed to depend on it.",
+   "children": [
+    {
+     "id": "pr1",
+     "title": "1 · Document + reproduce",
+     "kind": "tool",
+     "status": "proposal",
+     "summary": "Data dictionary, source catalog and runbooks; rebuild the current process deterministically."
+    },
+    {
+     "id": "pr2",
+     "title": "2 · Reconcile",
+     "kind": "test",
+     "status": "proposal",
+     "summary": "Match the old outputs on a representative period until they agree.",
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "pr3",
+     "title": "3 · Automate reporting",
+     "kind": "process",
+     "status": "proposal",
+     "summary": "Deterministic reporting on the managed layer."
+    },
+    {
+     "id": "pr4",
+     "title": "4 · AI explains",
+     "kind": "ai",
+     "status": "proposal",
+     "summary": "Add AI commentary and Q&A on validated results.",
+     "flags": [
+      "ai"
+     ]
+    },
+    {
+     "id": "pr5",
+     "title": "5 · RAG + anomaly ML",
+     "kind": "ai",
+     "status": "proposal",
+     "summary": "Then policy retrieval and anomaly detection, with model governance.",
+     "flags": [
+      "ai"
+     ]
+    }
+   ]
+  }
+ ],
+ "links": [
+  {
+   "from": "inputs",
+   "to": "cleaning",
+   "label": "files in"
+  },
+  {
+   "from": "config",
+   "to": "cleaning",
+   "label": "per-app rules"
+  },
+  {
+   "from": "config",
+   "to": "rules",
+   "label": "thresholds"
+  },
+  {
+   "from": "cleaning",
+   "to": "rules",
+   "label": "clean data"
+  },
+  {
+   "from": "rules",
+   "to": "pipelines",
+   "label": "results"
+  },
+  {
+   "from": "orchestration",
+   "to": "pipelines",
+   "label": "runs"
+  },
+  {
+   "from": "pipelines",
+   "to": "outputs",
+   "label": "writes"
+  },
+  {
+   "from": "outputs",
+   "to": "dashboards",
+   "label": "JSON / Parquet"
+  },
+  {
+   "from": "quality",
+   "to": "pipelines",
+   "label": "guards"
+  },
+  {
+   "from": "pr-platform",
+   "to": "cleaning",
+   "label": "replaces folders"
+  },
+  {
+   "from": "pr-platform",
+   "to": "pr-ai",
+   "label": "validated facts"
+  },
+  {
+   "from": "pr-security",
+   "to": "pr-ai",
+   "label": "permissions"
+  },
+  {
+   "from": "pr-ai",
+   "to": "dashboards",
+   "label": "explains"
+  },
+  {
+   "from": "pr-ops",
+   "to": "orchestration",
+   "label": "schedules"
+  }
+ ]
+}

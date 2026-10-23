@@ -1,0 +1,829 @@
+{
+ "id": "thrivekid",
+ "name": "ThriveKid",
+ "tagline": "Parent PWA to track a child's growth, sleep, feeding and milestones",
+ "children": [
+  {
+   "id": "frontend",
+   "title": "React 19 frontend",
+   "kind": "ui",
+   "summary": "TypeScript SPA where parents log daily stuff, see charts and pull reports for each child.",
+   "detail": "Vite + Tailwind build, React Router 7 for 50+ routes, Chart.js for graphs, Axios for API calls, lucide icons and toast messages.",
+   "tech": [
+    "React 19",
+    "TypeScript",
+    "Vite",
+    "Tailwind CSS",
+    "React Router",
+    "Axios"
+   ],
+   "children": [
+    {
+     "id": "routing",
+     "title": "Protected routing",
+     "kind": "ui",
+     "summary": "Public pages (login, signup, privacy) and everything else wrapped in a ProtectedRoute plus shared Layout.",
+     "detail": "Child-scoped routes like /children/:childId/reports/sleep and /children/:childId/vaccinations keep each view tied to one child. A 404 catch-all came out of the code review.",
+     "tech": [
+      "React Router"
+     ],
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "auth-context",
+     "title": "Auth context",
+     "kind": "ui",
+     "summary": "React context holding the signed-in user and tokens, with login, register and logout calls.",
+     "detail": "Login and register store the access token, refresh token and user. Logout calls /auth/logout so the refresh token is revoked server side, then clears everything.",
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "dashboard",
+     "title": "Dashboard",
+     "kind": "ui",
+     "summary": "Home screen with stat cards, quick actions, today's info, recent activity and upcoming reminders.",
+     "detail": "Was 865 lines before the code review; split into dashboard/* components and a useDashboardData hook.",
+     "tech": [
+      "React hooks"
+     ]
+    },
+    {
+     "id": "reports",
+     "title": "Per-child reports",
+     "kind": "output",
+     "summary": "Report pages for growth, sleep, feeding, milestones, medical, monthly and check-in trends.",
+     "detail": "Check-in summary counts good / okay / rough for sleep, feeding and day quality and is laid out for printing.",
+     "metric": "7 report types"
+    },
+    {
+     "id": "charts",
+     "title": "Activity and sleep charts",
+     "kind": "output",
+     "summary": "Chart.js graphs for sleep patterns and activity alongside the growth charts.",
+     "tech": [
+      "Chart.js",
+      "react-chartjs-2"
+     ]
+    },
+    {
+     "id": "badges-insights",
+     "title": "Badges and insights",
+     "kind": "ui",
+     "summary": "Badge progress for logging streaks and auto-generated insights from daily check-ins.",
+     "detail": "Badges compute progress toward each unlock and surface the next few to chase. Insights scan recent check-ins for patterns.",
+     "metric": "9 badges"
+    },
+    {
+     "id": "media",
+     "title": "Photos and media",
+     "kind": "ui",
+     "summary": "Photo upload and gallery for milestones and memories."
+    },
+    {
+     "id": "theme",
+     "title": "Light / dark theme",
+     "kind": "ui",
+     "summary": "Theme context that follows the system color scheme by default.",
+     "tech": [
+      "Tailwind CSS"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pwa",
+   "title": "PWA layer",
+   "kind": "ui",
+   "summary": "Installable app with a service worker, offline handling and local reminder notifications.",
+   "children": [
+    {
+     "id": "service-worker",
+     "title": "Service worker caching",
+     "kind": "infra",
+     "summary": "Precaches the app shell, serves pages network-first with cache fallback, never caches API calls.",
+     "detail": "Versioned cache cleans out old caches on activate. API requests always go to the network; offline they get a JSON 503. Navigation falls back to cached index.html.",
+     "tech": [
+      "Service Worker",
+      "Cache API"
+     ]
+    },
+    {
+     "id": "install",
+     "title": "Install prompt",
+     "kind": "ui",
+     "summary": "Catches beforeinstallprompt and shows an install banner; detects when it's already running standalone."
+    },
+    {
+     "id": "manifest",
+     "title": "Web app manifest",
+     "kind": "ui",
+     "summary": "Standalone display mode, app icons and home-screen shortcuts."
+    },
+    {
+     "id": "offline-detect",
+     "title": "Online / offline events",
+     "kind": "ui",
+     "summary": "Fires app-online and app-offline events so the UI can react when the connection drops."
+    },
+    {
+     "id": "reminder-notify",
+     "title": "Reminder notifications",
+     "kind": "output",
+     "summary": "Hook polls reminders every 60 seconds and fires a browser notification when one comes due.",
+     "detail": "Uses the browser Notification API, so it works while the app is open. True push while closed is on the roadmap.",
+     "tech": [
+      "Notification API"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "api",
+   "title": "ThriveKid.Api.Rest",
+   "kind": "process",
+   "summary": "ASP.NET Core 8 Web API layer: controllers, request/response resources and the HTTP pipeline.",
+   "tech": [
+    ".NET 8",
+    "ASP.NET Core",
+    "FluentValidation",
+    "Swashbuckle"
+   ],
+   "children": [
+    {
+     "id": "controllers",
+     "title": "15 REST controllers",
+     "kind": "process",
+     "summary": "One controller per feature plus auth, users and file upload, all behind JWT except auth.",
+     "metric": "15 controllers"
+    },
+    {
+     "id": "resources",
+     "title": "Resources + validators",
+     "kind": "process",
+     "summary": "ForCreate / ForUpdate / Response DTOs per feature, each with a FluentValidation validator.",
+     "detail": "Validation runs twice: API validators check the request shape and MaxLength limits, domain validators in ThriveKid.App check business rules. Assembly scanning registers them all.",
+     "tech": [
+      "FluentValidation"
+     ]
+    },
+    {
+     "id": "error-handling",
+     "title": "ProblemDetails errors",
+     "kind": "process",
+     "summary": "Global exception handler returns RFC 7807 ProblemDetails with a trace id and a generic message.",
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "feature-registration",
+     "title": "FeatureRegistration DI",
+     "kind": "tool",
+     "summary": "Each feature's service + storage pair is wired in one method, so adding a feature is one line.",
+     "tech": [
+      "Microsoft DI"
+     ]
+    },
+    {
+     "id": "file-upload",
+     "title": "File upload",
+     "kind": "input",
+     "summary": "Image and video upload up to 50MB with extension checks and magic-byte signature checks.",
+     "detail": "Reads the first bytes of each file and matches JPEG, PNG, GIF, WEBP, MP4/MOV, AVI and WEBM/MKV signatures. Delete rejects '..' paths and requires an /uploads/ prefix.",
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "health",
+     "title": "Health checks",
+     "kind": "infra",
+     "summary": "/health and /health/ready endpoints with an EF Core database check.",
+     "tech": [
+      "ASP.NET Health Checks"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "modules",
+   "title": "ThriveKid.App feature modules",
+   "kind": "process",
+   "summary": "Application layer with domain models living inside each feature folder: Domain, Services, Storage interface, Validators.",
+   "detail": "Every feature follows the same build order: domain model, storage interface, EF config, storage impl, validator, service, DTOs, controller, DI. Services enforce ownership by checking UserId on every read and write.",
+   "metric": "12 modules",
+   "children": [
+    {
+     "id": "tracking-modules",
+     "title": "Daily tracking modules",
+     "kind": "process",
+     "summary": "The modules parents use day to day to log what's happening.",
+     "children": [
+      {
+       "id": "mod-feeding",
+       "title": "FeedingLogs",
+       "kind": "input",
+       "summary": "Log breastmilk, formula and solids with meal type, time and notes."
+      },
+      {
+       "id": "mod-sleep",
+       "title": "SleepLogs",
+       "kind": "input",
+       "summary": "Start and end times with a computed sleep duration and end-after-start validation."
+      },
+      {
+       "id": "mod-growth",
+       "title": "GrowthLogs",
+       "kind": "input",
+       "summary": "Height and weight entries per child that feed the WHO growth charts."
+      },
+      {
+       "id": "mod-milestones",
+       "title": "Milestones",
+       "kind": "input",
+       "summary": "Developmental wins with dates and an optional photo."
+      },
+      {
+       "id": "mod-checkin",
+       "title": "DailyCheckIn",
+       "kind": "input",
+       "summary": "Quick good / okay / rough check-ins for sleep, feeding and the day, stored with the local date.",
+       "detail": "Saves LocalDate (YYYY-MM-DD) plus the IANA time zone used, so 'today' means the parent's today, not UTC. Values are whitelist-validated."
+      },
+      {
+       "id": "mod-medical",
+       "title": "MedicalRecords + vaccines",
+       "kind": "store",
+       "summary": "Doctor visits and vaccination records, with a built-in CDC/WHO vaccine schedule by age.",
+       "detail": "Schedule entries carry recommended age in months, dose number and a give-by window."
+      }
+     ]
+    },
+    {
+     "id": "planning-modules",
+     "title": "Planning and account modules",
+     "kind": "process",
+     "summary": "Child profiles, goals, reminders, toy ideas, family budgeting and user accounts.",
+     "children": [
+      {
+       "id": "mod-child",
+       "title": "Child",
+       "kind": "store",
+       "summary": "Child profiles with automatic age-in-months; the template every other module copies."
+      },
+      {
+       "id": "mod-learning",
+       "title": "LearningGoals",
+       "kind": "process",
+       "summary": "Age-appropriate goals with completion tracking; a completed date is required only once done."
+      },
+      {
+       "id": "mod-reminders",
+       "title": "Reminders",
+       "kind": "process",
+       "summary": "Tasks with due dates, repeat rules and a per-reminder time zone."
+      },
+      {
+       "id": "mod-toys",
+       "title": "ToyRecommendations",
+       "kind": "output",
+       "summary": "Age-based toy suggestions grouped by category."
+      },
+      {
+       "id": "mod-finance",
+       "title": "FinancialPlanning",
+       "kind": "process",
+       "summary": "Two models in one feature: monthly budgets and savings goals for the family."
+      },
+      {
+       "id": "mod-users",
+       "title": "Users + Auth",
+       "kind": "security",
+       "summary": "Accounts, profile edits, password change, JWT issue and refresh tokens.",
+       "flags": [
+        "security"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "current-user",
+     "title": "CurrentUserService",
+     "kind": "security",
+     "summary": "Pulls the user id from the JWT claims so services never trust a user id from the request body.",
+     "flags": [
+      "security"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "engines",
+   "title": "Domain engines",
+   "kind": "process",
+   "summary": "The parts with real logic beyond CRUD: recurring reminders, time zones, growth math and activity picks.",
+   "children": [
+    {
+     "id": "recurring-engine",
+     "title": "Recurring reminder engine",
+     "kind": "process",
+     "summary": "Works out the next run of a DAILY, WEEKLY or MONTHLY reminder in the parent's own time zone.",
+     "detail": "Steps the calendar in local time, not UTC, so a 7pm bedtime reminder stays at 7pm across DST changes and month lengths. Bad time zone ids fall back to UTC.",
+     "tech": [
+      "TimeZoneInfo"
+     ],
+     "flow": true,
+     "children": [
+      {
+       "id": "re-complete",
+       "title": "Mark complete",
+       "kind": "input",
+       "summary": "SetCompletedAsync checks ownership, flags the reminder done and stamps LastRunAt in UTC."
+      },
+      {
+       "id": "re-tolocal",
+       "title": "Convert to local clock",
+       "kind": "process",
+       "summary": "Converts the UTC instant into the reminder's IANA time zone."
+      },
+      {
+       "id": "re-step",
+       "title": "Step the period",
+       "kind": "process",
+       "summary": "Adds 1 day, 7 days or 1 month on the local clock based on the RepeatRule enum."
+      },
+      {
+       "id": "re-toutc",
+       "title": "Back to UTC",
+       "kind": "store",
+       "summary": "Converts the local next time back to UTC and saves it as NextRunAt."
+      }
+     ]
+    },
+    {
+     "id": "timezone-service",
+     "title": "TimeZoneService",
+     "kind": "process",
+     "summary": "Shared helper to validate time zone ids and convert between UTC and local; DB always stores UTC.",
+     "detail": "Frontend sends the browser's time zone and shows a timezone indicator so times read right for the parent."
+    },
+    {
+     "id": "who-growth",
+     "title": "WHO growth charts",
+     "kind": "output",
+     "summary": "Plots a child's height and weight against WHO 3rd, 50th and 97th percentile curves by sex, 0 to 36+ months.",
+     "detail": "Uses a simplified table of WHO percentile values per month (code notes full LMS data as the next step). Metric or imperial with cm-to-inch and kg-to-lb conversion, plus a plain-English guide to reading percentiles.",
+     "tech": [
+      "Chart.js"
+     ]
+    },
+    {
+     "id": "activity-engine",
+     "title": "Activity suggestion engine",
+     "kind": "process",
+     "summary": "Scores age-appropriate activities using today's check-ins, last week's history and time of day, then picks 2-3.",
+     "detail": "Rule-based scoring from a baseline of 50: a rough night boosts calm sensory and fine-motor play and lowers gross-motor. Final picks keep categories varied. No ML model."
+    }
+   ]
+  },
+  {
+   "id": "data",
+   "title": "ThriveKid.Data",
+   "kind": "store",
+   "summary": "Infrastructure layer: EF Core DbContext, Fluent API configs, migrations and storage service implementations.",
+   "tech": [
+    "EF Core 9",
+    "SQLite"
+   ],
+   "children": [
+    {
+     "id": "sqlite",
+     "title": "SQLite database",
+     "kind": "store",
+     "summary": "Single SQLite file; on Azure it lives on the App Service persistent storage.",
+     "tech": [
+      "SQLite"
+     ]
+    },
+    {
+     "id": "ef-configs",
+     "title": "Fluent API configurations",
+     "kind": "store",
+     "summary": "One IEntityTypeConfiguration per entity for keys, lengths, relations and indexes.",
+     "metric": "15 entity configs"
+    },
+    {
+     "id": "migrations",
+     "title": "EF Core migrations",
+     "kind": "store",
+     "summary": "Schema history from the first init through users, time zones, refresh tokens and medical records.",
+     "detail": "Migrations run on every startup. Later ones add UserId to all entities, refresh token indexes, and move medical records from in-memory to real tables.",
+     "metric": "15 migrations"
+    },
+    {
+     "id": "storage-services",
+     "title": "Storage services",
+     "kind": "store",
+     "summary": "EF Core implementations of each feature's storage interface, so App never touches the DbContext.",
+     "detail": "Renamed from Repository to StorageService during the architecture review for one consistent pattern."
+    },
+    {
+     "id": "seeder",
+     "title": "Dev-only seeder",
+     "kind": "tool",
+     "summary": "Migrates on startup and seeds demo data only in Development, never a known-login account in prod.",
+     "flags": [
+      "security"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "auth",
+   "title": "Auth and security",
+   "kind": "security",
+   "summary": "JWT auth with rotating refresh tokens, rate limits, security headers and a 13-fix hardening pass.",
+   "flags": [
+    "security"
+   ],
+   "children": [
+    {
+     "id": "auth-flow",
+     "title": "Token flow",
+     "kind": "security",
+     "summary": "Short-lived access tokens plus single-use refresh tokens, refreshed quietly by the frontend.",
+     "flags": [
+      "security"
+     ],
+     "flow": true,
+     "children": [
+      {
+       "id": "af-login",
+       "title": "Register / login",
+       "kind": "input",
+       "summary": "BCrypt-hashed passwords; email lowercased; login rate limited to 5 tries per IP per minute.",
+       "tech": [
+        "BCrypt.Net"
+       ],
+       "flags": [
+        "security"
+       ]
+      },
+      {
+       "id": "af-jwt",
+       "title": "1-hour access JWT",
+       "kind": "security",
+       "summary": "HMAC-SHA256 JWT with issuer, audience and a unique jti, cut from 7 days to 1 hour.",
+       "tech": [
+        "JwtBearer"
+       ],
+       "flags": [
+        "security"
+       ]
+      },
+      {
+       "id": "af-refresh",
+       "title": "7-day refresh token",
+       "kind": "store",
+       "summary": "64 random bytes stored server side with expiry and revoked-at, indexed for lookup.",
+       "flags": [
+        "security"
+       ]
+      },
+      {
+       "id": "af-interceptor",
+       "title": "Silent refresh on 401",
+       "kind": "process",
+       "summary": "Axios interceptor catches a 401, calls /auth/refresh once and replays queued requests.",
+       "detail": "An isRefreshing flag plus a queue stops parallel requests from firing duplicate refreshes. If refresh fails, tokens are cleared and the user goes to login.",
+       "tech": [
+        "Axios"
+       ],
+       "flags": [
+        "security"
+       ]
+      },
+      {
+       "id": "af-rotate",
+       "title": "Rotate on use",
+       "kind": "security",
+       "summary": "Each refresh revokes the old token and issues a fresh pair, so a stolen token works at most once.",
+       "flags": [
+        "security"
+       ]
+      },
+      {
+       "id": "af-logout",
+       "title": "Logout revokes",
+       "kind": "security",
+       "summary": "POST /auth/logout revokes the refresh token server side.",
+       "flags": [
+        "security"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "hardening",
+     "title": "13-fix security audit",
+     "kind": "security",
+     "summary": "Two-phase hardening: 6 critical/high fixes, then 7 more. All 13 marked done.",
+     "detail": "Phase 1: missing [Authorize] on check-in and upload controllers, a hardcoded user id, upload path traversal, user-id-0 fallback, error messages leaking host info, no security headers. Phase 2: 8-char passwords, HSTS, CORS, MaxLength on DTOs, magic bytes, rate limits, refresh tokens.",
+     "flags": [
+      "security"
+     ],
+     "metric": "13 of 13 fixed"
+    },
+    {
+     "id": "headers",
+     "title": "Security headers + HSTS",
+     "kind": "security",
+     "summary": "nosniff, DENY framing, strict referrer, locked-down permissions policy, and HSTS set by hand behind Azure's TLS.",
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "cors",
+     "title": "Tight CORS",
+     "kind": "security",
+     "summary": "Prod allows only configured origins; dev allows localhost and true RFC 1918 LAN ranges.",
+     "detail": "A custom check for 172.16-31.x fixed an earlier rule that let any 172.* origin through.",
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "secrets",
+     "title": "Secrets out of git",
+     "kind": "security",
+     "summary": "JWT key lives in a git-ignored local file or an env var; the app refuses to start without it.",
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "ownership",
+     "title": "Per-user data ownership",
+     "kind": "security",
+     "summary": "Every service checks the record's UserId against the JWT user and throws if they don't match.",
+     "flags": [
+      "security"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "quality",
+   "title": "Reviews, tests and CI",
+   "kind": "test",
+   "summary": "Senior-style code and architecture reviews worked through by severity, unit tests, and CI on every push.",
+   "flags": [
+    "test"
+   ],
+   "children": [
+    {
+     "id": "code-review",
+     "title": "Code review: 24 fixes",
+     "kind": "test",
+     "summary": "Full-stack review fixed critical to low: JWT secret moved out of git, PasswordHash kept out of responses, no logout revocation and more.",
+     "detail": "Worked strictly in severity order (3 critical, 6 high, 9 medium, 6 low), each fix explained before it went in. Ended with 0 TypeScript and 0 C# build errors.",
+     "flags": [
+      "test",
+      "security"
+     ],
+     "metric": "24 of 24 fixed"
+    },
+    {
+     "id": "arch-review",
+     "title": "Architecture review: 8 fixes",
+     "kind": "test",
+     "summary": "Fixed DIP/OCP issues, unified naming, added response DTOs, pulled out DI and seeding, cut a double DB trip.",
+     "detail": "Modular-monolith steps like per-module DbContext and domain events were written down as future work, not forced in.",
+     "flags": [
+      "test"
+     ],
+     "metric": "8 fixes"
+    },
+    {
+     "id": "prod-review",
+     "title": "Production readiness reviews",
+     "kind": "test",
+     "summary": "Deployment, frontend responsive, routing and production audits that drove the medical-records and token-index fixes.",
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "unit-tests",
+     "title": "xUnit unit tests",
+     "kind": "test",
+     "summary": "Tests for child age math, ownership checks, UTC conversion and password change.",
+     "detail": "Moq fakes the storage and current-user services; FluentAssertions for readable checks. A theory covers age-in-months edge cases.",
+     "tech": [
+      "xUnit",
+      "Moq",
+      "FluentAssertions"
+     ],
+     "flags": [
+      "test"
+     ],
+     "metric": "21 test cases"
+    },
+    {
+     "id": "ci",
+     "title": "GitHub Actions CI",
+     "kind": "test",
+     "summary": "Two jobs on push and PR to main: .NET restore/build/test/publish and Node npm ci + build.",
+     "detail": "Frontend build runs tsc -b before vite build, so type errors fail CI. 76 TypeScript build errors were fixed to get it green.",
+     "tech": [
+      "GitHub Actions",
+      ".NET 8",
+      "Node 20"
+     ],
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "smoke",
+     "title": "Smoke scripts",
+     "kind": "tool",
+     "summary": "Shell scripts that hit health and CRUD endpoints to sanity-check a running API.",
+     "flags": [
+      "test",
+      "tool"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "infra",
+   "title": "Deploy and ops",
+   "kind": "infra",
+   "summary": "Frontend on Vercel, API in a Docker image on Azure App Service, telemetry in Application Insights.",
+   "children": [
+    {
+     "id": "docker",
+     "title": "Docker multi-stage build",
+     "kind": "infra",
+     "summary": "SDK stage restores and publishes; slim aspnet runtime stage serves on port 8080.",
+     "detail": "Copies only the three .csproj files first so the restore layer caches between builds.",
+     "tech": [
+      "Docker",
+      ".NET 8"
+     ]
+    },
+    {
+     "id": "azure",
+     "title": "Azure App Service",
+     "kind": "infra",
+     "summary": "Runs the API; uploads served from /home/uploads so they survive redeploys.",
+     "tech": [
+      "Azure App Service"
+     ]
+    },
+    {
+     "id": "vercel",
+     "title": "Vercel frontend",
+     "kind": "infra",
+     "summary": "Hosts the Vite build with an SPA rewrite so deep links load index.html; API URL from an env var.",
+     "tech": [
+      "Vercel"
+     ]
+    },
+    {
+     "id": "telemetry",
+     "title": "App Insights + request logs",
+     "kind": "infra",
+     "summary": "Application Insights telemetry plus HTTP logs of method, path, status and duration.",
+     "tech": [
+      "Application Insights"
+     ]
+    },
+    {
+     "id": "dev-docs",
+     "title": "Build guides + prep agent",
+     "kind": "tool",
+     "summary": "Step-by-step build guides for every backend and UI feature, plus a GitHub Copilot agent for interview drills.",
+     "flags": [
+      "tool"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "roadmap",
+   "title": "Roadmap",
+   "kind": "process",
+   "status": "coming",
+   "summary": "Planned work written up in the repo's feature docs and reviews.",
+   "children": [
+    {
+     "id": "rm-reset",
+     "title": "Email password reset",
+     "kind": "security",
+     "status": "coming",
+     "summary": "Reset tokens, email sending and a reset page; designed, marked high priority.",
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "rm-push",
+     "title": "Web Push notifications",
+     "kind": "output",
+     "status": "coming",
+     "summary": "VAPID keys, stored subscriptions and server-sent push so reminders arrive with the app closed."
+    },
+    {
+     "id": "rm-sync",
+     "title": "Offline data sync",
+     "kind": "process",
+     "status": "coming",
+     "summary": "Background sync to send logs made offline once the connection is back; handler stubbed in the service worker."
+    },
+    {
+     "id": "rm-db",
+     "title": "Move off SQLite",
+     "kind": "store",
+     "status": "proposal",
+     "summary": "Review recommends Azure SQL or PostgreSQL for automated backups and safer prod storage."
+    },
+    {
+     "id": "rm-filters",
+     "title": "Search and filters",
+     "kind": "ui",
+     "status": "coming",
+     "summary": "Search children and filter logs by child, date range and status."
+    }
+   ]
+  }
+ ],
+ "links": [
+  {
+   "from": "frontend",
+   "to": "api",
+   "label": "REST + JWT"
+  },
+  {
+   "from": "pwa",
+   "to": "frontend",
+   "label": "caches app shell"
+  },
+  {
+   "from": "api",
+   "to": "modules",
+   "label": "calls services"
+  },
+  {
+   "from": "modules",
+   "to": "engines",
+   "label": "next run, time zones"
+  },
+  {
+   "from": "modules",
+   "to": "data",
+   "label": "storage interfaces"
+  },
+  {
+   "from": "auth",
+   "to": "api",
+   "label": "guards every route"
+  },
+  {
+   "from": "auth",
+   "to": "data",
+   "label": "refresh tokens"
+  },
+  {
+   "from": "engines",
+   "to": "frontend",
+   "label": "charts, suggestions"
+  },
+  {
+   "from": "quality",
+   "to": "infra",
+   "label": "CI gates build"
+  },
+  {
+   "from": "infra",
+   "to": "api",
+   "label": "Docker on Azure"
+  },
+  {
+   "from": "infra",
+   "to": "frontend",
+   "label": "Vercel"
+  },
+  {
+   "from": "roadmap",
+   "to": "pwa",
+   "label": "push + sync"
+  }
+ ]
+}

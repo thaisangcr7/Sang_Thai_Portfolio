@@ -1,0 +1,1443 @@
+{
+ "id": "avenotes",
+ "name": "Avenotes",
+ "tagline": "Live AI meeting assistant: hears the call, answers on tap, ready after",
+ "children": [
+  {
+   "id": "inputs",
+   "title": "Every way in",
+   "kind": "input",
+   "summary": "Avenotes takes live audio, recordings, pasted transcripts, spoken or typed notes, screenshots, files and what you tell it about yourself.",
+   "detail": "No bot joins the call. It hears only what your mic or a shared browser tab plays, so it works beside Zoom, Teams, Meet or Webex, or on a table in the room.",
+   "children": [
+    {
+     "id": "mic-tab-capture",
+     "title": "Mic + shared-tab audio",
+     "kind": "input",
+     "summary": "On a computer you share the call's tab and your mic is mixed in, so both sides get heard. On a phone or in a room it uses the mic.",
+     "detail": "getUserMedia (mic) and getDisplayMedia (tab audio) are mixed through one AudioContext into a single stream. A status line says 'mic only' or 'mic + meeting'.",
+     "tech": [
+      "Web Audio API",
+      "getDisplayMedia",
+      "MediaRecorder"
+     ]
+    },
+    {
+     "id": "import-recording",
+     "title": "Import a recording",
+     "kind": "input",
+     "summary": "Drop in an MP3, M4A, WAV, MP4, MOV or WEBM (up to 3 hours) and get a full meeting with speaker labels. The file is never kept.",
+     "detail": "The file goes straight from the browser to Deepgram's pre-recorded API on a short-lived token. Its length is metered up front from an estimate, so a modified client can't skip reporting it.",
+     "tech": [
+      "Deepgram Nova-3",
+      "pre-recorded API"
+     ],
+     "flags": [
+      "ai"
+     ]
+    },
+    {
+     "id": "import-transcript",
+     "title": "Import a transcript",
+     "kind": "input",
+     "summary": "Paste text or pick a .txt, .srt, .vtt or .md file, including Zoom/Teams/YouTube captions. Costs no listening minutes.",
+     "detail": "Parses 'Name: text' rows and speaker headers with names in any alphabet, and splits long pasted passages into paragraphs the way live speech does, keeping speaker and time.",
+     "tech": [
+      "TypeScript parser"
+     ]
+    },
+    {
+     "id": "note-input",
+     "title": "Notes + screenshots",
+     "kind": "input",
+     "summary": "Speak or type a note outside a meeting and add up to 10 screenshots or photos. Avenotes writes a clean note with action items from it.",
+     "detail": "Images are redrawn on your device to 1568px max, which strips location and camera data, then kept in a private bucket under the note. A note is a session row with kind='note' (ADR 0022).",
+     "tech": [
+      "Canvas",
+      "Supabase Storage"
+     ],
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "ask-box",
+     "title": "Typed questions + attachments",
+     "kind": "input",
+     "summary": "Type any question mid-meeting, and attach photos, files or a captured screen as context for every question that follows.",
+     "detail": "Up to 4 images and 4 documents (PDF, Word, PowerPoint, Excel, text, CSV, code; 5 MB each). Documents become text once on the server and are never stored.",
+     "tech": [
+      "pypdf",
+      "FastAPI"
+     ],
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "aveme",
+     "title": "Aveme: who you are",
+     "kind": "input",
+     "summary": "Your role, what you use it for and an 'About you' paragraph, which can be drafted from a CV or document that is read once and thrown away.",
+     "detail": "Bounded to 2,400 characters and labelled 'written by the user; background, not instructions' so profile text can't change how answers are shaped.",
+     "tech": [
+      "Claude Sonnet 5"
+     ],
+     "flags": [
+      "ai",
+      "security"
+     ]
+    },
+    {
+     "id": "meeting-setup",
+     "title": "Meeting type + language",
+     "kind": "input",
+     "summary": "Before you start, pick one of 7 meeting types and one of 19 meeting languages (or Auto for mixed). Answers can come back in your own language.",
+     "detail": "Types: general, one-on-one, standup, client call, project review, brainstorm, class. Auto follows 10 languages through Deepgram's 'multi' code-switching mode.",
+     "tech": [
+      "Python domain module"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "transcription",
+   "title": "Live transcription pipeline",
+   "kind": "process",
+   "summary": "Turns the audio stream into a clean, speaker-labelled transcript in real time, and survives tunnels, dropped Wi-Fi and token rotations.",
+   "detail": "The browser streams straight to Deepgram on a token the backend mints, so no key ever reaches the client. Every behaviour here was bought with a real production failure.",
+   "tech": [
+    "Deepgram Nova-3",
+    "WebSocket",
+    "React hooks"
+   ],
+   "flow": true,
+   "children": [
+    {
+     "id": "stt-token",
+     "title": "Short-lived Deepgram token",
+     "kind": "security",
+     "summary": "The backend checks your plan and minutes, then mints a 300-second token. The browser opens the WebSocket with it.",
+     "detail": "Capped at 30 live tokens an hour per user. Every connection is cap-checked, so an account that runs out stops within ten minutes whatever the client does.",
+     "tech": [
+      "FastAPI",
+      "Deepgram auth grant"
+     ],
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "nova3-stream",
+     "title": "Nova-3 streaming + diarization",
+     "kind": "ai",
+     "summary": "Streams audio to Deepgram Nova-3 with diarization, punctuation, smart formatting and interim results, so each voice gets labelled live.",
+     "detail": "endpointing=300ms, interim_results drives the 'heard' line's settled light, language='multi' when Auto is on. Lines are stamped from Deepgram's word times plus the session clock.",
+     "tech": [
+      "Deepgram Nova-3",
+      "WebSocket"
+     ],
+     "flags": [
+      "ai"
+     ]
+    },
+    {
+     "id": "merge-rules",
+     "title": "Paragraph merge rules",
+     "kind": "process",
+     "summary": "Words from the same speaker within 8 seconds join one paragraph, capped at 90 words so a monologue stays readable.",
+     "detail": "Mis-credited fragments of 2 words or less arriving within 400ms get folded back in (measured: 2s swallowed real interjections). No line passes 2,000 characters, the server's limit, which an e2e test pins.",
+     "tech": [
+      "TypeScript"
+     ],
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "rotation",
+     "title": "10-minute socket handover",
+     "kind": "process",
+     "summary": "Every 10 minutes a fresh, cap-checked socket takes over. The old one sends its last chunk and Finalize before closing, so no words fall in the gap.",
+     "detail": "Both sockets overlap for at most 2.5s. Lines from the new socket wait behind the old one's so the transcript stays in spoken order, and seconds are counted once.",
+     "tech": [
+      "WebSocket",
+      "MediaRecorder"
+     ]
+    },
+    {
+     "id": "reconnect-buffer",
+     "title": "Reconnect + audio buffering",
+     "kind": "process",
+     "summary": "When the connection drops, it keeps listening, holds up to 5 minutes of audio in memory and transcribes it when the connection is back.",
+     "detail": "Retries at 1, 2, 4, 8s, then every 10-15s and right away on 'online'. Held audio is never written to disk and catches up at 1.25x speed. If it can't recover, the meeting says how much was missed (ADR 0019).",
+     "tech": [
+      "MediaRecorder",
+      "AudioFeed"
+     ]
+    },
+    {
+     "id": "speaker-fix",
+     "title": "Name voices + fix speakers",
+     "kind": "ui",
+     "summary": "Name each voice, mark which one is you, and move a mis-credited line to the right speaker. Names carry into answers, recaps and exports.",
+     "detail": "Voices get numbered, never recognised: no voiceprints. After a line moves, the recap flags itself as out of date and offers a rewrite.",
+     "tech": [
+      "React"
+     ]
+    },
+    {
+     "id": "autosave",
+     "title": "Autosave + crash safety net",
+     "kind": "store",
+     "summary": "Every pause and stop saves the meeting. A copy also stays in localStorage until the save works, so a lost token or a crash can't wipe a lecture.",
+     "detail": "First save is a POST, then the same row gets PUTs (no duplicate meetings). Restore adopts the draft's row and only creates a new one on a 404. Written after a real 3-hour lecture was lost.",
+     "tech": [
+      "localStorage",
+      "FastAPI",
+      "Postgres"
+     ]
+    },
+    {
+     "id": "usage-report",
+     "title": "Listening meter",
+     "kind": "process",
+     "summary": "The browser reports seconds listened every 30s and on every close. The backend writes them to the cost ledger. Pause really stops the meter.",
+     "detail": "This is a named trust boundary: Deepgram bills a socket the server never sees. It's bounded by token TTL, forced rotation, up-front import metering and a daily check against Deepgram's own usage numbers.",
+     "tech": [
+      "FastAPI",
+      "Postgres"
+     ],
+     "flags": [
+      "security"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "answer-engine",
+   "title": "Answer engine",
+   "kind": "ai",
+   "summary": "One tap answers what was just said: the answer first, then the key points behind it, then key terms, streamed in seconds.",
+   "detail": "Answer-first, deliver-never-offer: the prompt bans hedges like 'I can suggest...'. The shape is ours and comes before any user-written text, so a profile can't rewrite every answer.",
+   "tech": [
+    "Claude Opus 5",
+    "Server-Sent Events",
+    "FastAPI"
+   ],
+   "flags": [
+    "ai"
+   ],
+   "children": [
+    {
+     "id": "quick-asks",
+     "title": "Live asks",
+     "kind": "ui",
+     "summary": "Eleven intents, from one-tap asks to typed questions, each with its own shape. Analytics log which help was used, never what was said.",
+     "tech": [
+      "React",
+      "Python domain module"
+     ],
+     "flags": [
+      "ai"
+     ],
+     "children": [
+      {
+       "id": "answer-this",
+       "title": "Answer this",
+       "kind": "ai",
+       "summary": "Answers the last thing said, in your voice when the question was aimed at you. One button, always in the same place.",
+       "flags": [
+        "ai"
+       ]
+      },
+      {
+       "id": "catch-me-up",
+       "title": "Catch me up + Explain that",
+       "kind": "ai",
+       "summary": "What was just discussed and whether anything waits on you, or the last line in plain words: jargon, acronyms, what they really mean.",
+       "flags": [
+        "ai"
+       ]
+      },
+      {
+       "id": "draft-response",
+       "title": "Draft a response",
+       "kind": "ai",
+       "summary": "Words you can say out loud, first person. Only on request, never by default, and never in a class.",
+       "flags": [
+        "ai"
+       ]
+      },
+      {
+       "id": "wrap-up",
+       "title": "Wrap up",
+       "kind": "ai",
+       "summary": "Before you close: what's decided, what's on you, what's still open, and one line you could say to end the meeting.",
+       "flags": [
+        "ai"
+       ]
+      },
+      {
+       "id": "refine",
+       "title": "Shorter / More / Follow-up",
+       "kind": "ai",
+       "summary": "Under every answer: make it shorter, go deeper, or ask a follow-up that knows what it follows. Tap any transcript line to explain or answer it.",
+       "flags": [
+        "ai"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "prompt-assembly",
+     "title": "Context window builder",
+     "kind": "process",
+     "summary": "Builds every prompt in a fixed order: answer shape, meeting-type focus, who you are, attachments, transcript, the focus line, then language last.",
+     "detail": "Transcript window: the whole meeting if it fits 30,000 chars, else the first 12 lines plus the newest stretch with a marked gap. Attached files go in as data blocks, never instructions. Your own lines are labelled.",
+     "tech": [
+      "Python",
+      "TypeScript"
+     ],
+     "flags": [
+      "ai",
+      "security"
+     ]
+    },
+    {
+     "id": "answer-modes",
+     "title": "Answer shaping by mode",
+     "kind": "ai",
+     "summary": "Meeting type picks Participant (answer, key points, terms) or Audience (what this means, key idea, why it matters, never lines to say).",
+     "detail": "A second, deterministic switch picks GLANCE (1,000 tokens) or FULL (4,000): code, steps or 'explain more' get the full answer. No extra model call decides this, so no added latency.",
+     "tech": [
+      "Python domain module"
+     ],
+     "flags": [
+      "ai"
+     ]
+    },
+    {
+     "id": "auto-answer",
+     "title": "Auto-answer + 'asked you'",
+     "kind": "process",
+     "summary": "Flags real questions and, if you turn it on, answers them without a tap. It errs towards no, since every answer spends allowance.",
+     "detail": "A real question ends in '?', has 4+ words, isn't a tag like 'make sense?', and isn't from the speaker marked as you. Nothing pops up: Answer this just lights up. The server refuses auto requests on plans without it.",
+     "tech": [
+      "TypeScript",
+      "FastAPI"
+     ]
+    },
+    {
+     "id": "freshness",
+     "title": "Freshness + no silent cut-offs",
+     "kind": "ui",
+     "summary": "If more is said after an answer, it shows 'New since this answer' with Refresh. If an answer hits its length limit, it says so and Continue picks up.",
+     "detail": "Refresh re-asks with the new lines and keeps the earlier answer (PD-0029), for when a speaker adds '...if the security review passes'. A cut-off sends an SSE Notice event, and full answers continue once on their own.",
+     "tech": [
+      "React",
+      "Server-Sent Events"
+     ],
+     "flags": [
+      "ai"
+     ]
+    },
+    {
+     "id": "model-routing",
+     "title": "Model choice per task",
+     "kind": "ai",
+     "summary": "Claude Opus 5 writes every answer, recap, plan and note. Sonnet 5 does background jobs: memory, live notes, picking meetings, drafting your profile.",
+     "detail": "The model belongs to the plan in code, not config. 'Thinking' is set per call because leaving it out means adaptive thinking, which spends the budget before the first word. Opus answers live with it off.",
+     "tech": [
+      "Claude Opus 5",
+      "Claude Sonnet 5",
+      "Anthropic API"
+     ],
+     "flags": [
+      "ai"
+     ]
+    },
+    {
+     "id": "prompt-cache",
+     "title": "Prompt caching + streaming",
+     "kind": "process",
+     "summary": "The prompt is split into a stable part that gets cached and a part that changes each time, so long meetings answer faster and cost less.",
+     "detail": "cache_control marks the system prompt and the stable transcript prefix. Each turn logs time-to-first-token, cached vs new tokens and output size: numbers only, never text.",
+     "tech": [
+      "Anthropic prompt caching",
+      "SSE"
+     ],
+     "flags": [
+      "ai"
+     ]
+    },
+    {
+     "id": "live-speed",
+     "title": "Router + live speed work",
+     "kind": "ai",
+     "status": "coming",
+     "summary": "Planned: a small model that decides which questions are really yours before auto-answering, and a cache prewarm for faster first words.",
+     "detail": "PRs 6 and 7 in the meeting-quality plan. The router gets scored for precision and recall on a labelled synthetic call. Answer this will never be routed.",
+     "tech": [
+      "Claude"
+     ],
+     "flags": [
+      "ai",
+      "test"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after-meeting",
+   "title": "Recaps, notes & plans",
+   "kind": "output",
+   "summary": "When the meeting ends, the recap writes itself and fills in on screen section by section, with your tasks ready to tick.",
+   "detail": "'Present during, ready after': what you get after the meeting is the product. Recap, follow-up and waiting-on all come from one model call, with no extra AI answers spent.",
+   "tech": [
+    "Claude Opus 5",
+    "SSE",
+    "React"
+   ],
+   "flags": [
+    "ai"
+   ],
+   "children": [
+    {
+     "id": "recap",
+     "title": "The recap",
+     "kind": "ai",
+     "summary": "TL;DR, your action items with deadlines, what others will do, decisions, open questions, discussion details, then jargon to learn.",
+     "detail": "Truth rules: a word heard once that contradicts what was said plainly becomes '(unclear)', never a fact. It reads the live notes. A cut-off gets continued once, then flagged. Streams in reading order.",
+     "tech": [
+      "Claude Opus 5",
+      "SSE"
+     ],
+     "flags": [
+      "ai",
+      "test"
+     ]
+    },
+    {
+     "id": "follow-up",
+     "title": "Follow-up message",
+     "kind": "ai",
+     "summary": "Drafts the message to send afterwards: what was decided, what you'll do, what you need from them. You copy or share it. Avenotes never sends it.",
+     "detail": "Written last in the same recap call, then split off before storage, so a public recap link can never carry it. You mark it sent by hand.",
+     "tech": [
+      "Claude Opus 5"
+     ],
+     "flags": [
+      "ai",
+      "security"
+     ]
+    },
+    {
+     "id": "tasks-waiting",
+     "title": "Tasks + Waiting on",
+     "kind": "store",
+     "summary": "Your action items go to Tasks. What others promised becomes 'Waiting on', with who and the exact words about when, never a made-up date.",
+     "detail": "Parsed from the recap's sections without another model call. Recap again replaces both lists. Waiting-on never counts toward what's on you.",
+     "tech": [
+      "Postgres",
+      "FastAPI"
+     ]
+    },
+    {
+     "id": "live-notes",
+     "title": "Organize as I listen",
+     "kind": "ai",
+     "summary": "About every three minutes it writes up the new stretch of the meeting: topics, decisions, action items, open questions (concepts for a class).",
+     "detail": "Reads the saved transcript, never what the browser sends, and organizes only the new stretch, stored with the range and hash it came from. Gated before it spends, with no slack, because nobody pressed a button.",
+     "tech": [
+      "Claude Sonnet 5",
+      "Postgres"
+     ],
+     "flags": [
+      "ai",
+      "security"
+     ]
+    },
+    {
+     "id": "plan-reportout",
+     "title": "Plan + Report out",
+     "kind": "ai",
+     "summary": "Plan turns a meeting into goal, ordered steps with owners, risks and what got missed. Report out writes what to tell a wider group.",
+     "detail": "Both read the meeting type and the live notes, credit people by name, and say '(unclear)' rather than guess.",
+     "tech": [
+      "Claude Opus 5"
+     ],
+     "flags": [
+      "ai"
+     ]
+    },
+    {
+     "id": "note-tidy",
+     "title": "Clean note writer",
+     "kind": "ai",
+     "summary": "Turns a rambling spoken note into a title, a one-line TL;DR, your words tidied and your action items, and reads the text in your screenshots.",
+     "detail": "Takes out filler and repeats but adds nothing. Every number, dose, name and date stays as you said it, and a doubtful word gets marked '(unclear)'. If tidying is refused, your words are still saved.",
+     "tech": [
+      "Claude Opus 5",
+      "vision"
+     ],
+     "flags": [
+      "ai"
+     ]
+    },
+    {
+     "id": "vocab-insights",
+     "title": "Vocabulary + Insights",
+     "kind": "output",
+     "summary": "Jargon from every recap builds a searchable glossary. Insights shows your last 30 days as counts only.",
+     "tech": [
+      "React",
+      "Postgres"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "memory-ask",
+   "title": "Memory & ask across meetings",
+   "kind": "ai",
+   "summary": "Avenotes learns a few short facts about you from each recap, and you can ask questions across all your past meetings with cited sources.",
+   "detail": "Deliberately not RAG and no embeddings: Postgres keyword full-text search plus a cheaper model picking from an index. A vector store is listed as not authorized until keyword search visibly fails people.",
+   "tech": [
+    "Postgres full-text",
+    "Claude Sonnet 5",
+    "Claude Opus 5"
+   ],
+   "flags": [
+    "ai"
+   ],
+   "children": [
+    {
+     "id": "memory-learn",
+     "title": "How memory learns",
+     "kind": "ai",
+     "summary": "After each recap, a background job asks the model what changed about you and applies only safe edits.",
+     "detail": "Learns from the recap, never the transcript. At most 30 items in 5 kinds: people, projects, commitments, regular meetings, preferences (ADR 0016).",
+     "tech": [
+      "Claude Sonnet 5",
+      "FastAPI BackgroundTasks",
+      "Postgres JSONB"
+     ],
+     "flags": [
+      "ai",
+      "security"
+     ],
+     "flow": true,
+     "children": [
+      {
+       "id": "mem-trigger",
+       "title": "Check before spending",
+       "kind": "process",
+       "summary": "Runs only if memory is on, you were told, the plan is paid up and this recap is new. The worst-case cost must fit, with no slack."
+      },
+      {
+       "id": "mem-ops",
+       "title": "add / confirm / replace / remove",
+       "kind": "ai",
+       "summary": "The model returns up to 8 operations as JSON in at most 600 tokens. The call is metered as kind 'memory'.",
+       "flags": [
+        "ai"
+       ]
+      },
+      {
+       "id": "mem-apply",
+       "title": "apply_ops guard",
+       "kind": "security",
+       "summary": "Trusts nothing the model says: allowlisted kinds only, duplicate filter, size caps, and items you edited yourself are off limits.",
+       "flags": [
+        "security",
+        "test"
+       ]
+      },
+      {
+       "id": "mem-write",
+       "title": "Compare-and-set write",
+       "kind": "store",
+       "summary": "Writes with a version check and retries once if stale. If the meeting got deleted meanwhile, the write is refused.",
+       "tech": [
+        "Postgres function"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "memory-controls",
+     "title": "See, edit, forget",
+     "kind": "ui",
+     "summary": "See every fact with its source meetings, then edit, delete, forget all or switch it off. 'Learn from my recent meetings' reads up to 20 recaps.",
+     "detail": "Deleting a meeting strips what was learned from it first. If that strip fails, nothing gets deleted (503), so no fact outlives its source.",
+     "tech": [
+      "React",
+      "FastAPI"
+     ],
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "memory-use",
+     "title": "Memory in every answer",
+     "kind": "ai",
+     "summary": "What it has learned rides along with your profile into live answers, recaps, report-outs, plans and cross-meeting asks.",
+     "detail": "Bounded to 4,400 characters, dated and grouped by kind, read with the profile row at no extra cost, and inside the cached prompt prefix.",
+     "tech": [
+      "Python"
+     ],
+     "flags": [
+      "ai"
+     ]
+    },
+    {
+     "id": "keyword-search",
+     "title": "Keyword full-text search",
+     "kind": "store",
+     "summary": "Search titles, speaker names, recaps and every word said as you type. It's Postgres full-text search, matching words, not meaning.",
+     "detail": "A GIN index and a search_sessions function that filters by owner and can only be called by the server (ADR 0011).",
+     "tech": [
+      "Postgres",
+      "GIN index",
+      "PostgREST RPC"
+     ],
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "ask-across",
+     "title": "Ask your meetings",
+     "kind": "ai",
+     "summary": "Ask 'what did I promise?' across your meetings and get an answer with numbered citations that open the exact line.",
+     "detail": "A fixed two-step pipeline, not an agent: one cheap call picks, code fetches, one call answers. Rate-limited to 20 asks per 10 minutes.",
+     "tech": [
+      "Claude Sonnet 5",
+      "Postgres",
+      "SSE"
+     ],
+     "flags": [
+      "ai",
+      "security"
+     ],
+     "flow": true,
+     "children": [
+      {
+       "id": "ask-index",
+       "title": "Build the index",
+       "kind": "process",
+       "summary": "Lists your pinned and newest meetings (up to about 60) as short lines: date, title, names, TL;DR. No transcripts."
+      },
+      {
+       "id": "ask-find",
+       "title": "FIND: model picks meetings",
+       "kind": "ai",
+       "summary": "Sonnet 5, at most 200 tokens, returns up to 5 index positions and 8 search words. Only positions cross the model boundary, never IDs.",
+       "flags": [
+        "ai",
+        "security"
+       ]
+      },
+      {
+       "id": "ask-lines",
+       "title": "Fetch matching lines",
+       "kind": "store",
+       "summary": "A Postgres function returns up to 30 matching lines per chosen meeting, each with the line before it, filtered by owner and IDs.",
+       "tech": [
+        "Postgres function"
+       ],
+       "flags": [
+        "security"
+       ]
+      },
+      {
+       "id": "ask-evidence",
+       "title": "Number the evidence",
+       "kind": "process",
+       "summary": "Recaps and lines get packed into at most 40,000 characters, numbered [n], and the list of what was read goes to the client first."
+      },
+      {
+       "id": "ask-answer",
+       "title": "Stream a cited answer",
+       "kind": "ai",
+       "summary": "Streams the answer with [n] citations. Citations are drawn from the server's own source list, never the model's text.",
+       "flags": [
+        "ai"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "ask-in-live",
+     "title": "Past meetings, mid-meeting",
+     "kind": "ui",
+     "summary": "During a call, '+ Ask your past meetings' runs one question against earlier meetings. Answer this never looks at past meetings on its own.",
+     "detail": "Auto-detecting when a live question needs history is listed as not authorized. Asking stays a control you choose.",
+     "tech": [
+      "React"
+     ],
+     "flags": [
+      "ai"
+     ]
+    },
+    {
+     "id": "pre-briefing",
+     "title": "Pre-meeting briefing",
+     "kind": "ai",
+     "status": "proposal",
+     "summary": "'Catch me up before this meeting', built on the same ask and memory. Waiting until people have actually used those.",
+     "flags": [
+      "ai"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "library-share",
+   "title": "Library, share & export",
+   "kind": "output",
+   "summary": "Every meeting is kept, sorted, searchable and askable, and can be shared by link, followed live or exported.",
+   "tech": [
+    "React",
+    "FastAPI",
+    "Postgres"
+   ],
+   "children": [
+    {
+     "id": "meetings-library",
+     "title": "Meetings, folders, pins",
+     "kind": "ui",
+     "summary": "Every meeting opens to Recap, Notes, Transcript and Ask. Sort meetings into folders, pin them to the top, rename or delete.",
+     "detail": "Folders are one level, 50 max, held to the same owner by a composite key (ADR 0021). Pins are a server-written timestamp (ADR 0010). Length and speaker count get computed in the database (ADR 0009).",
+     "tech": [
+      "Postgres",
+      "PostgREST"
+     ]
+    },
+    {
+     "id": "share-recap",
+     "title": "Share the recap by link",
+     "kind": "output",
+     "summary": "A link anyone can open to read the recap only. Never the transcript, your profile or the follow-up. Turning it off always works on any plan.",
+     "detail": "Token from secrets.token_urlsafe(24): 192 bits. Public reads are rate-limited to 240 a minute per IP.",
+     "tech": [
+      "Python secrets"
+     ],
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "live-link",
+     "title": "Share live",
+     "kind": "output",
+     "summary": "Your team or class follows the transcript as it happens with no account, then sees the recap and plan when it ends.",
+     "detail": "Shows as 'live' while the owner's last save is under 45 seconds old. Viewers who want to ask use their own account and allowance.",
+     "tech": [
+      "FastAPI",
+      "polling"
+     ],
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "export",
+     "title": "Word, Markdown, JSON",
+     "kind": "output",
+     "summary": "Export recap, plan, notes, Q&A and transcript, in that order, as .docx, .md or a JSON backup, or copy with formatting for Outlook, Teams or Slack.",
+     "detail": "Files are named after the meeting's title in any alphabet. Every question and answer from the meeting is stored server-side so exports and reopened meetings include them.",
+     "tech": [
+      "docx",
+      "Markdown",
+      "JSON"
+     ],
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "data-rights",
+     "title": "Download + delete my data",
+     "kind": "security",
+     "summary": "Download everything as one file at any time. Deleting the account cancels billing first, then removes meetings, memory, files and usage.",
+     "tech": [
+      "FastAPI",
+      "Supabase Storage"
+     ],
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "mcp-connector",
+     "title": "MCP connector for Claude",
+     "kind": "tool",
+     "summary": "A local MCP server lets Claude on your own computer read your meetings, notes, tasks and memory with a personal read-only key.",
+     "detail": "5 tools (list_meetings, get_meeting, list_notes, list_tasks, get_memory), Node with zero dependencies. Every call is a GET to /api/v1. Any other method gets a 405. Owner-only for now.",
+     "tech": [
+      "MCP",
+      "Node.js",
+      "stdio"
+     ],
+     "flags": [
+      "tool",
+      "agent",
+      "security"
+     ],
+     "metric": "5 MCP tools"
+    },
+    {
+     "id": "integrations",
+     "title": "Integrations",
+     "kind": "tool",
+     "status": "proposal",
+     "summary": "Slack, Notion, Drive, Zoom, calendars, Teams and Dropbox appear as a preview marked 'nothing below is built yet', each waiting on real demand.",
+     "flags": [
+      "tool"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "billing",
+   "title": "Billing & money engine",
+   "kind": "process",
+   "summary": "Every action that costs money gets checked before it spends and recorded after, so cost stays bounded by design.",
+   "detail": "Plans, allowances and features live in code, not in a dashboard. Listening and answers have two separate counters, with a fair-use dollar ceiling underneath.",
+   "tech": [
+    "Stripe",
+    "Postgres",
+    "Python domain module"
+   ],
+   "flags": [
+    "security",
+    "test"
+   ],
+   "children": [
+    {
+     "id": "plans-in-code",
+     "title": "Plans + feature gates in code",
+     "kind": "process",
+     "summary": "Free and Pro come from one Python file: minutes, answers, model, features. Free keeps 30 days open. Older meetings get locked, not deleted.",
+     "detail": "Features are frozensets on the Plan. An unknown plan string falls to the most restrictive plan. A locked feature returns 402 with what to do, and the app shows it as an upgrade prompt (ADR 0003).",
+     "tech": [
+      "Python dataclasses"
+     ],
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "usage-gate",
+     "title": "Gate before spending",
+     "kind": "security",
+     "summary": "One dependency runs on every metered route and returns a Caller with plan, headroom and profile, or refuses with a reason.",
+     "tech": [
+      "FastAPI dependency"
+     ],
+     "flags": [
+      "security"
+     ],
+     "flow": true,
+     "children": [
+      {
+       "id": "gate-profile",
+       "title": "Profile + invite guard",
+       "kind": "security",
+       "summary": "Loads the profile (with memory, at no extra round trip) and checks the invite allowlist.",
+       "flags": [
+        "security"
+       ]
+      },
+      {
+       "id": "gate-plan",
+       "title": "Plan + past-due check",
+       "kind": "security",
+       "summary": "Resolves the plan per request. A failed renewal drops to a zero-allowance past_due state right away.",
+       "flags": [
+        "security"
+       ]
+      },
+      {
+       "id": "gate-counters",
+       "title": "Minutes + answers left",
+       "kind": "process",
+       "summary": "Counts the rolling window in the database. The refusal names which counter ran out and the way forward.",
+       "tech": [
+        "Postgres function"
+       ]
+      },
+      {
+       "id": "gate-breaker",
+       "title": "Global spend breaker",
+       "kind": "security",
+       "summary": "A daily ceiling across all users stops a bug of ours that spends in a loop.",
+       "flags": [
+        "security"
+       ]
+      },
+      {
+       "id": "gate-inflight",
+       "title": "In-flight slot",
+       "kind": "security",
+       "summary": "At most 2 metered requests in flight per user (180s lease), so 50 parallel asks can't all slip past the allowance check.",
+       "flags": [
+        "security",
+        "test"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "meter-after",
+     "title": "Record after, even on abort",
+     "kind": "process",
+     "summary": "Usage gets written in a finally block with asyncio.shield, so cancelling a stream can't cancel the write that records its cost.",
+     "detail": "Closes 'ask, take the first words, abort, repeat'. Missing token counts get estimated and rounded up. A turn that failed before its first word isn't counted against you.",
+     "tech": [
+      "asyncio",
+      "Postgres"
+     ],
+     "flags": [
+      "security",
+      "test"
+     ]
+    },
+    {
+     "id": "stripe-webhook",
+     "title": "Signed webhook: only way to paid",
+     "kind": "security",
+     "summary": "Nothing a browser sends can upgrade an account. Only a signature-verified Stripe webhook grants a plan or a top-up (ADR 0004).",
+     "detail": "Unset secret: 503. Bad signature: 400. Replays get blocked by event-id claims, out-of-order events by last_event_at, and the plan is read from the current price. An unknown plan fails on purpose so Stripe keeps retrying.",
+     "tech": [
+      "Stripe Checkout",
+      "Stripe Billing Portal",
+      "webhooks"
+     ],
+     "flags": [
+      "security",
+      "test"
+     ]
+    },
+    {
+     "id": "fair-use",
+     "title": "Fair-use ceiling + trial guards",
+     "kind": "security",
+     "summary": "A dollar ceiling sits under the counters, and a free plan belongs to a hashed email, so delete-and-resign-up doesn't mint another.",
+     "tech": [
+      "SHA-256",
+      "Postgres"
+     ],
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "margin-rule",
+     "title": "Margin rule enforced by tests",
+     "kind": "test",
+     "summary": "Every plan, interval and card type must stay profitable in the expected case and lose only a small capped amount at worst, or the build fails.",
+     "detail": "Worst case means the whole allowance used at list price on an international card. A time-boxed exception is pinned to exact figures and fails the test after its end date. docs/economics.md is generated from the code.",
+     "tech": [
+      "pytest"
+     ],
+     "flags": [
+      "test"
+     ]
+    },
+    {
+     "id": "money-dashboard",
+     "title": "Money + funnel dashboard",
+     "kind": "tool",
+     "summary": "An admin view reconciles the cost ledger against Deepgram's own usage daily, and tracks sign-up → first meeting → came back → paying.",
+     "tech": [
+      "FastAPI",
+      "Postgres"
+     ],
+     "flags": [
+      "tool",
+      "security"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "security",
+   "title": "Security & privacy",
+   "kind": "security",
+   "summary": "Written invariants, a threat model of every way to lose money, and privacy rules like 'audio is never stored', all checked in code.",
+   "detail": "Guards fail closed on security and open on convenience. Any change touching auth, billing, user data or secrets needs an explicit security review step.",
+   "flags": [
+    "security"
+   ],
+   "metric": "17 invariants · 28 threats",
+   "children": [
+    {
+     "id": "creds-server",
+     "title": "Credentials stay server-side",
+     "kind": "security",
+     "summary": "Anthropic, Deepgram, Stripe and Supabase secret keys never reach the browser. That's why the backend exists.",
+     "detail": "The app refuses to start while any required value is still CHANGEME. Render secrets are sync:false. A secret scan checks tracked files and full git history, printing hashes, never values.",
+     "tech": [
+      "Pydantic settings",
+      "bash"
+     ],
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "identity",
+     "title": "Identity from the token",
+     "kind": "security",
+     "summary": "Who you are comes from the bearer token, checked against Supabase auth, never from the request body.",
+     "detail": "Sign-in by emailed code or Google, with a refresh token in the browser (ADR 0005). Verified IDs are cached for 300s in a size-capped map. Personal 'avn_' keys are refused everywhere but /api/v1.",
+     "tech": [
+      "Supabase GoTrue",
+      "JWT"
+     ],
+     "flags": [
+      "security",
+      "test"
+     ]
+    },
+    {
+     "id": "rls-owner",
+     "title": "RLS + owner filter in code",
+     "kind": "security",
+     "summary": "RLS is forced on every table and clients can't write anything. But the server key bypasses RLS, so every read also filters by user_id in code.",
+     "detail": "RLS is defence in depth against a leaked public key, not what keeps users apart on our own API. Migration 0014 revoked insert/update/delete from the client role on every table, present and future.",
+     "tech": [
+      "Postgres RLS",
+      "PostgREST"
+     ],
+     "flags": [
+      "security",
+      "test"
+     ]
+    },
+    {
+     "id": "prompt-injection",
+     "title": "Prompt-injection defences",
+     "kind": "security",
+     "summary": "Your profile is background, never instructions. Others' words, files and recaps are labelled as data, and the model sees positions, not IDs.",
+     "detail": "Answer shape comes before user text. An instruction planted in a recap can at worst pick different meetings among your own. Covered by injection tests.",
+     "tech": [
+      "prompt design"
+     ],
+     "flags": [
+      "security",
+      "ai",
+      "test"
+     ]
+    },
+    {
+     "id": "edge-guards",
+     "title": "CORS, headers, rate limits",
+     "kind": "security",
+     "summary": "An explicit CORS allowlist (never '*'), strict browser headers, and per-IP and per-user limits on sign-in, public links, tokens and asks.",
+     "detail": "Vercel sends nosniff, DENY framing and a Permissions-Policy that allows the mic and screen capture only for the app itself. Errors use one RFC 9457 format that says what to do without leaking internals.",
+     "tech": [
+      "FastAPI CORSMiddleware",
+      "Vercel headers",
+      "RFC 9457"
+     ],
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "threat-model",
+     "title": "Threat model",
+     "kind": "security",
+     "summary": "Every way someone could make Avenotes lose money (abort loops, socket hogging, forged webhooks, trial farming, stolen keys), each with its guard.",
+     "detail": "Each scenario lists its guard and the remaining exposure, with a 'what to look at every morning' checklist. The client-reported listening time is a named, accepted and monitored risk.",
+     "flags": [
+      "security"
+     ],
+     "metric": "28 scenarios"
+    },
+    {
+     "id": "privacy-rules",
+     "title": "Privacy by construction",
+     "kind": "security",
+     "summary": "Audio is never stored. Transcripts never go to crash reporting. Analytics record which help was used, never what was said. Files get read once.",
+     "detail": "Sentry is optional and gets no request bodies. No third-party analytics script runs on a page that handles meeting audio. Voices are numbered, not identified.",
+     "tech": [
+      "Sentry"
+     ],
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "personal-keys",
+     "title": "Read-only personal keys",
+     "kind": "security",
+     "summary": "Keys for your own tools: shown once, only a SHA-256 hash kept, never cached so revoking works instantly, GET-only, max 5 per account.",
+     "detail": "A second way to authenticate, on /api/v1 only (ADR 0025). Per-IP limits run before any lookup, plus per-account limits. Keys can't manage keys. The secret scan also catches 'avn_' keys.",
+     "tech": [
+      "SHA-256",
+      "FastAPI middleware"
+     ],
+     "flags": [
+      "security",
+      "test"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "quality",
+   "title": "Testing, evals & dev tooling",
+   "kind": "test",
+   "summary": "Thousands of tests run on fakes with no real keys, eval scripts judge AI output on a synthetic call, and coding agents follow a written rulebook.",
+   "detail": "No test reaches a real API, database or provider, on purpose (ADR 0007). Evals that spend money run by hand, never in CI.",
+   "tech": [
+    "pytest",
+    "Playwright",
+    "GitHub Actions"
+   ],
+   "flags": [
+    "test",
+    "tool"
+   ],
+   "children": [
+    {
+     "id": "pytest",
+     "title": "Backend pytest suite",
+     "kind": "test",
+     "summary": "Unit and in-process integration tests on fakes, not fixtures. No keys, no Postgres, never your .env.",
+     "detail": "The pure domain/ layer is tested with no database at all. Covers webhooks, ordering, inflight limits, injection, memory, recap truth, counters and native OAuth.",
+     "tech": [
+      "pytest",
+      "FastAPI TestClient"
+     ],
+     "flags": [
+      "test"
+     ],
+     "metric": "1,093 backend test functions"
+    },
+    {
+     "id": "playwright",
+     "title": "Playwright browser tests",
+     "kind": "test",
+     "summary": "The real app runs in Chromium against a faked API, mic and transcriber, covering listening, answers, recaps, exports, phone layouts and refusals.",
+     "detail": "73 spec files, split over 2 CI shards after the suite passed 30 minutes. The iOS tab-bar plugin has its own XCTest cases.",
+     "tech": [
+      "Playwright",
+      "Chromium",
+      "XCTest"
+     ],
+     "flags": [
+      "test"
+     ],
+     "metric": "601 tests · 73 specs"
+    },
+    {
+     "id": "ci-gates",
+     "title": "CI gates the deploy",
+     "kind": "test",
+     "summary": "Every PR and push runs pytest, lint, typecheck + build, the MCP connector test, browser tests and a full-history secret scan.",
+     "detail": "Render deploys the backend only after checks pass (ADR 0008), so a run on main is never cancelled. Actions are pinned to commit SHAs, with read-only permissions.",
+     "tech": [
+      "GitHub Actions",
+      "oxlint",
+      "Render checksPass"
+     ],
+     "flags": [
+      "test",
+      "security"
+     ]
+    },
+    {
+     "id": "ai-evals",
+     "title": "AI quality evals",
+     "kind": "test",
+     "summary": "Scripts run the production recap, plan and live-answer code on the real model against a synthetic call with known ground truth.",
+     "detail": "The meeting is invented, so nothing real gets sent. Scripts print numbers and pass/fail checks, never the text unless asked. Each paid run is approved by the owner.",
+     "tech": [
+      "Python",
+      "Anthropic API"
+     ],
+     "flags": [
+      "test",
+      "ai"
+     ],
+     "children": [
+      {
+       "id": "eval-recap",
+       "title": "Recap + plan truth checks",
+       "kind": "test",
+       "summary": "Checks the recap marks a contradiction unclear, invents no relocation, puts every action item under the right person, and isn't cut off.",
+       "flags": [
+        "test",
+        "ai"
+       ]
+      },
+      {
+       "id": "eval-speed",
+       "title": "Speed + thinking benchmark",
+       "kind": "test",
+       "summary": "Per model and thinking setting: time to first words, total time, cached vs new tokens, cost and checks, for a live answer and a recap.",
+       "flags": [
+        "test",
+        "ai"
+       ]
+      },
+      {
+       "id": "eval-router",
+       "title": "Auto-answer router eval",
+       "kind": "test",
+       "status": "coming",
+       "summary": "Precision and recall of the planned router on the fixture's labelled questions vs noise, comparing two model sizes.",
+       "flags": [
+        "test",
+        "ai"
+       ]
+      },
+      {
+       "id": "eval-stt",
+       "title": "Transcription A/B",
+       "kind": "test",
+       "status": "coming",
+       "summary": "A scripted recording scored by word error rate and entity recall, to decide on a model or keyterm change with data, not by feel.",
+       "flags": [
+        "test",
+        "ai"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "agent-rules",
+     "title": "Claude Code under CLAUDE.md",
+     "kind": "tool",
+     "summary": "Coding agents (Claude Code, and others via AGENTS.md) follow one constitution: inspect first, smallest safe change, never claim untested work.",
+     "detail": "CLAUDE.md holds the working rules, 9 critical invariants, high-risk surfaces and doc-update duties. A repo skill carries the brand system. A hand-off convention reports each session's status back to the owner.",
+     "tech": [
+      "Claude Code",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "Claude skills"
+     ],
+     "flags": [
+      "tool",
+      "agent"
+     ]
+    },
+    {
+     "id": "adr-practice",
+     "title": "ADRs + decision log",
+     "kind": "tool",
+     "summary": "Every structural choice gets an ADR, and product calls are logged as numbered decisions. Breaking a documented invariant needs a new ADR.",
+     "detail": "FEATURES.md is verified against code and has to be updated in the same PR as any feature change. The roadmap's NOW section is the only thing that authorizes building.",
+     "tech": [
+      "Markdown"
+     ],
+     "flags": [
+      "tool"
+     ],
+     "metric": "24 ADRs · 74 product decisions"
+    }
+   ]
+  },
+  {
+   "id": "platform",
+   "title": "Platform & infra",
+   "kind": "infra",
+   "summary": "A modular monolith: React on Vercel, one FastAPI service in Docker on Render, Supabase for Postgres, auth and storage.",
+   "detail": "Strict layering: api → services → adapters, with a pure domain/ layer that does no I/O. No ORM, no router library, no state library. New infrastructure needs a real requirement and an ADR.",
+   "tech": [
+    "React 19",
+    "FastAPI",
+    "Python 3.13",
+    "Supabase",
+    "Render",
+    "Vercel"
+   ],
+   "children": [
+    {
+     "id": "frontend",
+     "title": "React web app",
+     "kind": "ui",
+     "summary": "React 19 + TypeScript + Vite + Tailwind 4 on Vercel. A phone-first layout, a computer layout with a command palette, installable to a home screen.",
+     "detail": "services/api.ts is the only file that touches the network (fetch + SSE). Views come from a hook and query params, not a router. The landing's 3D is a lazy Three.js chunk, never in the app (ADR 0020).",
+     "tech": [
+      "React 19",
+      "TypeScript",
+      "Vite",
+      "Tailwind 4",
+      "Three.js"
+     ]
+    },
+    {
+     "id": "backend",
+     "title": "FastAPI modular monolith",
+     "kind": "infra",
+     "summary": "One Python service split into route modules, orchestration services, pure domain rules and one adapter per outside system.",
+     "detail": "core/deps.py is the only place that builds an adapter. State checks ('may this caller spend?') live in resources/validators, not in routes.",
+     "tech": [
+      "FastAPI",
+      "Python 3.13",
+      "Pydantic",
+      "httpx"
+     ],
+     "metric": "23 routes · 13 services · 15 domain · 26 adapters"
+    },
+    {
+     "id": "supabase",
+     "title": "Supabase Postgres + Storage",
+     "kind": "store",
+     "summary": "Postgres over PostgREST for meetings, profiles, usage ledger, tasks, folders and keys, with two private Storage buckets for avatars and note images.",
+     "detail": "Schema changes are numbered SQL files, applied by hand. New code is written to work safely before its migration lands. Transcripts are JSONB lines, and length and speaker count come from database functions.",
+     "tech": [
+      "Postgres",
+      "PostgREST",
+      "GoTrue",
+      "Supabase Storage"
+     ],
+     "metric": "37 migrations"
+    },
+    {
+     "id": "render",
+     "title": "Render, one Docker instance",
+     "kind": "infra",
+     "summary": "The backend runs as one Docker web service with a health check. Deploy settings live in render.yaml, not the dashboard.",
+     "detail": "Rate limits and in-flight counts live in process memory, correct only while there's one instance (ADR 0006). Redis is the named next step only if a second instance is ever needed.",
+     "tech": [
+      "Docker",
+      "Render Blueprint",
+      "uvicorn"
+     ]
+    },
+    {
+     "id": "observability",
+     "title": "Monitoring",
+     "kind": "infra",
+     "summary": "Optional Sentry for crashes (no bodies), UptimeRobot on /health, a first-party browser error endpoint and first-party visit counts.",
+     "detail": "The gaps are written down too: no request IDs, structured logs or metrics yet. Each turn logs timing and token numbers, never content.",
+     "tech": [
+      "Sentry",
+      "UptimeRobot"
+     ],
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "ios-shell",
+     "title": "iOS app shell",
+     "kind": "ui",
+     "status": "coming",
+     "summary": "A Capacitor shell around the same web build, with its own native tab bar, sign-in by Google, Apple or code, and the session kept in the Keychain.",
+     "detail": "Runs in the simulator only. Native sign-in uses PKCE with a fixed redirect, and Apple's refresh token is kept server-side so it can be revoked when the account is deleted (ADRs 0013, 0014, 0018).",
+     "tech": [
+      "Capacitor",
+      "Swift",
+      "Keychain",
+      "PKCE"
+     ],
+     "flags": [
+      "security"
+     ]
+    },
+    {
+     "id": "native-capture",
+     "title": "Background listening plugin",
+     "kind": "input",
+     "status": "coming",
+     "summary": "A native plugin that owns the mic, the Deepgram socket and a local transcript journal, so listening survives a locked screen and phone calls.",
+     "detail": "Next steps: S3 native capture, S4 TestFlight + store prep, S5 Android. Success means a 30-minute meeting with the screen locked for 10 loses no finished line and meters its full length.",
+     "tech": [
+      "Capacitor plugin",
+      "Swift",
+      "Deepgram"
+     ]
+    },
+    {
+     "id": "capture-options",
+     "title": "Desktop app or meeting bot",
+     "kind": "input",
+     "status": "proposal",
+     "summary": "One of the two, not both, to hear the far side of a call when you wear headphones. Waits on a transcription benchmark and what early users hit."
+    }
+   ]
+  }
+ ],
+ "links": [
+  {
+   "from": "inputs",
+   "to": "transcription",
+   "label": "audio stream"
+  },
+  {
+   "from": "inputs",
+   "to": "answer-engine",
+   "label": "questions + files"
+  },
+  {
+   "from": "transcription",
+   "to": "answer-engine",
+   "label": "live transcript"
+  },
+  {
+   "from": "transcription",
+   "to": "after-meeting",
+   "label": "saved transcript"
+  },
+  {
+   "from": "after-meeting",
+   "to": "memory-ask",
+   "label": "recaps teach memory"
+  },
+  {
+   "from": "memory-ask",
+   "to": "answer-engine",
+   "label": "who you are"
+  },
+  {
+   "from": "after-meeting",
+   "to": "library-share",
+   "label": "recap, tasks"
+  },
+  {
+   "from": "memory-ask",
+   "to": "library-share",
+   "label": "search + citations"
+  },
+  {
+   "from": "billing",
+   "to": "answer-engine",
+   "label": "gate + meter"
+  },
+  {
+   "from": "billing",
+   "to": "transcription",
+   "label": "token + minutes"
+  },
+  {
+   "from": "security",
+   "to": "library-share",
+   "label": "owner-only reads"
+  },
+  {
+   "from": "security",
+   "to": "billing",
+   "label": "webhook-only paid"
+  },
+  {
+   "from": "quality",
+   "to": "platform",
+   "label": "CI gates deploy"
+  },
+  {
+   "from": "quality",
+   "to": "answer-engine",
+   "label": "evals"
+  }
+ ]
+}

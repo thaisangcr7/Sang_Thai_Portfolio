@@ -1,0 +1,430 @@
+{
+ "id": "sentinel",
+ "name": "SENTINEL",
+ "tagline": "FRED indicator monitor with threshold alerts, deployed to AWS via IaC",
+ "children": [
+  {
+   "id": "inputs",
+   "title": "Economic data inputs",
+   "kind": "input",
+   "summary": "Pulls three U.S. economic indicators from the St. Louis Fed's FRED API whenever an ingest is triggered.",
+   "tech": [
+    "FRED API",
+    "httpx"
+   ],
+   "children": [
+    {
+     "id": "fedfunds",
+     "title": "FEDFUNDS",
+     "kind": "input",
+     "summary": "Federal Funds Rate."
+    },
+    {
+     "id": "cpiaucsl",
+     "title": "CPIAUCSL",
+     "kind": "input",
+     "summary": "Consumer Price Index, the inflation series."
+    },
+    {
+     "id": "unrate",
+     "title": "UNRATE",
+     "kind": "input",
+     "summary": "Unemployment rate."
+    },
+    {
+     "id": "scheduled-ingest",
+     "title": "Daily scheduled ingest",
+     "kind": "tool",
+     "flags": [
+      "tool"
+     ],
+     "summary": "A GitHub Actions cron called POST /ingest every day at 08:00 UTC while deployed. Switched off once the server was torn down.",
+     "tech": [
+      "GitHub Actions"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ingestion",
+   "title": "Ingestion ETL",
+   "kind": "process",
+   "flow": true,
+   "summary": "Fetch, clean and upsert each series. Built so running it twice never creates duplicate rows, because automated jobs retry.",
+   "tech": [
+    "Python",
+    "httpx",
+    "SQLAlchemy"
+   ],
+   "children": [
+    {
+     "id": "fetch",
+     "title": "Fetch latest 24",
+     "kind": "process",
+     "summary": "Asks FRED for the 24 most recent observations per series, newest first, and fails loudly on HTTP errors.",
+     "metric": "24 obs/series"
+    },
+    {
+     "id": "clean",
+     "title": "Clean values",
+     "kind": "process",
+     "summary": "Skips FRED's '.' placeholder for missing data and converts the rest from strings to floats."
+    },
+    {
+     "id": "upsert",
+     "title": "Postgres upsert",
+     "kind": "process",
+     "summary": "INSERT ... ON CONFLICT on (series_id, date) updates existing rows instead of duplicating them."
+    },
+    {
+     "id": "rollback",
+     "title": "All-or-nothing commit",
+     "kind": "process",
+     "summary": "Each series is one transaction: commit on success, roll back everything on any error, always close the session."
+    }
+   ]
+  },
+  {
+   "id": "storage",
+   "title": "PostgreSQL",
+   "kind": "store",
+   "summary": "Stores history so the API serves from the database and never depends on FRED being up for reads.",
+   "tech": [
+    "PostgreSQL 16",
+    "SQLAlchemy 2.0"
+   ],
+   "children": [
+    {
+     "id": "observations",
+     "title": "observations",
+     "kind": "store",
+     "summary": "One row per series per date with value and fetch time. A unique constraint backs the upsert."
+    },
+    {
+     "id": "thresholds",
+     "title": "thresholds",
+     "kind": "store",
+     "summary": "One max-change rule per series, set through the API."
+    },
+    {
+     "id": "alerts",
+     "title": "alerts",
+     "kind": "store",
+     "summary": "Each fired alert with the value, previous value and the size of the change."
+    }
+   ]
+  },
+  {
+   "id": "alerting",
+   "title": "Threshold alerts",
+   "kind": "process",
+   "summary": "After each ingest, compares consecutive observations against each series' threshold and saves an alert when the move is too big.",
+   "detail": "Plain rule-based checks, not prediction. The goal is spotting when an indicator moves enough to deserve attention.",
+   "children": [
+    {
+     "id": "pair-compare",
+     "title": "Consecutive-pair check",
+     "kind": "process",
+     "summary": "Walks the last 24 observations and measures each month's change from the one before."
+    },
+    {
+     "id": "abs-change",
+     "title": "Both directions",
+     "kind": "process",
+     "summary": "Uses the absolute change, so a sharp drop fires just like a sharp rise."
+    },
+    {
+     "id": "dedupe",
+     "title": "No duplicate alerts",
+     "kind": "process",
+     "summary": "Loads existing alert dates into a set first, so re-running the check never fires the same alert twice."
+    }
+   ]
+  },
+  {
+   "id": "api",
+   "title": "FastAPI service",
+   "kind": "process",
+   "summary": "REST API with read endpoints open and write endpoints behind an API key. Interactive docs come from OpenAPI.",
+   "tech": [
+    "FastAPI",
+    "Pydantic",
+    "Uvicorn"
+   ],
+   "children": [
+    {
+     "id": "health",
+     "title": "GET /health",
+     "kind": "output",
+     "summary": "Deep health check that runs SELECT 1 and returns 503 if the database is down, so a load balancer would actually notice."
+    },
+    {
+     "id": "metrics",
+     "title": "GET /metrics",
+     "kind": "output",
+     "summary": "The 100 most recent observations."
+    },
+    {
+     "id": "alerts-endpoint",
+     "title": "GET /alerts",
+     "kind": "output",
+     "summary": "The 50 most recent fired alerts."
+    },
+    {
+     "id": "ingest-endpoint",
+     "title": "POST /ingest",
+     "kind": "process",
+     "summary": "Runs the whole pipeline: ingest all three series, then check alerts. Returns rows per series and new alerts."
+    },
+    {
+     "id": "thresholds-endpoint",
+     "title": "POST /thresholds",
+     "kind": "process",
+     "summary": "Creates or updates the max-change threshold for a series."
+    }
+   ]
+  },
+  {
+   "id": "security",
+   "title": "Security review",
+   "kind": "security",
+   "flags": [
+    "security"
+   ],
+   "summary": "Reviewed auth, secrets, exposed ports, write endpoints, deploy config and failure behavior before launch, and fixed what it found.",
+   "metric": "6 issues fixed",
+   "children": [
+    {
+     "id": "api-key",
+     "title": "API key on writes",
+     "kind": "security",
+     "flags": [
+      "security"
+     ],
+     "summary": "POST routes require an X-API-Key header checked in a FastAPI dependency. Missing or wrong key gets a 401."
+    },
+    {
+     "id": "fail-fast",
+     "title": "Fail-fast secrets",
+     "kind": "security",
+     "flags": [
+      "security"
+     ],
+     "summary": "The app refuses to start if the database URL, API key or FRED key is missing from the environment."
+    },
+    {
+     "id": "ci-secrets",
+     "title": "Secrets in GitHub Secrets",
+     "kind": "security",
+     "flags": [
+      "security"
+     ],
+     "summary": "SSH key, host and API key live in repo secrets, never in the YAML. The deploy key file is deleted even if a step fails."
+    },
+    {
+     "id": "host-verify",
+     "title": "SSH host verification",
+     "kind": "security",
+     "flags": [
+      "security"
+     ],
+     "summary": "Deploys record the server's fingerprint with ssh-keyscan instead of turning host checking off."
+    },
+    {
+     "id": "https-plan",
+     "title": "HTTPS via Caddy",
+     "kind": "security",
+     "status": "proposal",
+     "flags": [
+      "security"
+     ],
+     "summary": "The original deploy was plain HTTP. A re-runnable script adds Caddy with auto TLS for any redeploy, then port 8000 gets closed.",
+     "tech": [
+      "Caddy",
+      "Let's Encrypt"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "infra",
+   "title": "AWS infra (Terraform)",
+   "kind": "infra",
+   "summary": "The whole AWS environment is code. It ran on EC2 for about five months, then was retired on purpose; terraform apply recreates it.",
+   "detail": "Not currently hosted. The instance was taken down rather than paying for an idle demo. Locally, docker compose up needs nothing from AWS.",
+   "tech": [
+    "Terraform",
+    "AWS EC2",
+    "Docker"
+   ],
+   "children": [
+    {
+     "id": "ami",
+     "title": "Ubuntu 22.04 AMI lookup",
+     "kind": "infra",
+     "summary": "A data source picks the latest official Canonical Ubuntu 22.04 image instead of hardcoding an AMI ID."
+    },
+    {
+     "id": "ec2",
+     "title": "EC2 instance",
+     "kind": "infra",
+     "summary": "t2.micro in us-east-1. user_data installs Docker, Compose and git on first boot."
+    },
+    {
+     "id": "security-group",
+     "title": "Security group",
+     "kind": "security",
+     "flags": [
+      "security"
+     ],
+     "summary": "Opens SSH, 80 and 443 for TLS, and 8000 for the app, marked to be removed once Caddy fronts the API."
+    },
+    {
+     "id": "key-pair",
+     "title": "SSH key pair",
+     "kind": "security",
+     "flags": [
+      "security"
+     ],
+     "summary": "Registers the deploy public key with AWS, used by the GitHub Actions deploy."
+    },
+    {
+     "id": "compose",
+     "title": "Docker Compose stack",
+     "kind": "infra",
+     "summary": "Postgres 16 plus the app container. The app waits for the database healthcheck before starting.",
+     "tech": [
+      "Docker Compose",
+      "Postgres 16"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cicd",
+   "title": "CI/CD pipeline",
+   "kind": "test",
+   "flags": [
+    "test"
+   ],
+   "flow": true,
+   "summary": "Every push to main runs the tests, and only a green test job can deploy. Failing tests leave the server on the last good version.",
+   "tech": [
+    "GitHub Actions"
+   ],
+   "children": [
+    {
+     "id": "test-job",
+     "title": "Test job",
+     "kind": "test",
+     "flags": [
+      "test"
+     ],
+     "summary": "Fresh Ubuntu runner, Python 3.11, pip install, pytest. Fake env values satisfy the startup checks."
+    },
+    {
+     "id": "deploy-gate",
+     "title": "Deploy gated on tests",
+     "kind": "test",
+     "flags": [
+      "test"
+     ],
+     "summary": "needs: test, plus a DEPLOY_TARGET switch so pushes don't fail trying to reach a server that no longer exists."
+    },
+    {
+     "id": "ssh-deploy",
+     "title": "SSH deploy to EC2",
+     "kind": "infra",
+     "summary": "Pulls main, rebuilds only the app container so Postgres keeps running, then curls /health."
+    }
+   ]
+  },
+  {
+   "id": "tests",
+   "title": "API tests",
+   "kind": "test",
+   "flags": [
+    "test"
+   ],
+   "summary": "Mocked pytest suite covering every endpoint, so it needs no live database or real FRED calls.",
+   "metric": "11 tests",
+   "tech": [
+    "pytest",
+    "pytest-mock"
+   ],
+   "children": [
+    {
+     "id": "test-reads",
+     "title": "Read endpoint tests",
+     "kind": "test",
+     "flags": [
+      "test"
+     ],
+     "summary": "Health check, metrics and alerts, including the empty-result cases."
+    },
+    {
+     "id": "test-writes",
+     "title": "Write + auth tests",
+     "kind": "test",
+     "flags": [
+      "test",
+      "security"
+     ],
+     "summary": "Ingest without a key is rejected, ingest returns fired alerts, thresholds create, update and reject bad bodies."
+    }
+   ]
+  }
+ ],
+ "links": [
+  {
+   "from": "inputs",
+   "to": "ingestion",
+   "label": "FRED observations"
+  },
+  {
+   "from": "api",
+   "to": "ingestion",
+   "label": "POST /ingest"
+  },
+  {
+   "from": "ingestion",
+   "to": "storage",
+   "label": "upsert"
+  },
+  {
+   "from": "api",
+   "to": "alerting",
+   "label": "check after ingest"
+  },
+  {
+   "from": "alerting",
+   "to": "storage",
+   "label": "save alerts"
+  },
+  {
+   "from": "storage",
+   "to": "api",
+   "label": "metrics + alerts"
+  },
+  {
+   "from": "security",
+   "to": "api",
+   "label": "API key on writes"
+  },
+  {
+   "from": "tests",
+   "to": "cicd",
+   "label": "must pass"
+  },
+  {
+   "from": "cicd",
+   "to": "infra",
+   "label": "SSH deploy"
+  },
+  {
+   "from": "infra",
+   "to": "api",
+   "label": "hosts container"
+  }
+ ]
+}
