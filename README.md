@@ -8,6 +8,9 @@ in a browser and you are looking at the site.
 ```
 index.html     the whole site: markup, styles and scripts in one file
 images/        project screenshots
+images/arch/   architecture diagram for each project (desktop + phone)
+field/         AI Space Field: breakdown posts with diagrams
+tools/diagrams the script that draws the architecture diagrams
 favicon.svg    site icon
 CNAME          the custom domain GitHub Pages serves from
 sitemap.xml    submitted to search engines

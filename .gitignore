@@ -1,1 +1,4 @@
 CONTENT_GUIDE.md
+node_modules/
+tools/diagrams/out/
+tools/diagrams/tmp_*
