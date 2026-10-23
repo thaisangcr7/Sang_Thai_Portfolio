@@ -245,7 +245,9 @@
       links.forEach(l => { inc[l.to]++; out[l.from]++; });
       // cross-cutting branches (testing, security, tooling, ops) that only point at others sit in an "always on" band
       const side = new Set(br.filter(b => ['test', 'security', 'tool', 'infra'].includes(b.kind) && inc[b.id] === 0 && b.status !== 'proposal').map(b => b.id)
-        .concat(br.filter(b => inc[b.id] === 0 && out[b.id] === 0).map(b => b.id)));
+        .concat(br.filter(b => inc[b.id] === 0 && out[b.id] === 0).map(b => b.id))
+        // roadmap branches (all 'coming') belong at the bottom with the cross-cutting ones
+        .concat(br.filter(b => b.status === 'coming' && inc[b.id] === 0).map(b => b.id)));
       const flow = br.filter(b => !side.has(b.id));
       const rank = {}; flow.forEach(b => { rank[b.id] = 0; });
       for (let k = 0; k < flow.length; k++) {
