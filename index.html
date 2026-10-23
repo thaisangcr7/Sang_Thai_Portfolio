@@ -1105,39 +1105,6 @@
       margin: -0.75rem 0 1.75rem; max-width: 560px;
     }
 
-    /* == ARCHITECTURE DIAGRAM ON EACH PROJECT == */
-    .arch {
-      position: relative;
-      margin: 0.25rem 0 1.5rem;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      overflow: hidden;
-      background: #FCFBFF;
-      cursor: zoom-in;
-      box-shadow: var(--shadow-sm);
-      transition: box-shadow 0.3s, transform 0.3s;
-    }
-    .arch:hover { box-shadow: 0 10px 30px rgba(224,78,114,0.12); }
-    .arch__img { display: block; width: 100%; height: auto; }
-    .arch__more { display: none; }
-    @media (max-width: 600px) {
-      /* Phones get the stacked diagram, capped so each card stays short. */
-      .arch { max-height: 470px; }
-      .arch::after {
-        content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 120px;
-        background: linear-gradient(to bottom, rgba(252,251,255,0), #FCFBFF 75%);
-        pointer-events: none;
-      }
-      .arch__more {
-        display: block; position: absolute; left: 50%; bottom: 14px; z-index: 1;
-        transform: translateX(-50%);
-        font-family: var(--font-sans); font-size: 0.8rem; font-weight: 600;
-        color: #fff; background: var(--accent);
-        border: none; border-radius: 999px; padding: 0.55rem 1.1rem;
-        box-shadow: 0 6px 18px rgba(224,78,114,0.3);
-        white-space: nowrap; pointer-events: none;
-      }
-    }
     /* Tall images (phone diagrams) scroll inside the lightbox. */
     .lightbox-overlay.lightbox-overlay--tall {
       align-items: flex-start; overflow-y: auto; padding: 4.5rem 0 3rem;
@@ -1202,6 +1169,7 @@
       a.field-card:hover { transform: none; }
     }
   </style>
+  <link rel="stylesheet" href="assets/explorer.css" />
 </head>
 <body>
 
@@ -1302,7 +1270,7 @@
       <!-- == SECTION: PORTFOLIO == -->
       <section id="portfolio" class="inner portfolio" tabindex="-1">
         <h2 class="section-heading reveal-item">Projects</h2>
-        <p class="section-sub reveal-item">Each project starts with how it works: the architecture, end to end. Tap a diagram to open it full size.</p>
+        <p class="section-sub reveal-item">Each project opens with its full architecture as a live map. Tap a branch to zoom in, or use Highlight to see where AI, agents, testing and security show up.</p>
 
         <!-- Avenotes -->
         <div class="project-card reveal-item">
@@ -1313,13 +1281,7 @@
             </div>
             <span class="status-badge status-live">Live &middot; Paid plans</span>
           </div>
-          <figure class="arch">
-            <picture>
-              <source media="(max-width: 600px)" srcset="images/arch/arch-avenotes-m.webp" />
-              <img src="images/arch/arch-avenotes.webp" alt="Avenotes architecture: how data flows through it end to end" class="arch__img" loading="lazy" decoding="async" />
-            </picture>
-            <button type="button" class="arch__more" tabindex="-1" aria-hidden="true">See the full diagram</button>
-          </figure>
+          <div class="arch-tree" data-tree="data/trees/avenotes.json" aria-label="Interactive architecture map"><noscript>Turn on JavaScript to explore the architecture map.</noscript></div>
           <div class="screenshot-gallery screenshot-gallery--wide">
             <img src="images/avenotes-hero.jpg" alt="Avenotes during a live meeting: a question is asked and Avenotes gives the bottom line, what matters and the next move from the meeting transcript." class="screenshot-gallery__img" loading="lazy" />
             <img src="images/avenotes-memory.jpg" alt="Asking 'what did we decide last time?' mid-meeting: Avenotes searches past meetings and names the meeting and recap each point came from." class="screenshot-gallery__img" loading="lazy" />
@@ -1364,13 +1326,7 @@
             </div>
             <span class="status-badge status-muted">Internal &middot; Handed off</span>
           </div>
-          <figure class="arch">
-            <picture>
-              <source media="(max-width: 600px)" srcset="images/arch/arch-atlas-m.webp" />
-              <img src="images/arch/arch-atlas.webp" alt="ATLAS architecture: how data flows through it end to end" class="arch__img" loading="lazy" decoding="async" />
-            </picture>
-            <button type="button" class="arch__more" tabindex="-1" aria-hidden="true">See the full diagram</button>
-          </figure>
+          <div class="arch-tree" data-tree="data/trees/atlas.json" aria-label="Interactive architecture map"><noscript>Turn on JavaScript to explore the architecture map.</noscript></div>
           <p class="project-card__desc">
             I designed and built ATLAS end to end, a production-grade Python platform for a
             50+ application payment-controls program at Citi. It automates
@@ -1417,13 +1373,7 @@
             </div>
             <span class="status-badge status-live">Open source &middot; Docker</span>
           </div>
-          <figure class="arch">
-            <picture>
-              <source media="(max-width: 600px)" srcset="images/arch/arch-avocado-m.webp" />
-              <img src="images/arch/arch-avocado.webp" alt="Avocado architecture: how data flows through it end to end" class="arch__img" loading="lazy" decoding="async" />
-            </picture>
-            <button type="button" class="arch__more" tabindex="-1" aria-hidden="true">See the full diagram</button>
-          </figure>
+          <div class="arch-tree" data-tree="data/trees/avocado.json" aria-label="Interactive architecture map"><noscript>Turn on JavaScript to explore the architecture map.</noscript></div>
           <div class="screenshot-gallery screenshot-gallery--wide">
             <img src="images/avocado-cited.jpg" alt="Avocado answering &lsquo;what policies does this Space define?&rsquo; with seven source chips, noting that two of the three policies are titles with no content, and ending with what is missing from the sources." class="screenshot-gallery__img" loading="lazy" />
             <img src="images/avocado-briefing.jpg" alt="A Workspace Executive Briefing: headline verdict, a six-tile KPI strip with status colours, a revenue section marked on course, and computed charts." class="screenshot-gallery__img" loading="lazy" />
@@ -1504,21 +1454,15 @@
             </div>
             <span class="status-badge status-live">Open source &middot; Docker</span>
           </div>
-          <figure class="arch">
-            <picture>
-              <source media="(max-width: 600px)" srcset="images/arch/arch-creditrag-m.webp" />
-              <img src="images/arch/arch-creditrag.webp" alt="credit-rag architecture: how data flows through it end to end" class="arch__img" loading="lazy" decoding="async" />
-            </picture>
-            <button type="button" class="arch__more" tabindex="-1" aria-hidden="true">See the full diagram</button>
-          </figure>
+          <div class="arch-tree" data-tree="data/trees/creditrag.json" aria-label="Interactive architecture map"><noscript>Turn on JavaScript to explore the architecture map.</noscript></div>
           <p class="project-card__desc">
             A service that reads a 200-page commercial credit agreement and returns the
             terms a credit team actually needs &mdash; borrower, facility amount, maturity,
             pricing, covenants, events of default &mdash; as structured data. Every value
             arrives <strong>cited</strong>, with the page and the exact sentence it came
-            from. Each citation is then checked in code against the source text, so
-            anything that cannot be traced comes back <strong>not found</strong> rather
-            than invented.
+            from. Code then checks that every citation points at a passage that was
+            actually retrieved, so anything that cannot be traced comes back
+            <strong>not found</strong> rather than invented.
           </p>
           <p class="project-card__desc">
             Search runs in two passes: vector similarity over pgvector to gather
@@ -1583,13 +1527,7 @@
             </div>
             <span class="status-badge status-live">Private repo &middot; On request</span>
           </div>
-          <figure class="arch">
-            <picture>
-              <source media="(max-width: 600px)" srcset="images/arch/arch-layers-m.webp" />
-              <img src="images/arch/arch-layers.webp" alt="LAYERS architecture: how data flows through it end to end" class="arch__img" loading="lazy" decoding="async" />
-            </picture>
-            <button type="button" class="arch__more" tabindex="-1" aria-hidden="true">See the full diagram</button>
-          </figure>
+          <div class="arch-tree" data-tree="data/trees/layers.json" aria-label="Interactive architecture map"><noscript>Turn on JavaScript to explore the architecture map.</noscript></div>
           <p class="project-card__desc">
             A statistical comparison of two anti-money-laundering detectors &mdash; a
             rule-based baseline and a graph-based method &mdash; on IBM&rsquo;s synthetic AML
@@ -1643,13 +1581,7 @@
             </div>
             <span class="status-badge status-muted">Retired &middot; ran ~5 months on AWS</span>
           </div>
-          <figure class="arch">
-            <picture>
-              <source media="(max-width: 600px)" srcset="images/arch/arch-sentinel-m.webp" />
-              <img src="images/arch/arch-sentinel.webp" alt="SENTINEL architecture: how data flows through it end to end" class="arch__img" loading="lazy" decoding="async" />
-            </picture>
-            <button type="button" class="arch__more" tabindex="-1" aria-hidden="true">See the full diagram</button>
-          </figure>
+          <div class="arch-tree" data-tree="data/trees/sentinel.json" aria-label="Interactive architecture map"><noscript>Turn on JavaScript to explore the architecture map.</noscript></div>
           <p class="project-card__desc">
             A monitoring service that tracks three U.S. economic indicators &mdash; the
             federal funds rate, CPI and unemployment &mdash; pulling them daily from the
@@ -1710,13 +1642,7 @@
             </div>
             <span class="status-badge status-live">Runs locally &middot; Docker</span>
           </div>
-          <figure class="arch">
-            <picture>
-              <source media="(max-width: 600px)" srcset="images/arch/arch-pipeline-m.webp" />
-              <img src="images/arch/arch-pipeline.webp" alt="Portfolio Analytics Pipeline architecture: how data flows through it end to end" class="arch__img" loading="lazy" decoding="async" />
-            </picture>
-            <button type="button" class="arch__more" tabindex="-1" aria-hidden="true">See the full diagram</button>
-          </figure>
+          <div class="arch-tree" data-tree="data/trees/pipeline.json" aria-label="Interactive architecture map"><noscript>Turn on JavaScript to explore the architecture map.</noscript></div>
           <img src="images/portfolio_analysis.png" alt="Portfolio Analytics Dashboard" class="project-card__img">
           <p class="project-card__desc">
             An ELT pipeline that turns daily stock prices into a dashboard without anyone
@@ -1767,13 +1693,7 @@
             </div>
             <span class="status-badge status-live">Live</span>
           </div>
-          <figure class="arch">
-            <picture>
-              <source media="(max-width: 600px)" srcset="images/arch/arch-thrivekid-m.webp" />
-              <img src="images/arch/arch-thrivekid.webp" alt="ThriveKid architecture: how data flows through it end to end" class="arch__img" loading="lazy" decoding="async" />
-            </picture>
-            <button type="button" class="arch__more" tabindex="-1" aria-hidden="true">See the full diagram</button>
-          </figure>
+          <div class="arch-tree" data-tree="data/trees/thrivekid.json" aria-label="Interactive architecture map"><noscript>Turn on JavaScript to explore the architecture map.</noscript></div>
           <div class="screenshot-gallery">
             <img src="images/thrivekid-main.jpeg" alt="ThriveKid main page" class="screenshot-gallery__img" loading="lazy" />
             <img src="images/Main_dark.jpeg" alt="ThriveKid dark mode" class="screenshot-gallery__img" loading="lazy" />
@@ -2546,8 +2466,7 @@
       const src = img.currentSrc || img.src;
       const ratio = img.naturalWidth ? img.naturalHeight / img.naturalWidth : 1;
       lightboxOverlay.classList.toggle('lightbox-overlay--tall', ratio > 1.3);
-      lightboxOverlay.classList.toggle('lightbox-overlay--wide', !!img.closest('.arch') && ratio <= 1.3);
-      lightboxImg.src = src;
+            lightboxImg.src = src;
       lightboxImg.alt = img.alt;
       lightboxOverlay.scrollTop = 0;
       lightboxOverlay.classList.add('active');
@@ -2555,9 +2474,6 @@
     }
     document.querySelectorAll('.screenshot-gallery__img, .project-card__img').forEach(img => {
       img.addEventListener('click', () => openLightbox(img));
-    });
-    document.querySelectorAll('.arch').forEach(fig => {
-      fig.addEventListener('click', () => openLightbox(fig.querySelector('img')));
     });
     function closeLightbox() {
       lightboxOverlay.classList.remove('active');
@@ -2796,6 +2712,7 @@
 
   <!-- Analytics: GoatCounter (privacy-friendly, no cookies) -->
   <!-- Sign up at https://www.goatcounter.com → replace "sangthai" with your chosen code -->
+  <script src="assets/explorer.js" defer></script>
   <script data-goatcounter="https://sangthai.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

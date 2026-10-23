@@ -1,0 +1,736 @@
+{
+  "id": "credit-rag",
+  "name": "credit-rag",
+  "tagline": "Pulls key terms from credit agreements, each with page and quote",
+  "children": [
+    {
+      "id": "inputs",
+      "title": "Document intake",
+      "kind": "input",
+      "summary": "Credit agreements come in as PDF uploads or SEC EDGAR HTML. A generator makes a sample agreement with known answers.",
+      "source": "src/credit_rag/api/routes/ingest.py; scripts/fetch_edgar.py; src/credit_rag/synthetic.py",
+      "children": [
+        {
+          "id": "upload",
+          "title": "POST /ingest",
+          "kind": "input",
+          "summary": "Upload a PDF and get a 202 with a document id right away. Processing carries on in the background.",
+          "detail": "Checks PDF magic bytes and the 25 MB limit. The document id comes from the file's SHA-256, so re-uploading the same file returns already_accepted instead of a duplicate.",
+          "tech": [
+            "FastAPI"
+          ],
+          "metric": "25 MB cap",
+          "source": "src/credit_rag/api/routes/ingest.py; tests/api/test_ingest.py"
+        },
+        {
+          "id": "body-limit",
+          "title": "Body-size guard",
+          "kind": "security",
+          "summary": "An ASGI middleware enforces the upload cap before the multipart body is buffered, returning 413.",
+          "detail": "Found in review: a size check inside the endpoint runs after parsing and limits nothing. This one covers declared and chunked bodies.",
+          "flags": [
+            "security"
+          ],
+          "source": "src/credit_rag/api/middleware.py"
+        },
+        {
+          "id": "edgar-fetch",
+          "title": "EDGAR fetch script",
+          "kind": "tool",
+          "summary": "Pulls a real credit agreement from SEC EDGAR with a pinned URL and SHA-256, so the test document is reproducible.",
+          "detail": "The filing itself stays out of git. Parsed as native HTML because printing to PDF first corrupted text ('Borrower' became 'Bor ower').",
+          "flags": [
+            "tool"
+          ],
+          "source": "scripts/fetch_edgar.py; DECISIONS.md"
+        },
+        {
+          "id": "synthetic-doc",
+          "title": "Synthetic agreement",
+          "kind": "tool",
+          "summary": "Generates a multi-page sample agreement with a pricing-grid table and exact ground truth for regression tests.",
+          "flags": [
+            "test",
+            "tool"
+          ],
+          "source": "src/credit_rag/synthetic.py; tests/unit/test_synthetic.py"
+        }
+      ]
+    },
+    {
+      "id": "async-ingest",
+      "title": "Kafka queue + worker",
+      "kind": "process",
+      "summary": "Uploads become events on a Kafka topic. A separate worker processes them, and retries are safe because work is idempotent.",
+      "flow": true,
+      "source": "src/credit_rag/messaging/producer.py; src/credit_rag/worker/main.py; DECISIONS.md",
+      "children": [
+        {
+          "id": "events",
+          "title": "Versioned events",
+          "kind": "process",
+          "summary": "Event contracts are versioned and keyed by document id, so all events for one document stay in order.",
+          "source": "src/credit_rag/models/events.py"
+        },
+        {
+          "id": "producer",
+          "title": "Kafka producer",
+          "kind": "process",
+          "summary": "The API publishes an ingest event when Kafka is on. With it off, the same pipeline runs as an in-process background task.",
+          "detail": "Redpanda locally (Kafka API, no ZooKeeper or JVM). Real Kafka is a compose-only swap.",
+          "tech": [
+            "aiokafka",
+            "Redpanda"
+          ],
+          "source": "src/credit_rag/messaging/producer.py; tests/api/test_ingest_kafka.py"
+        },
+        {
+          "id": "worker",
+          "title": "Idempotent worker",
+          "kind": "process",
+          "summary": "At-least-once: offsets commit only after processing. A document already ready is skipped on redelivery.",
+          "detail": "Auto-commit is off. Chunks are replaced with delete+insert, so reprocessing never doubles the index. Emits completed/failed events.",
+          "tech": [
+            "aiokafka"
+          ],
+          "source": "src/credit_rag/worker/main.py; tests/unit/test_worker.py; tests/integration/test_kafka_roundtrip.py"
+        },
+        {
+          "id": "atomic-claim",
+          "title": "Atomic claim",
+          "kind": "store",
+          "summary": "A single SQL claim makes sure only one worker processes a document. Stuck 'processing' rows are reclaimed after 15 minutes.",
+          "detail": "Closed a duplicate-upload race found in code review.",
+          "metric": "15-min reclaim",
+          "source": "src/credit_rag/store/pgvector_store.py"
+        },
+        {
+          "id": "to-thread",
+          "title": "CPU work off the event loop",
+          "kind": "process",
+          "summary": "Parsing and embedding run in threads so the Kafka consumer keeps sending heartbeats during long documents.",
+          "detail": "Found in a containerized end-to-end run: inline parsing blocked the loop, the consumer got kicked from its group, and redeliveries piled up. asyncio.to_thread fixed it.",
+          "source": "src/credit_rag/pipeline.py; DECISIONS.md"
+        }
+      ]
+    },
+    {
+      "id": "parse-index",
+      "title": "Parse, chunk, embed",
+      "kind": "process",
+      "summary": "Each agreement is parsed locally with Docling, split so tables stay whole, embedded locally and stored in pgvector.",
+      "flow": true,
+      "source": "src/credit_rag/pipeline.py",
+      "children": [
+        {
+          "id": "docling",
+          "title": "Docling parsing",
+          "kind": "process",
+          "summary": "Docling reads PDF and HTML with table-structure recognition on and OCR off, keeping page and heading provenance.",
+          "detail": "Picked over unstructured for stronger open-source table handling. Runs fully local, so document text never leaves the machine at this stage.",
+          "tech": [
+            "Docling"
+          ],
+          "source": "src/credit_rag/parsing/docling_parser.py; tests/integration/test_docling_parser.py; DECISIONS.md"
+        },
+        {
+          "id": "chunker",
+          "title": "Table-preserving chunker",
+          "kind": "process",
+          "summary": "Prose is split by section into 1,200-char pieces with overlap. Tables stay whole as Markdown chunks.",
+          "detail": "Overlap never crosses a table boundary. Each piece is tagged with the page it starts on, so citations stay accurate across page breaks. That's why a rate defined in a pricing grid can still be cited.",
+          "metric": "1200 / 150 chars",
+          "source": "src/credit_rag/chunking/chunker.py; tests/unit/test_chunker.py"
+        },
+        {
+          "id": "empty-guard",
+          "title": "Fail on zero chunks",
+          "kind": "test",
+          "summary": "A document that yields no chunks (like a scanned PDF with OCR off) is marked failed, not ready.",
+          "detail": "Cancellations and shutdowns also mark the doc failed with a shielded write, so nothing gets stranded mid-processing.",
+          "flags": [
+            "test"
+          ],
+          "source": "src/credit_rag/pipeline.py; tests/unit/test_pipeline_guards.py"
+        },
+        {
+          "id": "encoder",
+          "title": "Local embeddings",
+          "kind": "ai",
+          "summary": "bge-small-en-v1.5 embeds chunks locally into 384-d normalized vectors, batched and lazy-loaded.",
+          "tech": [
+            "sentence-transformers",
+            "bge-small-en-v1.5"
+          ],
+          "flags": [
+            "ai"
+          ],
+          "metric": "384-d",
+          "source": "src/credit_rag/embedding/encoder.py; tests/unit/test_encoder.py"
+        },
+        {
+          "id": "pgvector",
+          "title": "pgvector store",
+          "kind": "store",
+          "summary": "One Postgres holds documents, chunks and vectors, with an HNSW cosine index and a full-text GIN index.",
+          "detail": "Raw asyncpg and explicit SQL keep the index DDL and the <=> cosine query visible instead of hidden behind an ORM. A generated tsvector column keeps the keyword index in sync.",
+          "tech": [
+            "PostgreSQL",
+            "pgvector",
+            "asyncpg"
+          ],
+          "source": "src/credit_rag/store/pgvector_store.py; db/init/001_init.sql; tests/integration/test_pgvector_store.py"
+        }
+      ]
+    },
+    {
+      "id": "retrieval",
+      "title": "Two-pass retrieval",
+      "kind": "ai",
+      "summary": "Per field group: fast vector + keyword search for recall, then a local cross-encoder re-ranks for precision.",
+      "flags": [
+        "ai"
+      ],
+      "flow": true,
+      "source": "src/credit_rag/retrieval/retriever.py; src/credit_rag/retrieval/reranker.py; docs/adr/0003-hybrid-retrieval-and-preamble-prior.md",
+      "children": [
+        {
+          "id": "field-queries",
+          "title": "One query per field group",
+          "kind": "process",
+          "summary": "Five focused questions (parties, facility, pricing, covenants, defaults) drive retrieval instead of one big query.",
+          "source": "src/credit_rag/extraction/groups.py"
+        },
+        {
+          "id": "dense-ann",
+          "title": "Vector search",
+          "kind": "ai",
+          "summary": "Embeds the query and pulls the top 20 nearest chunks from this document via HNSW.",
+          "tech": [
+            "pgvector"
+          ],
+          "flags": [
+            "ai"
+          ],
+          "metric": "top-k 20",
+          "source": "src/credit_rag/retrieval/retriever.py; src/credit_rag/store/pgvector_store.py"
+        },
+        {
+          "id": "bm25",
+          "title": "Keyword search + RRF",
+          "kind": "process",
+          "summary": "Postgres full-text search runs alongside and the two ranked lists merge with Reciprocal Rank Fusion (k=60).",
+          "detail": "Rank-based fusion because keyword scores and cosine distance aren't on comparable scales. Measured: it alone didn't move accuracy, but it's kept for literal figures and defined terms.",
+          "tech": [
+            "tsvector",
+            "GIN"
+          ],
+          "source": "src/credit_rag/retrieval/retriever.py; tests/unit/test_hybrid_retrieval.py; docs/adr/0003-hybrid-retrieval-and-preamble-prior.md"
+        },
+        {
+          "id": "rerank",
+          "title": "Cross-encoder re-rank",
+          "kind": "ai",
+          "summary": "A local MiniLM cross-encoder scores each query + chunk pair together and keeps the best 5.",
+          "detail": "Stage 1 is cheap recall, stage 2 is precise. Both scores are kept on each result. One env var upgrades to bge-reranker-base.",
+          "tech": [
+            "ms-marco-MiniLM-L-6-v2"
+          ],
+          "flags": [
+            "ai"
+          ],
+          "metric": "20 -> 5",
+          "source": "src/credit_rag/retrieval/reranker.py; tests/unit/test_retriever.py; tests/integration/test_retrieval_real_models.py"
+        },
+        {
+          "id": "preamble",
+          "title": "Pinned title page",
+          "kind": "process",
+          "summary": "The first 2 chunks are always pinned into results, because the borrower's name lives on the title page.",
+          "detail": "'Borrower' shows up in 288 of 437 chunks, so no ranking can find the one that names it. Adding the title page as a candidate failed too: the re-ranker dropped it. Pinning is what worked.",
+          "metric": "57% -> 71%",
+          "source": "src/credit_rag/retrieval/retriever.py; docs/adr/0003-hybrid-retrieval-and-preamble-prior.md"
+        }
+      ]
+    },
+    {
+      "id": "extraction",
+      "title": "Cited extraction",
+      "kind": "ai",
+      "summary": "Claude fills a strict schema of credit terms from the retrieved chunks, with a page and quote behind every value.",
+      "flags": [
+        "ai"
+      ],
+      "source": "src/credit_rag/extraction/extractor.py; src/credit_rag/models/credit.py; prompts/",
+      "children": [
+        {
+          "id": "schema",
+          "title": "Credit terms schema",
+          "kind": "process",
+          "summary": "Borrower, agent, facility type, amount, maturity, margin, benchmark, events of default, plus a covenants list.",
+          "detail": "Each field carries value, found, citations (chunk id, page, section, verbatim quote) and a rationale. found=false is a valid answer, not an error.",
+          "tech": [
+            "Pydantic"
+          ],
+          "metric": "8 fields + covenants",
+          "source": "src/credit_rag/models/credit.py; tests/test_models.py"
+        },
+        {
+          "id": "groups",
+          "title": "Attribute groups",
+          "kind": "process",
+          "summary": "Fields are extracted in five groups, each with its own retrieval query and sub-schema.",
+          "source": "src/credit_rag/extraction/groups.py"
+        },
+        {
+          "id": "prompts",
+          "title": "Versioned prompts",
+          "kind": "ai",
+          "summary": "System and user prompts live as files: ground in context, cite spans, abstain instead of guessing.",
+          "detail": "Changing a prompt is treated as a measurable event: re-run the eval and compare.",
+          "flags": [
+            "ai"
+          ],
+          "source": "prompts/README.md; prompts/extraction_system.md; prompts/extraction_user.md"
+        },
+        {
+          "id": "instructor",
+          "title": "Instructor + Claude",
+          "kind": "ai",
+          "summary": "Claude Sonnet 4.6 returns typed output via Instructor, which re-prompts on validation errors (2 retries).",
+          "tech": [
+            "Instructor",
+            "Anthropic",
+            "Claude Sonnet 4.6"
+          ],
+          "flags": [
+            "ai"
+          ],
+          "source": "src/credit_rag/extraction/client.py; src/credit_rag/core/config.py"
+        },
+        {
+          "id": "no-context",
+          "title": "No-context short-circuit",
+          "kind": "process",
+          "summary": "If retrieval returns nothing, the group abstains without spending an LLM call.",
+          "source": "src/credit_rag/extraction/extractor.py; tests/unit/test_extractor.py"
+        },
+        {
+          "id": "grounding-check",
+          "title": "Citation check in code",
+          "kind": "security",
+          "summary": "Any value whose citations don't point to a chunk actually retrieved is demoted to NOT FOUND. The model never self-certifies.",
+          "detail": "Covenants with unverifiable citations are dropped. Tested with a mocked LLM that invents a 'ghost' citation.",
+          "flags": [
+            "security",
+            "test"
+          ],
+          "source": "src/credit_rag/extraction/extractor.py; tests/unit/test_extractor.py"
+        },
+        {
+          "id": "extract-cache",
+          "title": "Redis result cache",
+          "kind": "store",
+          "summary": "Optional cache of extraction results, keyed by content-hash doc id plus model and schema version.",
+          "detail": "Same id always means same content, so a hit can't be stale; including model and schema version means a deploy misses instead of serving old output. Off by default.",
+          "tech": [
+            "Redis"
+          ],
+          "source": "src/credit_rag/store/cache.py; tests/api/test_extract_cache.py"
+        }
+      ]
+    },
+    {
+      "id": "eval",
+      "title": "Eval harness",
+      "kind": "test",
+      "summary": "Scores retrieval and extraction against hand-labeled answer keys, so every change is proven with numbers.",
+      "flags": [
+        "test",
+        "ai"
+      ],
+      "metric": "71% vs 57% baseline",
+      "source": "eval/README.md; eval/metrics.py; eval/run_eval.py",
+      "children": [
+        {
+          "id": "metrics",
+          "title": "Four metrics",
+          "kind": "test",
+          "summary": "Context precision, context recall, faithfulness (cited quote is in the cited chunk) and per-field accuracy.",
+          "detail": "Deterministic, no LLM judge needed. Correct abstention counts as correct.",
+          "flags": [
+            "test"
+          ],
+          "source": "eval/metrics.py; tests/unit/test_metrics.py"
+        },
+        {
+          "id": "golden-sets",
+          "title": "Golden answer keys",
+          "kind": "test",
+          "summary": "A synthetic agreement with exact truth and a hand-labeled 229-page SEC credit agreement.",
+          "detail": "Relevance labels use content markers, so they survive re-chunking.",
+          "flags": [
+            "test"
+          ],
+          "metric": "229 pages / 437 chunks",
+          "source": "eval/golden/synthetic.json; eval/golden/tractor_supply.json"
+        },
+        {
+          "id": "ab-results",
+          "title": "Measured A/B",
+          "kind": "test",
+          "summary": "Dense only: 57%. Plus keyword search: still 57%. Plus pinned title page: 71%, with the borrower now right.",
+          "detail": "Faithfulness held at 0.875 across all arms and the synthetic set stayed at 1.0. The textbook fix was tested and falsified, then the real cause was found in the data.",
+          "flags": [
+            "test"
+          ],
+          "metric": "0.571 -> 0.714",
+          "source": "docs/adr/0003-hybrid-retrieval-and-preamble-prior.md; PROGRESS.md"
+        },
+        {
+          "id": "run-eval",
+          "title": "make eval runner",
+          "kind": "tool",
+          "summary": "Runs the full real pipeline end to end. --mock swaps in a groundable fake extractor, otherwise it calls live Claude.",
+          "detail": "Every retrieval add-on is env-flagged, so any arm can be reproduced.",
+          "flags": [
+            "test",
+            "tool"
+          ],
+          "source": "eval/run_eval.py; Makefile"
+        }
+      ]
+    },
+    {
+      "id": "api-ui",
+      "title": "API + Angular UI",
+      "kind": "ui",
+      "summary": "A small FastAPI surface and a single-page Angular app: upload, watch status, then see every term with its citations.",
+      "source": "src/credit_rag/api/app.py; frontend/src/app/app.component.ts",
+      "children": [
+        {
+          "id": "routes",
+          "title": "API routes",
+          "kind": "process",
+          "summary": "POST /ingest, GET /documents/{id} for status, POST /extract for results, GET /health, and OpenAPI docs.",
+          "detail": "/extract returns 404, 409 (not ready) or a clear 503 if no model key is set, instead of a fake answer.",
+          "tech": [
+            "FastAPI"
+          ],
+          "source": "src/credit_rag/api/routes/; tests/api/test_extract.py"
+        },
+        {
+          "id": "api-key",
+          "title": "API key auth",
+          "kind": "security",
+          "summary": "Every endpoint needs an x-api-key header, compared in constant time. An empty key fails at startup.",
+          "flags": [
+            "security"
+          ],
+          "source": "src/credit_rag/api/deps.py; src/credit_rag/core/config.py; tests/api/test_auth.py"
+        },
+        {
+          "id": "error-envelope",
+          "title": "Safe error envelope",
+          "kind": "security",
+          "summary": "Errors come back in one client-safe shape with no tracebacks leaked.",
+          "flags": [
+            "security"
+          ],
+          "source": "src/credit_rag/api/errors.py; src/credit_rag/core/errors.py"
+        },
+        {
+          "id": "angular",
+          "title": "Angular demo UI",
+          "kind": "ui",
+          "summary": "Angular 19 with signals: drag-drop upload, a status pill polling every 2s, then one card per term.",
+          "detail": "Each card shows the value with page-cited quotes, or a NOT FOUND badge with the reason. Covenants render as a table. Plain CSS, no UI framework.",
+          "tech": [
+            "Angular 19",
+            "TypeScript"
+          ],
+          "source": "frontend/src/app/app.component.ts; frontend/src/app/api.service.ts; frontend/package.json"
+        },
+        {
+          "id": "e2e",
+          "title": "Playwright end-to-end",
+          "kind": "test",
+          "summary": "Drives the real UI against the live stack and checks every card is either cited or explicitly abstained.",
+          "detail": "The test also captures the README screenshots, so they can't drift from the real UI. Passed with 8/8 attributes and 12 citations.",
+          "tech": [
+            "Playwright"
+          ],
+          "flags": [
+            "test"
+          ],
+          "source": "frontend/e2e/extraction.spec.ts; frontend/playwright.config.ts"
+        }
+      ]
+    },
+    {
+      "id": "infra",
+      "title": "Infra + security",
+      "kind": "infra",
+      "summary": "One Docker image for API and worker, a Compose stack with Kafka and Redis, k8s manifests, and optional Vault secrets.",
+      "source": "Dockerfile; docker-compose.yml; deploy/k8s/",
+      "children": [
+        {
+          "id": "docker",
+          "title": "One image, two roles",
+          "kind": "infra",
+          "summary": "Multi-stage uv build, non-root, lockfile-exact deps. The worker is the same image with a different command.",
+          "detail": "No API-vs-worker drift: one build, one set of pinned deps.",
+          "tech": [
+            "Docker",
+            "uv"
+          ],
+          "flags": [
+            "security"
+          ],
+          "source": "Dockerfile; DECISIONS.md"
+        },
+        {
+          "id": "compose",
+          "title": "Compose stack",
+          "kind": "infra",
+          "summary": "API, worker, Postgres+pgvector, Redis and Redpanda, with Vault and the UI behind opt-in profiles.",
+          "detail": "Shared volumes for raw files and the model cache. A containerized run went ingest -> Kafka -> worker -> ready in about 15-18s for the sample doc.",
+          "tech": [
+            "Docker Compose",
+            "Redpanda",
+            "Redis"
+          ],
+          "source": "docker-compose.yml; scripts/dev_up.sh; scripts/ingest_sample.sh"
+        },
+        {
+          "id": "k8s",
+          "title": "Kubernetes manifests",
+          "kind": "infra",
+          "summary": "API Deployment with an autoscaler (2-6 replicas), a worker Deployment, and config/secret maps.",
+          "detail": "Pods run as non-root. Worker replicas share Kafka partitions, so they scale up to the partition count.",
+          "tech": [
+            "Kubernetes"
+          ],
+          "source": "deploy/k8s/api.yaml; deploy/k8s/worker.yaml; deploy/k8s/configmap.yaml"
+        },
+        {
+          "id": "vault",
+          "title": "Vault secrets (opt-in)",
+          "kind": "security",
+          "summary": "Env vars by default. Set a Vault address and secrets load from Vault KV v2 at startup.",
+          "tech": [
+            "HashiCorp Vault",
+            "hvac"
+          ],
+          "flags": [
+            "security"
+          ],
+          "source": "src/credit_rag/core/secrets.py; tests/unit/test_secrets.py"
+        },
+        {
+          "id": "uv-lock",
+          "title": "Locked, reproducible builds",
+          "kind": "tool",
+          "summary": "uv with a committed lockfile and pinned Python 3.12, after 'green locally, red in CI' drift.",
+          "detail": "Root cause was no lockfile, Python version drift, and an unanchored .gitignore rule that silently left the models package out of the repo.",
+          "tech": [
+            "uv"
+          ],
+          "flags": [
+            "tool"
+          ],
+          "source": "docs/adr/0002-uv-lockfile-reproducible-builds.md; uv.lock; .python-version"
+        },
+        {
+          "id": "logging",
+          "title": "Structured logs",
+          "kind": "infra",
+          "summary": "Standard logging with a JSON formatter switched on for production.",
+          "tech": [
+            "logging"
+          ],
+          "source": "src/credit_rag/core/logging.py"
+        }
+      ]
+    },
+    {
+      "id": "testing",
+      "title": "Tests + CI",
+      "kind": "test",
+      "summary": "A fast suite with test doubles runs in about a second, plus marked integration tests against real models, Kafka and pgvector.",
+      "flags": [
+        "test"
+      ],
+      "metric": "67 test functions",
+      "source": "tests/; .github/workflows/ci.yml; Makefile",
+      "children": [
+        {
+          "id": "fast-suite",
+          "title": "Fast unit suite",
+          "kind": "test",
+          "summary": "The LLM and database are swapped for fakes, so tests are quick and give the same result every time.",
+          "tech": [
+            "pytest"
+          ],
+          "flags": [
+            "test"
+          ],
+          "source": "tests/unit/; tests/api/conftest.py"
+        },
+        {
+          "id": "integration",
+          "title": "Integration tests",
+          "kind": "test",
+          "summary": "Marked tests hit real Docling, real models, a real pgvector and a real Redpanda round trip.",
+          "flags": [
+            "test"
+          ],
+          "source": "tests/integration/test_docling_parser.py; tests/integration/test_kafka_roundtrip.py; tests/integration/test_pgvector_store.py; tests/integration/test_retrieval_real_models.py"
+        },
+        {
+          "id": "ci",
+          "title": "GitHub Actions",
+          "kind": "test",
+          "summary": "Two jobs: lint + strict type check + fast tests, and store integration tests against a pgvector service.",
+          "tech": [
+            "GitHub Actions",
+            "ruff",
+            "mypy --strict"
+          ],
+          "flags": [
+            "test"
+          ],
+          "source": ".github/workflows/ci.yml"
+        },
+        {
+          "id": "precommit",
+          "title": "Pre-commit hooks",
+          "kind": "tool",
+          "summary": "ruff check, ruff format and mypy run before every commit.",
+          "flags": [
+            "test",
+            "tool"
+          ],
+          "source": ".pre-commit-config.yaml"
+        },
+        {
+          "id": "reviews",
+          "title": "Recorded code reviews",
+          "kind": "test",
+          "summary": "Review rounds are written up with findings and fixes, including an adversarial second pass.",
+          "detail": "Round 1: 18 findings confirmed, 23 refuted. Round 2: 7 confirmed, all fixed and re-checked in the containerized stack.",
+          "flags": [
+            "test"
+          ],
+          "source": "docs/reviews/2026-06-28-phase-0-1-2-7-skeleton.md; PROGRESS.md"
+        }
+      ]
+    },
+    {
+      "id": "roadmap",
+      "title": "Planned next",
+      "kind": "process",
+      "status": "coming",
+      "summary": "Work the repo docs name as next or deferred, each to be proven by the eval harness first.",
+      "source": "PROGRESS.md; DECISIONS.md; docs/adr/0003-hybrid-retrieval-and-preamble-prior.md",
+      "children": [
+        {
+          "id": "defined-terms",
+          "title": "Defined-term index",
+          "kind": "ai",
+          "status": "coming",
+          "summary": "Resolve defined terms like 'Revolving Committed Amount' before retrieval, to fix the still-missed facility amount.",
+          "flags": [
+            "ai"
+          ],
+          "source": "docs/adr/0003-hybrid-retrieval-and-preamble-prior.md; PROGRESS.md"
+        },
+        {
+          "id": "addons",
+          "title": "Contextual retrieval + LLM judge",
+          "kind": "ai",
+          "status": "coming",
+          "summary": "Flagged add-ons to A/B against the harness: contextual retrieval and an optional LLM-judge faithfulness signal.",
+          "flags": [
+            "ai",
+            "test"
+          ],
+          "source": "DECISIONS.md; eval/README.md"
+        },
+        {
+          "id": "alembic",
+          "title": "Alembic migrations",
+          "kind": "store",
+          "status": "coming",
+          "summary": "Deferred until the schema changes after v1. Plain init SQL is enough for now.",
+          "source": "DECISIONS.md; db/init/001_init.sql"
+        },
+        {
+          "id": "otel",
+          "title": "OpenTelemetry tracing",
+          "kind": "infra",
+          "status": "coming",
+          "summary": "Deferred until there's a collector to send traces to. Logs are already structured JSON.",
+          "source": "DECISIONS.md"
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "from": "api-ui",
+      "to": "inputs",
+      "label": "PDF upload"
+    },
+    {
+      "from": "inputs",
+      "to": "async-ingest",
+      "label": "ingest event"
+    },
+    {
+      "from": "async-ingest",
+      "to": "parse-index",
+      "label": "worker runs pipeline"
+    },
+    {
+      "from": "parse-index",
+      "to": "retrieval",
+      "label": "vectors + tsvector"
+    },
+    {
+      "from": "retrieval",
+      "to": "extraction",
+      "label": "top-5 + title page"
+    },
+    {
+      "from": "extraction",
+      "to": "api-ui",
+      "label": "cited terms"
+    },
+    {
+      "from": "eval",
+      "to": "retrieval",
+      "label": "A/B scores"
+    },
+    {
+      "from": "eval",
+      "to": "extraction",
+      "label": "faithfulness"
+    },
+    {
+      "from": "infra",
+      "to": "async-ingest",
+      "label": "Redpanda + Redis"
+    },
+    {
+      "from": "testing",
+      "to": "parse-index",
+      "label": "real-model tests"
+    },
+    {
+      "from": "roadmap",
+      "to": "retrieval",
+      "label": "defined terms"
+    }
+  ]
+}

@@ -1,0 +1,1097 @@
+{
+  "id": "avocado",
+  "name": "Avocado",
+  "tagline": "Team copilot that cites your docs and computes over your data",
+  "children": [
+    {
+      "id": "inputs",
+      "title": "Inputs",
+      "kind": "input",
+      "summary": "Everything a team can feed in: files, spreadsheets, images, audio, a synced folder, and live voice questions.",
+      "source": "backend/app/api/v1/documents.py; backend/app/api/v1/voice.py; README.md",
+      "children": [
+        {
+          "id": "file-upload",
+          "title": "File uploads",
+          "kind": "input",
+          "summary": "Drag in PDFs, Word docs, Excel/CSV, Markdown, text and images. File type is detected from the bytes, not just the name.",
+          "detail": "Upload validation checks type and size. Detection looks at the file head plus the content type, so a renamed file still lands on the right parser.",
+          "tech": [
+            "FastAPI"
+          ],
+          "source": "backend/app/api/v1/documents.py; backend/app/ingestion/detection.py"
+        },
+        {
+          "id": "folder-sync",
+          "title": "Folder sync script",
+          "kind": "tool",
+          "summary": "Syncs a local folder into a workspace through the public API. Unchanged files are skipped, changed ones re-uploaded.",
+          "detail": "Keeps a sync-state file in the folder. Has --dry-run and --delete-missing. This is the connector-style stand-in while real connectors are deferred.",
+          "flags": [
+            "tool"
+          ],
+          "source": "backend/scripts/sync_workspace_folder.py; README.md"
+        },
+        {
+          "id": "voice-recordings",
+          "title": "Recorded audio",
+          "kind": "input",
+          "summary": "Upload a meeting recording, Deepgram transcribes it, and the transcript becomes a normal searchable document.",
+          "detail": "The audio is kept next to the transcript so it can be re-transcribed later without a new upload. Default model is Deepgram nova-2.",
+          "tech": [
+            "Deepgram"
+          ],
+          "flags": [
+            "ai"
+          ],
+          "source": "backend/app/services/voice_service.py; backend/app/clients/stt/deepgram.py"
+        },
+        {
+          "id": "live-dictation",
+          "title": "Live voice questions",
+          "kind": "input",
+          "summary": "Speak a question instead of typing it. A WebSocket streams the mic to speech-to-text and fills the composer.",
+          "detail": "The socket authenticates on its first message, not a URL token, so no token lands in access logs. Workspace access is re-checked on the socket. The mic only shows if the server reports voice is configured.",
+          "tech": [
+            "WebSocket",
+            "Deepgram"
+          ],
+          "flags": [
+            "security"
+          ],
+          "source": "backend/app/api/v1/voice.py; frontend/src/features/voice/VoiceInput.tsx; frontend/src/features/voice/useAudioRecorder.ts"
+        },
+        {
+          "id": "demo-seed",
+          "title": "Demo data seed",
+          "kind": "tool",
+          "summary": "One command builds a sample company with policies, notes, spreadsheets and a real 110k-row orders dataset.",
+          "detail": "Seeds through the public API like a real user would. Includes an empty workspace on purpose, to show the honest 'not in these sources' answer.",
+          "flags": [
+            "tool"
+          ],
+          "metric": "110,064 real rows",
+          "source": "backend/scripts/generate_demo_data.py; backend/scripts/demo_fixtures/SOURCE.md"
+        }
+      ]
+    },
+    {
+      "id": "ingestion",
+      "title": "Ingestion pipeline",
+      "kind": "process",
+      "summary": "Turns each upload into searchable chunks and, for spreadsheets, a real table pandas can compute over.",
+      "flow": true,
+      "source": "backend/app/services/ingestion_service.py; backend/app/worker/tasks.py; docs/architecture.md",
+      "children": [
+        {
+          "id": "parse",
+          "title": "Parse by type",
+          "kind": "process",
+          "summary": "Type-specific parsers pull text and structure out of PDF, DOCX, XLSX, CSV, Markdown and plain text.",
+          "detail": "CSV delimiters are sniffed. Spreadsheet frames are normalised and described column by column so the analysis model gets a clean schema.",
+          "tech": [
+            "pandas",
+            "pypdf",
+            "python-docx"
+          ],
+          "source": "backend/app/ingestion/parsers.py"
+        },
+        {
+          "id": "vision-ocr",
+          "title": "Vision for images and scans",
+          "kind": "ai",
+          "summary": "Images and scanned PDFs have no text, so Claude's vision input describes them for later search.",
+          "detail": "Scanned PDFs are rendered at 150 DPI with pypdfium2 (picked over PyMuPDF for licensing) and capped at 20 pages as a cost control. Vision output is capped at 2,048 tokens.",
+          "tech": [
+            "pypdfium2",
+            "Claude vision"
+          ],
+          "flags": [
+            "ai"
+          ],
+          "source": "backend/app/services/ingestion_service.py; backend/app/ingestion/rasterize.py"
+        },
+        {
+          "id": "chunking",
+          "title": "Chunking",
+          "kind": "process",
+          "summary": "Splits text on the widest natural break that fits: paragraph, then line, then sentence, then space.",
+          "detail": "1,200-character chunks with 150 characters of overlap so a passage that straddles a seam still reads right. Tiny tail chunks under 80 chars get merged.",
+          "metric": "1200 / 150 chars",
+          "source": "backend/app/ingestion/chunking.py"
+        },
+        {
+          "id": "tables-twice",
+          "title": "Spreadsheets stored twice",
+          "kind": "store",
+          "summary": "Each spreadsheet is embedded as text and also kept as a structured table, so it can be both searched and computed on.",
+          "detail": "The text copy answers 'which file mentions Q3 revenue?'. The table copy is what the sandboxed pandas code reads.",
+          "source": "backend/app/models/documents.py; README.md"
+        },
+        {
+          "id": "embedding",
+          "title": "Embeddings",
+          "kind": "ai",
+          "summary": "Chunks are embedded with Voyage or OpenAI at 1,024 dimensions. Questions use the query encoding, not the passage one.",
+          "detail": "An offline hash embedder lets the whole retrieval path run without an API key in dev. It's not semantic, and config refuses to start with it outside development.",
+          "tech": [
+            "voyage-3",
+            "text-embedding-3-small"
+          ],
+          "flags": [
+            "ai"
+          ],
+          "metric": "1024-d",
+          "source": "backend/app/clients/embeddings/providers.py; backend/app/services/rag_service.py"
+        },
+        {
+          "id": "vector-store",
+          "title": "pgvector + HNSW",
+          "kind": "store",
+          "summary": "Vectors live in Postgres next to everything else, with an HNSW cosine index and a workspace pre-filter index.",
+          "detail": "HNSW (m=16, ef_construction=64) over IVFFlat because IVFFlat built on an empty table quietly loses recall. Chunks are tagged with their embedding space so mixed models never get compared.",
+          "tech": [
+            "PostgreSQL 16",
+            "pgvector"
+          ],
+          "source": "backend/alembic/versions/0003_vector_index.py; backend/alembic/versions/0008_tag_chunks_with_embedding_space.py"
+        },
+        {
+          "id": "classify",
+          "title": "Knowledge layer tagging",
+          "kind": "ai",
+          "summary": "A cheap model reads each document's opening text and tags it as a policy, process and so on, with subjects and dates.",
+          "detail": "Only the first part of the file is sent: a policy says what it is on page one. Feeds the Knowledge Map view.",
+          "flags": [
+            "ai"
+          ],
+          "source": "backend/app/services/knowledge_service.py; backend/alembic/versions/0005_document_classifications.py; frontend/src/features/knowledge/KnowledgeMap.tsx"
+        }
+      ]
+    },
+    {
+      "id": "answer-paths",
+      "title": "Two answer paths",
+      "kind": "ai",
+      "summary": "One chat box, two engines: quote the documents for knowledge, compute from the table for data.",
+      "detail": "A regex intent check picks the path per turn (analysis words + a spreadsheet in scope, or report phrases). It's rules, not an LLM, so routing is cheap and predictable.",
+      "flags": [
+        "ai"
+      ],
+      "source": "backend/app/services/chat_service.py; README.md",
+      "children": [
+        {
+          "id": "intent-router",
+          "title": "Intent router",
+          "kind": "process",
+          "summary": "Picks retrieval, single-file analysis, or a whole-workspace report from the wording and what data is in the workspace.",
+          "detail": "Streams different events per path: citations for retrieval, analysis_started/completed for analysis, report_started for reports.",
+          "source": "backend/app/services/chat_service.py"
+        },
+        {
+          "id": "rag-path",
+          "title": "Cited retrieval path",
+          "kind": "ai",
+          "summary": "For knowledge questions: find the right passages, answer only from them, and cite each claim.",
+          "flags": [
+            "ai"
+          ],
+          "flow": true,
+          "source": "backend/app/services/rag_service.py",
+          "children": [
+            {
+              "id": "retrieve",
+              "title": "Vector search",
+              "kind": "process",
+              "summary": "Embeds the question and pulls the top 8 chunks from this workspace only.",
+              "detail": "Cosine similarity floor of 0.15, kept loose on purpose: the prompt handles weak evidence, and cutting too hard makes confident 'I don't know's.",
+              "metric": "top-8, sim >= 0.15",
+              "source": "backend/app/services/rag_service.py; backend/app/repositories/documents.py"
+            },
+            {
+              "id": "grounded-prompt",
+              "title": "Grounded answer prompt",
+              "kind": "ai",
+              "summary": "Sources are numbered and the model must cite [1], [2], never fill gaps from general knowledge, and flag disagreements.",
+              "detail": "Also asks for exact figures, answer-first, and a short Limits note when coverage is partial. A shared 'voice' block keeps chat, reports and analysis reading like one colleague.",
+              "flags": [
+                "ai"
+              ],
+              "source": "backend/app/services/rag_service.py"
+            },
+            {
+              "id": "cited-only",
+              "title": "Only cited sources attached",
+              "kind": "process",
+              "summary": "After the answer comes back, only the sources it actually cited are saved on the message.",
+              "detail": "So the citation list means 'this answer used it', not 'this was retrieved'.",
+              "source": "backend/app/services/rag_service.py; backend/app/models/conversations.py"
+            },
+            {
+              "id": "no-hit-fallbacks",
+              "title": "Honest no-hit fallbacks",
+              "kind": "ai",
+              "summary": "If nothing matches, separate prompts handle small talk, web search, connected tools, or saying plainly it's not in the docs.",
+              "detail": "A per-workspace require_grounding flag (on by default) decides whether a general-knowledge answer is ever allowed. Web and tool answers must say they didn't come from uploads.",
+              "flags": [
+                "ai"
+              ],
+              "source": "backend/app/services/rag_service.py; backend/alembic/versions/0020_workspace_grounding_mode.py"
+            },
+            {
+              "id": "presets",
+              "title": "Presets go first",
+              "kind": "ai",
+              "summary": "Team presets (named system prompts) are prepended, so the built-in citation rules are always the last word.",
+              "detail": "A message names a preset by slug, never by prompt text, so a client can't smuggle in its own system prompt. The answer records which preset version it ran under.",
+              "flags": [
+                "ai",
+                "security"
+              ],
+              "source": "backend/app/services/preset_service.py; backend/app/services/rag_service.py; backend/tests/integration/test_presets.py"
+            }
+          ]
+        },
+        {
+          "id": "analysis-path",
+          "title": "Computed analysis path",
+          "kind": "ai",
+          "summary": "For data questions: the model writes pandas, it runs in a locked sandbox over the whole file, and you get the number plus the code.",
+          "flags": [
+            "ai",
+            "security"
+          ],
+          "flow": true,
+          "source": "backend/app/services/analysis_service.py",
+          "children": [
+            {
+              "id": "schema-only",
+              "title": "Model sees schema only",
+              "kind": "ai",
+              "summary": "The model gets the table's columns and types, never the data rows. The program produces the number.",
+              "detail": "That's what makes an answer reproducible and auditable instead of plausible.",
+              "flags": [
+                "ai"
+              ],
+              "source": "backend/app/services/analysis_service.py"
+            },
+            {
+              "id": "codegen",
+              "title": "LLM writes Python",
+              "kind": "ai",
+              "summary": "The strongest available model writes the pandas program (code generation is the top tier in the router).",
+              "tech": [
+                "pandas"
+              ],
+              "flags": [
+                "ai"
+              ],
+              "source": "backend/app/services/analysis_service.py; backend/app/clients/llm/router.py"
+            },
+            {
+              "id": "ast-screen",
+              "title": "Static code screen",
+              "kind": "security",
+              "summary": "An AST check rejects banned imports like socket, subprocess, ctypes and requests before anything runs.",
+              "detail": "Defence in depth, explicitly not the boundary. The container is the boundary.",
+              "flags": [
+                "security"
+              ],
+              "source": "backend/app/clients/sandbox/guard.py; backend/tests/unit/test_sandbox_guard.py"
+            },
+            {
+              "id": "sandbox-run",
+              "title": "Sandboxed run",
+              "kind": "security",
+              "summary": "The code runs in a no-network, read-only container over the full dataset. Results come back on stdout only.",
+              "detail": "The harness loads mounted CSVs into DataFrames, runs the snippet, captures any matplotlib chart, and prints one JSON object. Output tables are capped at 200 rows x 50 cols.",
+              "tech": [
+                "Docker",
+                "pandas",
+                "matplotlib"
+              ],
+              "flags": [
+                "security"
+              ],
+              "source": "sandbox/runner.py; backend/app/clients/sandbox/http_sandbox.py"
+            },
+            {
+              "id": "self-repair",
+              "title": "Retry on its own error",
+              "kind": "ai",
+              "summary": "If the code fails (usually a wrong column name), the traceback goes back to the model once. Two attempts max.",
+              "detail": "A third try rarely works and costs real money. Timeouts are not retried.",
+              "flags": [
+                "ai"
+              ],
+              "metric": "2 attempts",
+              "source": "backend/app/services/analysis_service.py"
+            },
+            {
+              "id": "code-artifact",
+              "title": "Run saved with its code",
+              "kind": "store",
+              "summary": "Each run is logged as an AnalysisRun and the program is kept as a code artifact you can open later.",
+              "detail": "Doubles as an audit log: question, generated code, result and status per run.",
+              "source": "backend/app/models/analysis.py; backend/app/services/artifact_service.py"
+            }
+          ]
+        },
+        {
+          "id": "exec-report",
+          "title": "Workspace executive report",
+          "kind": "ai",
+          "summary": "Ask for an executive summary and it profiles every spreadsheet, then builds a KPI dashboard where every number is computed.",
+          "flags": [
+            "ai"
+          ],
+          "flow": true,
+          "source": "backend/app/services/report_service.py; backend/app/services/report_profiler.py",
+          "children": [
+            {
+              "id": "report-intent",
+              "title": "Report intent detection",
+              "kind": "process",
+              "summary": "Strong phrases like 'executive summary' or 'KPI report' route to a report. 'Dashboard' only does if there are several datasets.",
+              "source": "backend/app/services/chat_service.py"
+            },
+            {
+              "id": "profiler",
+              "title": "Deterministic profiler",
+              "kind": "process",
+              "summary": "Our own profiling code (not model-written) runs in the same sandbox and emits KPIs and small aggregated series.",
+              "detail": "Running it in the sandbox keeps a huge or malformed spreadsheet from tying up an API worker.",
+              "flags": [
+                "security"
+              ],
+              "source": "backend/app/services/report_profiler.py"
+            },
+            {
+              "id": "report-narrative",
+              "title": "One narrative pass",
+              "kind": "ai",
+              "summary": "A single generation writes per-theme narrative with on course / watch / off course status and picks series to chart.",
+              "detail": "Any chart whose fields don't match a computed series is dropped before it reaches the browser. The report is saved on the message, so it survives a reload.",
+              "flags": [
+                "ai"
+              ],
+              "source": "backend/app/services/report_service.py"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "model-layer",
+      "title": "Model router",
+      "kind": "ai",
+      "summary": "One interface over Anthropic, OpenAI and Ollama. 'Auto' picks a model per task, and the UI always shows which one answered.",
+      "flags": [
+        "ai"
+      ],
+      "source": "backend/app/clients/llm/router.py; backend/app/clients/llm/base.py",
+      "children": [
+        {
+          "id": "providers",
+          "title": "Provider adapters",
+          "kind": "ai",
+          "summary": "Anthropic (primary), OpenAI and Ollama adapters behind one generate/stream interface, built lazily.",
+          "detail": "A missing OpenAI key doesn't stop boot if only Claude is used. A shared contract test holds every adapter to the same behaviour.",
+          "tech": [
+            "Anthropic",
+            "OpenAI",
+            "Ollama"
+          ],
+          "flags": [
+            "ai",
+            "test"
+          ],
+          "source": "backend/app/clients/llm/anthropic_provider.py; backend/app/clients/llm/openai_provider.py; backend/app/clients/llm/ollama_provider.py; backend/tests/unit/test_provider_contract.py"
+        },
+        {
+          "id": "auto-routing",
+          "title": "Auto mode by task type",
+          "kind": "ai",
+          "summary": "Cheap models for titles, classification and the prompt wand. The strongest for code, synthesis and artifacts.",
+          "detail": "A workspace pinned to a model always gets that model. model_used is saved on every message and shown as a tag.",
+          "flags": [
+            "ai"
+          ],
+          "source": "backend/app/clients/llm/router.py; backend/tests/unit/test_model_router.py"
+        },
+        {
+          "id": "budget",
+          "title": "Monthly org budget",
+          "kind": "security",
+          "summary": "Each org has a spend ceiling. Past 80% Auto stops reaching for frontier models; at 100% nothing else bills.",
+          "detail": "Usage is logged per call. Budget state is computed in the service layer so the router policy stays pure and testable.",
+          "metric": "80% soft cap",
+          "source": "backend/app/clients/llm/router.py; backend/app/services/usage_service.py; backend/alembic/versions/0009_org_monthly_budget.py; backend/tests/integration/test_budget.py"
+        },
+        {
+          "id": "enhance-wand",
+          "title": "Prompt wand",
+          "kind": "ai",
+          "summary": "Sharpens a half-typed question on the cheap tier. If it answers instead of rewriting, the result is thrown away.",
+          "detail": "A reply far longer than the draft is discarded and the original kept. There's an undo, since rewriting typed text is destructive.",
+          "flags": [
+            "ai"
+          ],
+          "source": "backend/app/services/enhance_service.py; frontend/src/features/chat/EnhanceWand.test.tsx"
+        }
+      ]
+    },
+    {
+      "id": "tools-agent",
+      "title": "Tool calling (MCP)",
+      "kind": "agent",
+      "summary": "Claude can call tools from connected MCP servers in a loop, plus web search, when the documents have nothing.",
+      "flags": [
+        "agent",
+        "tool",
+        "ai"
+      ],
+      "source": "backend/app/clients/tools/mcp_client.py; backend/app/clients/llm/anthropic_provider.py; docs/PROGRESS.md",
+      "children": [
+        {
+          "id": "tool-loop",
+          "title": "Tool-use loop",
+          "kind": "agent",
+          "summary": "The model picks tools, Avocado runs them and hands results back, up to 8 rounds per turn.",
+          "detail": "Every call gets an answer, even failures, because a model told nothing assumes success. Providers without the loop declare supports_client_tools = False instead of ignoring tools.",
+          "flags": [
+            "agent",
+            "tool"
+          ],
+          "metric": "8-round cap",
+          "source": "backend/app/clients/llm/anthropic_provider.py; backend/tests/unit/test_client_tool_loop.py"
+        },
+        {
+          "id": "mcp-client",
+          "title": "MCP client",
+          "kind": "tool",
+          "summary": "Hand-written Streamable HTTP client: initialize, tools/list, tools/call. Handles JSON and SSE replies.",
+          "detail": "Skipped the SDK because it brings a server framework and stdio transport not needed here. Caps response bytes (4 MB), result text (24k chars) and listing pages (20) so a hostile server can't flood things.",
+          "tech": [
+            "MCP",
+            "httpx"
+          ],
+          "flags": [
+            "tool",
+            "security"
+          ],
+          "source": "backend/app/clients/tools/mcp_client.py; backend/tests/unit/test_mcp_client.py"
+        },
+        {
+          "id": "mcp-config",
+          "title": "Server config + credentials",
+          "kind": "security",
+          "summary": "A JSON MCP_SERVERS row declares a server. auth_ref names the env var holding the token, never the token itself.",
+          "detail": "Unset credential vars, duplicate slugs or plaintext secrets in production fail at boot. Tool names are prefixed by server (wiki__search) so two servers can both offer 'search'.",
+          "flags": [
+            "tool",
+            "security"
+          ],
+          "source": "backend/app/clients/tools/registry.py; backend/app/core/config.py; backend/tests/unit/test_mcp_configuration.py"
+        },
+        {
+          "id": "tools-panel",
+          "title": "Tools panel + context cost",
+          "kind": "ui",
+          "summary": "A searchable tools modal with toggles per conversation and a line showing how much context enabled tools eat.",
+          "detail": "Cost is measured from the real tools/list, not guessed. A one-minute cached health probe shows whether each server is reachable. Placeholder cards can't be switched on.",
+          "flags": [
+            "tool"
+          ],
+          "source": "frontend/src/features/tools/ToolsModal.tsx; backend/app/services/tool_service.py; backend/app/services/tool_catalogue.py"
+        },
+        {
+          "id": "web-search",
+          "title": "Web search tool",
+          "kind": "tool",
+          "summary": "Anthropic's server-hosted web search, used only when the workspace has no hits. Answers must say they came from the web.",
+          "flags": [
+            "tool",
+            "ai"
+          ],
+          "source": "backend/app/services/chat_service.py; backend/app/services/rag_service.py"
+        },
+        {
+          "id": "tool-output-data",
+          "title": "Tool output is data",
+          "kind": "security",
+          "summary": "Text a tool returns is treated as something to report, never an instruction, in both code and prompt.",
+          "detail": "Nothing in the client parses tool output to decide what code does, and the prompt tells the model to ignore any requests inside it.",
+          "flags": [
+            "security"
+          ],
+          "source": "backend/app/services/rag_service.py; docs/PROGRESS.md"
+        }
+      ]
+    },
+    {
+      "id": "outputs",
+      "title": "Workspace UI",
+      "kind": "ui",
+      "summary": "A React workspace with streaming chat, charts, saved artifacts, history, schedules and team task tools.",
+      "tech": [
+        "React 19",
+        "TypeScript",
+        "Vite",
+        "Tailwind",
+        "TanStack Query",
+        "Zustand"
+      ],
+      "source": "frontend/src/features/workspace/WorkspaceShell.tsx; frontend/package.json",
+      "children": [
+        {
+          "id": "chat-stream",
+          "title": "Streaming chat + citations",
+          "kind": "ui",
+          "summary": "Answers stream in over SSE with clickable sources and a model tag. A gauge shows how full the context window is.",
+          "detail": "The gauge needs no extra request: messages already record what was sent and the model spec carries the window size.",
+          "source": "frontend/src/features/chat/ChatView.tsx; frontend/src/api/stream.ts; frontend/src/features/chat/ContextGauge.tsx"
+        },
+        {
+          "id": "charts",
+          "title": "Charts with Vega",
+          "kind": "output",
+          "summary": "Analysis results and report sections render as Vega-Lite charts built from computed data.",
+          "tech": [
+            "vega-embed"
+          ],
+          "source": "frontend/src/features/analysis/vegaSpec.ts; frontend/src/features/analysis/VegaChart.tsx; frontend/src/features/analysis/ReportArtifact.tsx"
+        },
+        {
+          "id": "artifacts",
+          "title": "Artifacts in a sandboxed frame",
+          "kind": "output",
+          "summary": "Model-written HTML dashboards and code are saved as versioned artifacts and shown in a null-origin iframe.",
+          "detail": "default-src 'none' policy, never dangerouslySetInnerHTML, so model HTML can't reach the session token. Tests prove they fail if allow-same-origin is added. HTML downloads as an attachment with nosniff.",
+          "flags": [
+            "security",
+            "test"
+          ],
+          "source": "frontend/src/features/artifacts/ArtifactFrame.tsx; backend/app/services/artifact_service.py; backend/alembic/versions/0011_artifacts.py"
+        },
+        {
+          "id": "history",
+          "title": "History + feedback",
+          "kind": "ui",
+          "summary": "Search, filter, rename, pin, archive, export to Markdown with citations, and thumbs up/down per message.",
+          "detail": "Message counts come back in the same query as a correlated scalar to avoid N+1 on the list page.",
+          "source": "frontend/src/features/history/HistoryPage.tsx; backend/app/services/chat_service.py; backend/tests/integration/test_history.py"
+        },
+        {
+          "id": "schedules",
+          "title": "Scheduled prompts",
+          "kind": "output",
+          "summary": "Save a prompt with a cron schedule. Each run opens a real conversation, so the answer lands in history with citations.",
+          "detail": "The UI leads with next run time and last error, since a quietly failing schedule is the thing to design against.",
+          "tech": [
+            "croniter"
+          ],
+          "source": "frontend/src/features/schedules/SchedulesModal.tsx; backend/app/services/schedule_service.py; backend/tests/integration/test_schedules.py"
+        },
+        {
+          "id": "notifications",
+          "title": "Notification bell",
+          "kind": "ui",
+          "summary": "Tells a person when their scheduled run finished, or failed. Opening the panel doesn't mark things read.",
+          "source": "frontend/src/features/notifications/NotificationBell.tsx; backend/app/services/notification_service.py"
+        },
+        {
+          "id": "team-mastermind",
+          "title": "Tasks, resume, suggestions",
+          "kind": "ai",
+          "summary": "Projects and tasks with their own threads. Reopening a task gets a 'here's where we left off' summary, plus a nudges bar.",
+          "detail": "Suggestion facts (overdue, new, unfinished) are computed exactly; the model only phrases and orders them, and a rewrite that changes the count is rejected. Resume falls back to a plain summary and says so.",
+          "flags": [
+            "ai"
+          ],
+          "source": "backend/app/services/task_resume_service.py; backend/app/services/suggestion_service.py; frontend/src/features/tasks/TaskBoard.tsx"
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "title": "Tenancy + security",
+      "kind": "security",
+      "summary": "Orgs, teams, workspaces and roles, enforced in the repository layer and again by Postgres row-level security.",
+      "flags": [
+        "security"
+      ],
+      "source": "backend/app/repositories/base.py; backend/app/db/rls.py; backend/app/services/membership_service.py",
+      "children": [
+        {
+          "id": "tenancy-model",
+          "title": "Orgs > Teams > Workspaces",
+          "kind": "security",
+          "summary": "Users belong to an org, join teams with a role, and teams own workspaces of shared knowledge.",
+          "detail": "One account per email globally, enforced by the schema (migration 0004).",
+          "flags": [
+            "security"
+          ],
+          "source": "backend/app/models/tenancy.py; docs/architecture.md"
+        },
+        {
+          "id": "scoped-repo",
+          "title": "Scoped repositories",
+          "kind": "security",
+          "summary": "WorkspaceScopedRepository requires workspace_id on every read and write and removes the unscoped get() entirely.",
+          "detail": "Flat routes like /documents/{id} check access in the same query as the lookup, so a row is never loaded before access is known. Cross-tenant requests get a 404, not a 403.",
+          "flags": [
+            "security"
+          ],
+          "source": "backend/app/repositories/base.py; README.md"
+        },
+        {
+          "id": "rbac",
+          "title": "RBAC roles",
+          "kind": "security",
+          "summary": "Four roles: org_admin, team_admin, member, viewer. One service resolves a user's effective role for every privileged path.",
+          "detail": "The 'org admins can manage any team' shortcut is scoped to the admin's own org inside that one resolver, not at call sites.",
+          "flags": [
+            "security",
+            "test"
+          ],
+          "metric": "21 RBAC tests",
+          "source": "backend/app/models/enums.py; backend/app/services/membership_service.py; backend/tests/integration/test_rbac.py"
+        },
+        {
+          "id": "rls",
+          "title": "Postgres row-level security",
+          "kind": "security",
+          "summary": "A second, independent layer: even a query that forgot its filter returns zero rows from another tenant.",
+          "detail": "Identity is re-applied on every transaction begin. Unset identity means no rows, not all rows. The app refuses to start in staging/prod if its DB role can bypass RLS.",
+          "flags": [
+            "security"
+          ],
+          "source": "backend/app/db/rls.py; backend/alembic/versions/0006_row_level_security.py; backend/scripts/create_app_role.sql"
+        },
+        {
+          "id": "auth",
+          "title": "Auth + invitations",
+          "kind": "security",
+          "summary": "Local email/password with argon2 and JWTs. Invite tokens are stored only as SHA-256 hashes and shown once.",
+          "detail": "Unknown, used, revoked and expired invites all look the same, so nobody can probe which existed. Tokens are redacted from logged paths.",
+          "tech": [
+            "argon2",
+            "PyJWT"
+          ],
+          "flags": [
+            "security"
+          ],
+          "source": "backend/app/core/security.py; backend/app/services/invitation_service.py; backend/tests/integration/test_invitations.py"
+        },
+        {
+          "id": "rate-limit",
+          "title": "Rate limits + log redaction",
+          "kind": "security",
+          "summary": "Redis-backed fixed-window limits per client and per org, and secrets scrubbed from log lines.",
+          "tech": [
+            "Redis"
+          ],
+          "flags": [
+            "security"
+          ],
+          "source": "backend/app/api/middleware.py; backend/app/core/logging.py; backend/tests/unit/test_log_redaction.py; backend/tests/integration/test_rate_limit.py"
+        },
+        {
+          "id": "task-visibility",
+          "title": "Task visibility rule",
+          "kind": "security",
+          "summary": "Tasks are seen only by the assignee, project members and admins, applied as a SQL predicate, not filtered in Python.",
+          "flags": [
+            "security"
+          ],
+          "source": "backend/app/repositories/projects.py; backend/tests/integration/test_task_visibility.py"
+        },
+        {
+          "id": "sandbox-hardening",
+          "title": "Sandbox hardening",
+          "kind": "security",
+          "summary": "Generated code runs in a locked container started by a separate runner service. No compliant sandbox means a 503, not weaker isolation.",
+          "detail": "Only the runner holds the Docker socket: no DB, no model access. Limits come from the runner's own config, never the request, so a caller can't ask for unlimited ones.",
+          "flags": [
+            "security",
+            "test"
+          ],
+          "metric": "16 escape tests",
+          "source": "backend/app/clients/sandbox/docker_sandbox.py; sandbox/Dockerfile; sandbox/service.py",
+          "children": [
+            {
+              "id": "sb-network",
+              "title": "No network",
+              "kind": "security",
+              "summary": "--network=none, plus tests that sockets and DNS both fail inside the box.",
+              "flags": [
+                "security"
+              ],
+              "source": "backend/app/clients/sandbox/docker_sandbox.py; backend/tests/integration/test_sandbox_security.py"
+            },
+            {
+              "id": "sb-readonly",
+              "title": "Read-only filesystem",
+              "kind": "security",
+              "summary": "--read-only root with a small tmpfs. Data comes in on a read-only mount and can't be modified.",
+              "flags": [
+                "security"
+              ],
+              "source": "backend/app/clients/sandbox/docker_sandbox.py; backend/tests/integration/test_sandbox_security.py"
+            },
+            {
+              "id": "sb-user",
+              "title": "Non-root user 10001",
+              "kind": "security",
+              "summary": "Runs as uid/gid 10001 set in the image and on the run command. Never root.",
+              "flags": [
+                "security"
+              ],
+              "source": "backend/app/clients/sandbox/docker_sandbox.py; backend/tests/integration/test_sandbox_security.py"
+            },
+            {
+              "id": "sb-caps",
+              "title": "cap-drop ALL + no-new-privileges",
+              "kind": "security",
+              "summary": "Every Linux capability dropped and privilege escalation blocked.",
+              "flags": [
+                "security"
+              ],
+              "source": "backend/app/clients/sandbox/docker_sandbox.py; backend/tests/integration/test_sandbox_security.py"
+            },
+            {
+              "id": "sb-limits",
+              "title": "Memory, CPU and PID caps",
+              "kind": "security",
+              "summary": "--memory equals --memory-swap so swap can't dodge the cap. A PID limit stops fork bombs. 30s timeout, 512 MB, 1 CPU by default.",
+              "flags": [
+                "security"
+              ],
+              "source": "backend/app/clients/sandbox/docker_sandbox.py; backend/tests/integration/test_sandbox_security.py"
+            },
+            {
+              "id": "sb-runner",
+              "title": "Runner owns the socket",
+              "kind": "security",
+              "summary": "The API talks to the runner over HTTP with a shared token. Compromising the API doesn't mean owning the host.",
+              "flags": [
+                "security"
+              ],
+              "source": "sandbox/service.py; backend/app/clients/sandbox/http_sandbox.py; docker-compose.yml"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "testing",
+      "title": "Testing + CI",
+      "kind": "test",
+      "summary": "Hundreds of backend and frontend tests against real Postgres and real containers, run on every push.",
+      "flags": [
+        "test"
+      ],
+      "metric": "578 backend + 176 frontend tests",
+      "source": "README.md; .github/workflows/ci.yml",
+      "children": [
+        {
+          "id": "backend-tests",
+          "title": "Backend suite",
+          "kind": "test",
+          "summary": "Unit and integration tests with pytest, run in parallel with a database per worker.",
+          "detail": "Integration tests need real Postgres + pgvector: vector columns, JSONB and enum types have no SQLite equivalent, so SQLite would prove the wrong thing.",
+          "tech": [
+            "pytest",
+            "pytest-xdist"
+          ],
+          "flags": [
+            "test"
+          ],
+          "metric": "578 tests",
+          "source": "backend/tests/; backend/tests/conftest.py"
+        },
+        {
+          "id": "cross-tenant-tests",
+          "title": "Cross-tenant tests",
+          "kind": "test",
+          "summary": "Two unrelated orgs probe every workspace route: lists, reads, writes, uploads, retrieval chunks, analysis runs, stats.",
+          "detail": "Reading another tenant's workspace must return 404. A separate 9-test file checks the RLS policies directly in the database.",
+          "flags": [
+            "test",
+            "security"
+          ],
+          "metric": "9 isolation tests",
+          "source": "backend/tests/integration/test_tenant_isolation.py; backend/tests/integration/test_row_level_security.py"
+        },
+        {
+          "id": "sandbox-tests",
+          "title": "Sandbox escape tests",
+          "kind": "test",
+          "summary": "Real containers, not mocks: network, raw sockets, DNS, infinite loops, sleep, memory, read-only FS, root, fork bomb, stdout flood.",
+          "detail": "CI builds the sandbox image first, because without it these tests skip and the guarantees go unverified.",
+          "flags": [
+            "test",
+            "security"
+          ],
+          "metric": "16 tests",
+          "source": "backend/tests/integration/test_sandbox_security.py"
+        },
+        {
+          "id": "frontend-tests",
+          "title": "Frontend tests",
+          "kind": "test",
+          "summary": "Vitest component and API tests, plus ESLint, a strict typecheck and a production build.",
+          "tech": [
+            "Vitest",
+            "ESLint",
+            "TypeScript"
+          ],
+          "flags": [
+            "test"
+          ],
+          "metric": "176 tests",
+          "source": "frontend/src/api/client.test.ts; frontend/src/features/artifacts/ArtifactFrame.test.tsx; frontend/package.json"
+        },
+        {
+          "id": "ci-jobs",
+          "title": "GitHub Actions jobs",
+          "kind": "test",
+          "summary": "Five jobs: backend lint, backend tests (Postgres + Redis services), frontend, image builds, and a gitleaks secret scan.",
+          "detail": "Backend tests run with coverage and upload the report. Image builds cover the API, sandbox and runner images.",
+          "tech": [
+            "GitHub Actions",
+            "ruff",
+            "gitleaks"
+          ],
+          "flags": [
+            "test",
+            "security"
+          ],
+          "source": ".github/workflows/ci.yml"
+        },
+        {
+          "id": "migrations-ci",
+          "title": "Migrations checked in CI",
+          "kind": "test",
+          "summary": "Every push runs upgrade, full downgrade, upgrade again, then alembic check for model drift.",
+          "detail": "20 numbered migrations, each reversible.",
+          "tech": [
+            "Alembic"
+          ],
+          "flags": [
+            "test"
+          ],
+          "metric": "20 migrations",
+          "source": ".github/workflows/ci.yml; backend/alembic/versions/"
+        },
+        {
+          "id": "verify-script",
+          "title": "Local verify script",
+          "kind": "tool",
+          "summary": "Runs every CI gate locally in the same order and stops at the first failure. --quick skips only Docker tests.",
+          "detail": "Written after a few 'commit, then find CI red' rounds.",
+          "flags": [
+            "test",
+            "tool"
+          ],
+          "source": "scripts/verify.sh"
+        }
+      ]
+    },
+    {
+      "id": "platform",
+      "title": "Infra, jobs + ops",
+      "kind": "infra",
+      "summary": "Docker Compose stack, an arq worker on Redis for background jobs, structured logs and optional tracing.",
+      "source": "docker-compose.yml; backend/app/worker/main.py; backend/app/core/tracing.py",
+      "children": [
+        {
+          "id": "compose",
+          "title": "Docker Compose stack",
+          "kind": "infra",
+          "summary": "Six services: Postgres+pgvector, Redis, API, sandbox runner, worker, and the web app.",
+          "detail": "Same API image for local and cloud, all settings from env vars. The runner isn't published outside the compose network.",
+          "tech": [
+            "Docker Compose",
+            "pgvector/pg16",
+            "Redis 7"
+          ],
+          "source": "docker-compose.yml"
+        },
+        {
+          "id": "worker",
+          "title": "Background worker",
+          "kind": "process",
+          "summary": "arq on Redis runs ingestion and transcription jobs off the request path.",
+          "detail": "Without REDIS_URL, ingestion falls back to running in-process in the API, which is fine for a demo and wrong for load.",
+          "tech": [
+            "arq",
+            "Redis"
+          ],
+          "source": "backend/app/worker/main.py; backend/app/worker/tasks.py"
+        },
+        {
+          "id": "schedule-sweep",
+          "title": "Schedule sweep",
+          "kind": "process",
+          "summary": "One arq cron entry runs every minute and fires any due user schedule, computing the next run with croniter.",
+          "detail": "Tested so one failing schedule can't block another tenant's, and a failure still moves the clock forward instead of retrying forever.",
+          "tech": [
+            "arq cron",
+            "croniter"
+          ],
+          "source": "backend/app/worker/main.py; backend/app/worker/tasks.py; backend/tests/integration/test_schedules.py"
+        },
+        {
+          "id": "logging",
+          "title": "Structured logging",
+          "kind": "infra",
+          "summary": "structlog JSON logs with request context, trace ids stamped on every line, and secret redaction.",
+          "tech": [
+            "structlog"
+          ],
+          "source": "backend/app/core/logging.py"
+        },
+        {
+          "id": "tracing",
+          "title": "OpenTelemetry tracing",
+          "kind": "infra",
+          "summary": "Optional tracing across FastAPI, SQLAlchemy and httpx: requests, queries and outbound model calls.",
+          "detail": "Off unless OTEL_ENABLED is set, so a missing collector can never stop the API from starting.",
+          "tech": [
+            "OpenTelemetry"
+          ],
+          "source": "backend/app/core/tracing.py; backend/tests/unit/test_tracing.py"
+        },
+        {
+          "id": "deploy-recipes",
+          "title": "Deploy recipes (not launched)",
+          "kind": "infra",
+          "summary": "A Render blueprint and an Oracle VM guide are written, but Avocado was never deployed publicly.",
+          "detail": "Managed platforms can't give the runner a Docker socket, so there the sandbox is disabled and /analyze returns 503 rather than running with less isolation.",
+          "source": "render.yaml; docs/deploy-oracle.md; README.md"
+        },
+        {
+          "id": "claude-code",
+          "title": "Claude Code under AGENTS.md",
+          "kind": "tool",
+          "summary": "Built with Claude Code following AGENTS.md rules: thin routers, repo-only DB access, workspace scoping, sandbox limits.",
+          "detail": "CLAUDE.md just imports AGENTS.md so there's one source of truth. Any new cross-tenant query path needs an isolation test before merge. PROGRESS.md is the hand-off file between sessions.",
+          "tech": [
+            "Claude Code"
+          ],
+          "flags": [
+            "tool"
+          ],
+          "source": "AGENTS.md; CLAUDE.md; .claude/settings.json; docs/PROGRESS.md"
+        }
+      ]
+    },
+    {
+      "id": "roadmap",
+      "title": "Roadmap",
+      "kind": "process",
+      "status": "coming",
+      "summary": "What the repo docs say is still ahead: UX polish, collaboration, enterprise trim, and connectors.",
+      "source": "docs/PROGRESS.md; docs/workspaces-parity.md; README.md",
+      "children": [
+        {
+          "id": "phase5-ux",
+          "title": "First-open UX polish",
+          "kind": "ui",
+          "status": "coming",
+          "summary": "In progress: guided first open, upload-to-insight cues, report templates, bundle performance and a load test.",
+          "source": "README.md; docs/architecture.md"
+        },
+        {
+          "id": "collaboration",
+          "title": "Collaboration (Phase F)",
+          "kind": "ui",
+          "status": "coming",
+          "summary": "Multi-person threads: participants, @mentions, presence dots and live push. Not started; docs say do it last or not at all.",
+          "detail": "Estimated 15-20 working days. The voice WebSocket path already exists as transport; the hard parts are presence, fan-out and two people sending at once.",
+          "source": "docs/workspaces-parity.md; docs/PROGRESS.md"
+        },
+        {
+          "id": "enterprise-trim",
+          "title": "What's New + attestation",
+          "kind": "ui",
+          "status": "coming",
+          "summary": "Rest of Phase G: a What's New feed and an attestation page. Blocked until there's something true to put in them.",
+          "source": "docs/PROGRESS.md"
+        },
+        {
+          "id": "connectors",
+          "title": "External connectors",
+          "kind": "input",
+          "status": "coming",
+          "summary": "A first real connector (Google Drive suggested) is deferred until UX goals are met. MCP covers integrations for now.",
+          "source": "docs/architecture.md; README.md; backend/app/clients/connectors/__init__.py"
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "from": "inputs",
+      "to": "ingestion",
+      "label": "files + transcripts"
+    },
+    {
+      "from": "ingestion",
+      "to": "answer-paths",
+      "label": "chunks + tables"
+    },
+    {
+      "from": "answer-paths",
+      "to": "model-layer",
+      "label": "prompts by task"
+    },
+    {
+      "from": "model-layer",
+      "to": "tools-agent",
+      "label": "tool-use loop"
+    },
+    {
+      "from": "answer-paths",
+      "to": "tools-agent",
+      "label": "no-hit fallback"
+    },
+    {
+      "from": "answer-paths",
+      "to": "outputs",
+      "label": "streamed answers"
+    },
+    {
+      "from": "security",
+      "to": "answer-paths",
+      "label": "workspace scope"
+    },
+    {
+      "from": "security",
+      "to": "ingestion",
+      "label": "RLS on chunks"
+    },
+    {
+      "from": "platform",
+      "to": "ingestion",
+      "label": "arq jobs"
+    },
+    {
+      "from": "platform",
+      "to": "outputs",
+      "label": "scheduled runs"
+    },
+    {
+      "from": "testing",
+      "to": "security",
+      "label": "isolation + escape"
+    },
+    {
+      "from": "roadmap",
+      "to": "outputs",
+      "label": "collaboration"
+    }
+  ]
+}

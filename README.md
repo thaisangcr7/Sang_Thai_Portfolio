@@ -8,9 +8,9 @@ in a browser and you are looking at the site.
 ```
 index.html     the whole site: markup, styles and scripts in one file
 images/        project screenshots
-images/arch/   architecture diagram for each project (desktop + phone)
+assets/        explorer.js + explorer.css: the zoomable architecture map on each project
+data/trees/    one JSON tree per project that the map draws (format: tools/trees/SCHEMA.md)
 field/         AI Space Field: breakdown posts with diagrams
-tools/diagrams the script that draws the architecture diagrams
 favicon.svg    site icon
 CNAME          the custom domain GitHub Pages serves from
 sitemap.xml    submitted to search engines

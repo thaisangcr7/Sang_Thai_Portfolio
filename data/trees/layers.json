@@ -1,0 +1,788 @@
+{
+  "id": "layers",
+  "name": "LAYERS",
+  "tagline": "Stats harness: rule-based vs graph AML detection on synthetic data",
+  "children": [
+    {
+      "id": "inputs",
+      "title": "Data inputs",
+      "kind": "input",
+      "summary": "Loads IBM's synthetic AML transaction CSV (or a generated dev fixture) into Postgres, then derives the account graph from it.",
+      "detail": "Research on IBM's public synthetic data only, not real customers and not a production AML system. It scores an immutable historical corpus offline.",
+      "tech": [
+        "Python",
+        "psycopg",
+        "PostgreSQL"
+      ],
+      "source": "README.md; backend/layers/jobs/handlers/ingest.py; backend/layers/jobs/handlers/build_graph.py",
+      "flow": true,
+      "children": [
+        {
+          "id": "ibm-hi-small",
+          "title": "IBM HI-Small dataset",
+          "kind": "input",
+          "summary": "IBM's synthetic anti-money-laundering transactions, the HI-Small variant. Downloaded separately, never committed to the repo.",
+          "detail": "5,078,345 transactions, 515,080 accounts, 0.102% laundering. Five other variants (HI/LI small, medium, large) already have table partitions waiting.",
+          "metric": "5.08M transactions",
+          "source": "README.md; db/schema.sql"
+        },
+        {
+          "id": "sample-generator",
+          "title": "Synthetic dev fixture",
+          "kind": "tool",
+          "flags": [
+            "tool"
+          ],
+          "summary": "Generates a small CSV in the IBM format so the whole pipeline runs without the real data.",
+          "detail": "Plants laundering as structure (cycles, fan-out bursts, layering chains) with amounts drawn from normal traffic, after an earlier version leaked the answer through round amounts. Fixture results are explicitly not findings.",
+          "tech": [
+            "Python"
+          ],
+          "source": "scripts/generate_sample_csv.py; README.md"
+        },
+        {
+          "id": "ingest",
+          "title": "Idempotent CSV ingest",
+          "kind": "process",
+          "summary": "Bulk-loads the CSV into its variant partition. Re-running is a no-op, and a crashed run resumes where it stopped.",
+          "tech": [
+            "psycopg",
+            "PostgreSQL COPY"
+          ],
+          "source": "backend/layers/jobs/handlers/ingest.py",
+          "children": [
+            {
+              "id": "ingest-staging",
+              "title": "COPY to staging, cast in SQL",
+              "kind": "process",
+              "summary": "Rows land as text in a temp staging table and Postgres does the type casts, which takes seconds instead of minutes of Python parsing.",
+              "source": "backend/layers/jobs/handlers/ingest.py"
+            },
+            {
+              "id": "ingest-natural-key",
+              "title": "Natural key on row number",
+              "kind": "process",
+              "summary": "UNIQUE (dataset_variant, source_row_num) plus ON CONFLICT DO NOTHING, so loading twice never doubles the corpus.",
+              "source": "backend/layers/jobs/handlers/ingest.py; db/schema.sql"
+            }
+          ],
+          "detail": "Reads columns by position (the IBM file has two columns both named Account) and commits every 100,000 rows so progress is durable."
+        },
+        {
+          "id": "build-graph",
+          "title": "Account graph build",
+          "kind": "process",
+          "summary": "Derives accounts and directed edges from a variant's transactions. Dataset-scoped and safe to re-run.",
+          "detail": "Edges carry totals, counts and average time between payments (computed with LAG). HI-Small yields 1,015,736 edges.",
+          "metric": "1.02M edges",
+          "tech": [
+            "PostgreSQL"
+          ],
+          "source": "backend/layers/jobs/handlers/build_graph.py; README.md"
+        }
+      ]
+    },
+    {
+      "id": "storage",
+      "title": "Postgres schema",
+      "kind": "store",
+      "summary": "PostgreSQL 16 holds the corpus, run outputs, comparisons, the job queue and auth. Partitioned from day one.",
+      "detail": "Idempotent DDL in schema.sql, with Alembic migrations 0001-0005 for later changes (run diagnostics, self-transactions, wider currency, matched rate).",
+      "tech": [
+        "PostgreSQL 16",
+        "Alembic",
+        "SQLAlchemy"
+      ],
+      "source": "db/schema.sql; db/migrations/versions/",
+      "children": [
+        {
+          "id": "txn-partitions",
+          "title": "Partitioned transactions",
+          "kind": "store",
+          "summary": "Transactions are LIST-partitioned by dataset variant, so a second variant loads without a migration.",
+          "detail": "A variant filter plans an index-only scan on one partition of six.",
+          "source": "db/schema.sql; docs/ARCHITECTURE.md"
+        },
+        {
+          "id": "scores-tables",
+          "title": "Per-run scores",
+          "kind": "store",
+          "summary": "scores is HASH-partitioned by run (16 partitions). account_scores snapshots graph features per run so runs never overwrite each other.",
+          "detail": "The original spec stored features on accounts, so a second run silently corrupted any comparison with the first. Logged as defect S2 and fixed.",
+          "source": "db/schema.sql; docs/ARCHITECTURE.md"
+        },
+        {
+          "id": "runs-table",
+          "title": "Reproducible run records",
+          "kind": "store",
+          "summary": "Each detection run stores config_hash, code_version and random_seed, with telemetry kept in a separate diagnostics column.",
+          "source": "db/schema.sql; db/migrations/versions/0002_run_diagnostics.py"
+        },
+        {
+          "id": "comparison-tables",
+          "title": "Comparisons + metrics",
+          "kind": "store",
+          "summary": "A comparison row is the job; comparison_metrics holds one row per metric with CI, raw and adjusted p-values.",
+          "detail": "CHECK blocks comparing a run to itself. p-values are DOUBLE PRECISION so values below 1e-8 don't round to zero.",
+          "source": "db/schema.sql; db/migrations/versions/0005_matched_rate.py"
+        },
+        {
+          "id": "roles",
+          "title": "Least-privilege roles",
+          "kind": "security",
+          "flags": [
+            "security"
+          ],
+          "summary": "Four Postgres roles. Grants, not code conventions, decide who can touch what, so a bug in a route can't exceed them.",
+          "metric": "4 roles",
+          "source": "db/roles.sql; docs/SECURITY.md",
+          "children": [
+            {
+              "id": "role-api",
+              "title": "layers_api",
+              "kind": "security",
+              "flags": [
+                "security"
+              ],
+              "summary": "Can validate, enqueue and read. Cannot write scores or any analytical table, cannot run DDL, 30s statement timeout.",
+              "source": "db/roles.sql"
+            },
+            {
+              "id": "role-worker",
+              "title": "layers_worker",
+              "kind": "security",
+              "flags": [
+                "security"
+              ],
+              "summary": "Writes scores and results but has no access at all to api_keys. Gets TEMPORARY for the ingest staging table.",
+              "source": "db/roles.sql; docs/ARCHITECTURE.md"
+            }
+          ],
+          "detail": "Also layers_readonly (no api_keys or audit_log) and layers_migrator (the only role that applies schema). None is superuser. The jobs, api_keys and audit_log tables live here too."
+        }
+      ]
+    },
+    {
+      "id": "jobs",
+      "title": "Job queue + worker",
+      "kind": "process",
+      "summary": "Nothing long-running happens in a request. The API enqueues a row and workers claim it from Postgres, no broker needed.",
+      "tech": [
+        "PostgreSQL",
+        "psycopg"
+      ],
+      "source": "backend/layers/jobs/queue.py; backend/layers/jobs/worker.py",
+      "children": [
+        {
+          "id": "skip-locked",
+          "title": "SKIP LOCKED claims",
+          "kind": "process",
+          "summary": "Workers claim with SELECT ... FOR UPDATE SKIP LOCKED, safe under any number of concurrent workers.",
+          "source": "backend/layers/jobs/queue.py"
+        },
+        {
+          "id": "heartbeats",
+          "title": "Heartbeats + orphan reclaim",
+          "kind": "process",
+          "summary": "Running jobs heartbeat and write progress to their own row. A job whose worker died is returned to the queue.",
+          "source": "backend/layers/jobs/queue.py; backend/layers/jobs/worker.py",
+          "detail": "SIGTERM/SIGINT set a flag so the job in flight finishes and commits; a hard-killed worker leaves a stale heartbeat that gets reclaimed. Either way no job is silently lost."
+        },
+        {
+          "id": "retries",
+          "title": "Retries with backoff",
+          "kind": "process",
+          "summary": "Failed jobs retry with exponential backoff up to max_attempts. Bad input fails permanently instead of looping.",
+          "source": "backend/layers/jobs/queue.py; docs/PROJECT_PLAN.md"
+        },
+        {
+          "id": "handlers",
+          "title": "Job handlers",
+          "kind": "process",
+          "summary": "Four job types run in order for a full analysis: ingest, build_graph, detect, compare. Bad input fails fast and isn't retried.",
+          "source": "backend/layers/jobs/handlers/; docs/SECURITY.md",
+          "detail": "detect writes millions of score rows with COPY instead of executemany, which saves minutes per run. Job payloads are re-validated on claim, including path containment on the ingest filename."
+        }
+      ]
+    },
+    {
+      "id": "detectors",
+      "title": "Two detectors",
+      "kind": "process",
+      "summary": "A four-rule baseline and a graph method, both pure functions over numpy arrays with no database or HTTP inside.",
+      "detail": "Neither detector was tuned; both ran at documented defaults. Keeping the domain layer pure is what lets each one be tested against known answers.",
+      "tech": [
+        "numpy",
+        "NetworkX",
+        "scikit-learn"
+      ],
+      "source": "backend/layers/domain/detectors/; docs/DETECTION_SPEC.md",
+      "children": [
+        {
+          "id": "rule-based",
+          "title": "Rule-based baseline",
+          "kind": "process",
+          "summary": "Four independent rules. Score is rules fired / 4, flagged if any fired, with the rule names kept as reasons.",
+          "detail": "Only five possible score values, so ranking metrics are tie-heavy for it. On HI-Small its AUC-ROC was 0.4967, basically a coin flip.",
+          "tech": [
+            "numpy",
+            "PostgreSQL"
+          ],
+          "source": "backend/layers/domain/detectors/rule_based.py; backend/layers/api/resources/runs/detector_config.py",
+          "children": [
+            {
+              "id": "rule-large",
+              "title": "Large transaction",
+              "kind": "process",
+              "summary": "Fires on amounts above a threshold (default 50,000).",
+              "source": "backend/layers/domain/detectors/rule_based.py; backend/layers/api/resources/runs/detector_config.py"
+            },
+            {
+              "id": "rule-rapid",
+              "title": "Rapid succession",
+              "kind": "process",
+              "summary": "Counts the sender's payments in a trailing time window using a SQL window function, one sort instead of a self-join.",
+              "detail": "The original spec used a +/- window, twice as wide as documented and looking into the future. Fixed to a trailing window that includes the scored row.",
+              "source": "backend/layers/domain/detectors/rule_based.py; docs/ARCHITECTURE.md"
+            },
+            {
+              "id": "rule-round",
+              "title": "Round amount",
+              "kind": "process",
+              "summary": "Fires when an amount sits within a tolerance of a round multiple.",
+              "source": "backend/layers/domain/detectors/rule_based.py"
+            },
+            {
+              "id": "rule-cross-currency",
+              "title": "Cross-currency high value",
+              "kind": "process",
+              "summary": "Fires when payment and receiving currency differ and the amount is above a threshold (default 10,000).",
+              "source": "backend/layers/domain/detectors/rule_based.py; backend/layers/api/resources/runs/detector_config.py"
+            }
+          ]
+        },
+        {
+          "id": "graph-features",
+          "title": "Five account features",
+          "kind": "process",
+          "summary": "Degree ratio, cycle participation, temporal burst, pass-through ratio and log transaction count, in a fixed column order.",
+          "source": "backend/layers/domain/detectors/graph_based/features.py; backend/layers/domain/detectors/graph_based/scoring.py",
+          "children": [
+            {
+              "id": "f-degree",
+              "title": "Degree ratio",
+              "kind": "process",
+              "summary": "Out-degree over in-degree, stored as double precision so huge hubs don't overflow.",
+              "source": "backend/layers/domain/detectors/graph_based/features.py"
+            },
+            {
+              "id": "f-cycle",
+              "title": "Cycle participation",
+              "kind": "process",
+              "summary": "Whether an account sits on a money loop. Exact enumeration runs under a time budget, with an SCC fallback.",
+              "detail": "Length-bounded simple_cycles still blew up on dense graphs, so a wall-clock budget switches to an O(V+E) strongly-connected-components check. Which method ran is recorded on the run.",
+              "source": "backend/layers/domain/detectors/graph_based/features.py; docs/ARCHITECTURE.md"
+            },
+            {
+              "id": "f-burst",
+              "title": "Temporal burst",
+              "kind": "process",
+              "summary": "Largest share of an account's activity inside any one time window, found with an O(n) two-pointer sweep.",
+              "source": "backend/layers/domain/detectors/graph_based/features.py"
+            },
+            {
+              "id": "f-passthrough",
+              "title": "Pass-through ratio",
+              "kind": "process",
+              "summary": "How closely money in matches money out, a classic layering signal.",
+              "source": "backend/layers/domain/detectors/graph_based/features.py"
+            },
+            {
+              "id": "f-txn-count",
+              "title": "Log transaction count",
+              "kind": "process",
+              "summary": "log1p of activity, so a handful of hyperactive accounts don't dominate every split in the forest.",
+              "source": "backend/layers/domain/detectors/graph_based/scoring.py"
+            }
+          ]
+        },
+        {
+          "id": "graph-based",
+          "title": "Graph + Isolation Forest",
+          "kind": "ai",
+          "flags": [
+            "ai"
+          ],
+          "summary": "Builds five graph features per account, scores them with an unsupervised Isolation Forest, then maps account risk onto transactions.",
+          "tech": [
+            "NetworkX",
+            "scikit-learn",
+            "numpy"
+          ],
+          "source": "backend/layers/domain/detectors/graph_based/",
+          "children": [
+            {
+              "id": "isolation-forest",
+              "title": "Isolation Forest scoring",
+              "kind": "ai",
+              "flags": [
+                "ai"
+              ],
+              "summary": "Unsupervised anomaly model over the feature matrix, default 200 trees, fixed seed for reproducibility.",
+              "detail": "Risk is a rank transform of the raw score, and flagged uses the same quantity, so the two can never disagree. A known-answer test caught an inverted sort that would have flagged the most ordinary accounts.",
+              "tech": [
+                "scikit-learn"
+              ],
+              "source": "backend/layers/domain/detectors/graph_based/scoring.py; docs/ARCHITECTURE.md"
+            },
+            {
+              "id": "txn-mapping",
+              "title": "Account-to-transaction map",
+              "kind": "process",
+              "summary": "A transaction is flagged if either its sender or receiver account is flagged, so both detectors score the same rows.",
+              "source": "backend/layers/domain/detectors/graph_based/scoring.py; docs/ARCHITECTURE.md"
+            },
+            {
+              "id": "network-extraction",
+              "title": "Flagged network extraction",
+              "kind": "process",
+              "summary": "Bounded 2-hop ego networks around flagged accounts, highest risk first, with a size cap and a truncated flag.",
+              "detail": "The original spec unioned ancestors and descendants, which on a giant component is basically the whole 515k-node graph.",
+              "source": "backend/layers/domain/detectors/graph_based/networks.py; docs/ARCHITECTURE.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "statistics",
+      "title": "Statistical evaluation",
+      "kind": "process",
+      "summary": "Compares two runs on five metrics, each with a 95% CI on the difference and a corrected p-value, picking the right test per metric.",
+      "detail": "10,000 bootstrap replicates over 5.08M transactions finish in about 0.5 seconds, because the naive row-resampling bootstrap would never finish.",
+      "metric": "10k replicates in 0.5s",
+      "tech": [
+        "numpy",
+        "SciPy"
+      ],
+      "source": "backend/layers/domain/evaluation/; backend/layers/jobs/handlers/compare.py; README.md",
+      "children": [
+        {
+          "id": "alignment-check",
+          "title": "Run alignment check",
+          "kind": "test",
+          "flags": [
+            "test"
+          ],
+          "summary": "Refuses to compare runs that scored different data: variant, row count and transaction set must match, else 409.",
+          "source": "backend/layers/jobs/handlers/compare.py; backend/layers/api/resources/comparisons/validators/comparison_for_create_validator.py"
+        },
+        {
+          "id": "multinomial-bootstrap",
+          "title": "8-cell multinomial bootstrap",
+          "kind": "process",
+          "summary": "Precision, recall and F1 CIs from resampling an 8-cell count table instead of millions of rows. Two-sided p-values.",
+          "source": "backend/layers/domain/evaluation/bootstrap.py; backend/layers/domain/evaluation/metrics.py"
+        },
+        {
+          "id": "delong",
+          "title": "DeLong test",
+          "kind": "process",
+          "summary": "Closed-form paired test for AUC-ROC with midrank tie handling. Matches sklearn's AUC to about 1e-16.",
+          "source": "backend/layers/domain/evaluation/delong.py; docs/PROJECT_PLAN.md"
+        },
+        {
+          "id": "aucpr-bootstrap",
+          "title": "Stratified AUC-PR bootstrap",
+          "kind": "process",
+          "summary": "Paired bootstrap for average precision over a presorted score order, scaling with positives rather than corpus size.",
+          "source": "backend/layers/domain/evaluation/bootstrap.py"
+        },
+        {
+          "id": "mcnemar",
+          "title": "Stratified McNemar",
+          "kind": "process",
+          "summary": "Exact McNemar run separately on true positives and flagged negatives, since pooled accuracy is swamped by easy negatives.",
+          "source": "backend/layers/domain/evaluation/mcnemar.py; docs/ARCHITECTURE.md"
+        },
+        {
+          "id": "correction",
+          "title": "Multiple-comparison fix",
+          "kind": "process",
+          "summary": "Benjamini-Hochberg or Holm adjustment across the five metrics, so testing five things doesn't inflate false wins.",
+          "source": "backend/layers/domain/evaluation/correction.py"
+        },
+        {
+          "id": "matched-rate",
+          "title": "Matched flag rate",
+          "kind": "process",
+          "summary": "Re-thresholds the graph score to the rule detector's flag rate for a like-for-like comparison. Records if the rate was hit exactly.",
+          "detail": "The Isolation Forest's contamination knob pins its flag rate. At a matched 29.8% rate, the recall gap flipped from -0.09 to +0.18.",
+          "source": "backend/layers/domain/evaluation/matched_rate.py; README.md"
+        },
+        {
+          "id": "finding",
+          "title": "The finding",
+          "kind": "output",
+          "summary": "Graph method ranks better (AUC-ROC +0.120) but both detectors are near-useless here: precision ~0.001, about 999 false alarms per hit.",
+          "detail": "All five differences are significant, mostly because n is five million. The write-up leads with effect sizes and CIs, and says this is about these two untuned detectors on one synthetic dataset.",
+          "metric": "AUC-ROC +0.120",
+          "source": "README.md"
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "title": "REST API",
+      "kind": "process",
+      "summary": "FastAPI service that authenticates, validates, enqueues and reads results. Every number it serves was already computed by a worker.",
+      "tech": [
+        "FastAPI",
+        "Pydantic v2",
+        "SQLAlchemy"
+      ],
+      "source": "backend/layers/api/main.py; backend/layers/api/controllers/",
+      "children": [
+        {
+          "id": "runs-routes",
+          "title": "Runs endpoints",
+          "kind": "process",
+          "summary": "POST /api/runs returns 202 and queues a run; GET shows status with live stage progress; runs can be cancelled.",
+          "source": "backend/layers/api/controllers/runs_controller.py"
+        },
+        {
+          "id": "comparisons-routes",
+          "title": "Comparisons endpoints",
+          "kind": "process",
+          "summary": "Create a comparison (202) then poll it, same shape as runs, so no bootstrap ever runs inside a request.",
+          "source": "backend/layers/api/controllers/comparisons_controller.py"
+        },
+        {
+          "id": "networks-routes",
+          "title": "Networks + accounts",
+          "kind": "process",
+          "summary": "Paginated flagged networks and flagged accounts per run, plus a single-network fetch for the graph view.",
+          "source": "backend/layers/api/controllers/networks_controller.py"
+        },
+        {
+          "id": "validation",
+          "title": "Strict request validation",
+          "kind": "security",
+          "flags": [
+            "security"
+          ],
+          "summary": "Every numeric field is bounded and extra fields are rejected, with method-based config dispatch.",
+          "detail": "Fixes a spec bug where a graph config silently parsed as a rule config, dropping every graph parameter with no error.",
+          "source": "backend/layers/api/resources/runs/detector_config.py; backend/layers/api/resources/runs/validators/run_for_create_validator.py; docs/ARCHITECTURE.md"
+        },
+        {
+          "id": "middleware",
+          "title": "Middleware stack",
+          "kind": "security",
+          "flags": [
+            "security"
+          ],
+          "summary": "API-key auth with read/write scopes, per-key rate limits, audit logging, request IDs and one error envelope for every failure.",
+          "source": "backend/layers/api/middleware/"
+        }
+      ]
+    },
+    {
+      "id": "ui",
+      "title": "React frontend",
+      "kind": "ui",
+      "summary": "React 19 + Vite app to launch runs, compare them and explore flagged networks. No UUID pasting anywhere.",
+      "tech": [
+        "React 19",
+        "Vite",
+        "TanStack Query",
+        "TypeScript",
+        "D3"
+      ],
+      "source": "frontend/src/App.tsx; frontend/package.json",
+      "children": [
+        {
+          "id": "verdict",
+          "title": "Plain-language verdict",
+          "kind": "ui",
+          "summary": "Leads the comparison with a sentence generated from the data, and deliberately refuses to just say 'X wins'.",
+          "source": "frontend/src/features/comparison/verdict.ts; frontend/src/features/comparison/ComparisonView.tsx"
+        },
+        {
+          "id": "forest-plot",
+          "title": "Forest plot",
+          "kind": "ui",
+          "summary": "Shows each metric's difference with its CI against zero, faceted by scale so tiny metrics aren't flattened.",
+          "source": "frontend/src/features/comparison/ForestPlot.tsx; docs/PROJECT_PLAN.md"
+        },
+        {
+          "id": "network-graph",
+          "title": "D3 network view",
+          "kind": "ui",
+          "summary": "Force-directed graph of a flagged network. Risk rides node size, flagged status uses color plus a legend.",
+          "tech": [
+            "d3-force"
+          ],
+          "source": "frontend/src/features/networks/NetworkGraph.tsx; frontend/src/features/networks/NetworksView.tsx"
+        },
+        {
+          "id": "generated-client",
+          "title": "Generated API client",
+          "kind": "tool",
+          "flags": [
+            "tool"
+          ],
+          "summary": "Types are generated from OpenAPI and never hand-edited. CI fails if they drift from the backend.",
+          "tech": [
+            "openapi-typescript",
+            "openapi-fetch"
+          ],
+          "source": "frontend/src/api/schema.d.ts; frontend/src/api/client.ts; .github/workflows/ci.yml; openapi.json"
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "title": "Security",
+      "kind": "security",
+      "flags": [
+        "security"
+      ],
+      "summary": "Threat model focused on compute abuse and result integrity, with a per-milestone checklist. 46 of 50 controls done.",
+      "metric": "46/50 controls",
+      "source": "docs/SECURITY.md; docs/PROJECT_PLAN.md",
+      "children": [
+        {
+          "id": "api-keys",
+          "title": "Hashed API keys",
+          "kind": "security",
+          "flags": [
+            "security"
+          ],
+          "summary": "256-bit random keys shown once, SHA-256 at rest, constant-time comparison, identical 401s so errors can't be used as an oracle.",
+          "source": "backend/layers/api/middleware/api_key_auth.py; scripts/create_api_key.py; docs/SECURITY.md"
+        },
+        {
+          "id": "nginx-edge",
+          "title": "nginx edge",
+          "kind": "security",
+          "flags": [
+            "security"
+          ],
+          "summary": "Per-IP rate limit, 64k body cap, CSP and other security headers. Only the UI publishes a port.",
+          "tech": [
+            "nginx"
+          ],
+          "source": "ops/nginx.conf; docker-compose.yml"
+        },
+        {
+          "id": "containers",
+          "title": "Hardened containers",
+          "kind": "security",
+          "flags": [
+            "security"
+          ],
+          "summary": "Non-root (uid 10001), read-only root filesystem, capabilities dropped, base images pinned by digest.",
+          "detail": "The internet-facing API image is built without scikit-learn, and CI fails if it shows up there.",
+          "tech": [
+            "Docker"
+          ],
+          "source": "ops/Dockerfile.api; ops/Dockerfile.worker; docker-compose.yml; .github/workflows/ci.yml"
+        },
+        {
+          "id": "supply-chain",
+          "title": "Supply-chain checks",
+          "kind": "security",
+          "flags": [
+            "security",
+            "test"
+          ],
+          "summary": "Hash-pinned lockfiles with a drift check, pip-audit for known vulnerabilities and Bandit static analysis in CI.",
+          "tech": [
+            "pip-audit",
+            "Bandit",
+            "uv"
+          ],
+          "source": ".github/workflows/ci.yml; requirements.lock; pyproject.toml; scripts/scan_secrets.py; .githooks/pre-commit; backend/layers/config.py",
+          "detail": "A secret scanner also runs in a pre-commit hook and again in CI over full git history, and config refuses placeholder passwords at startup."
+        },
+        {
+          "id": "restore-drill",
+          "title": "Backup restore drill",
+          "kind": "infra",
+          "summary": "Dumps, restores into a throwaway database and compares row counts table by table. Passed on the full corpus.",
+          "metric": "10.16M scores matched",
+          "source": "scripts/backup_restore.sh; docs/SECURITY.md"
+        }
+      ]
+    },
+    {
+      "id": "quality",
+      "title": "Tests + CI",
+      "kind": "test",
+      "flags": [
+        "test"
+      ],
+      "summary": "Known-answer tests for the stats, integration tests against real Postgres, and a seven-job GitHub Actions pipeline.",
+      "metric": "223 tests",
+      "detail": "Collected from the repo: 165 backend unit, 46 integration, 12 frontend (the README's 209 predates later additions).",
+      "tech": [
+        "pytest",
+        "Vitest",
+        "GitHub Actions",
+        "ruff",
+        "mypy"
+      ],
+      "source": "backend/tests/; frontend/src/features/comparison/ForestPlot.test.ts; frontend/src/features/comparison/verdict.test.ts; .github/workflows/ci.yml",
+      "children": [
+        {
+          "id": "domain-tests",
+          "title": "Known-answer stats tests",
+          "kind": "test",
+          "flags": [
+            "test"
+          ],
+          "summary": "Bootstrap checked against brute force, DeLong and metrics against sklearn, and a run vs itself gives zero difference.",
+          "metric": "97% domain coverage",
+          "source": "backend/tests/domain/; docs/PROJECT_PLAN.md"
+        },
+        {
+          "id": "integration-tests",
+          "title": "Integration as worker role",
+          "kind": "test",
+          "flags": [
+            "test",
+            "security"
+          ],
+          "summary": "Runs against live Postgres as layers_worker, not a superuser, so grant bugs surface. That's how a missing TEMPORARY grant was caught.",
+          "source": "backend/tests/integration/; README.md; backend/tests/security/",
+          "detail": "Security tests also cover auth scopes, rate limiting and the secret scanner's hits and false positives."
+        },
+        {
+          "id": "ci-pipeline",
+          "title": "Seven CI jobs",
+          "kind": "test",
+          "flags": [
+            "test"
+          ],
+          "summary": "Secret scan, lockfile drift, frontend + client drift, lint/types, tests with an 85% coverage floor, image checks, audit.",
+          "detail": "Also re-applies schema.sql to prove it's idempotent.",
+          "tech": [
+            "GitHub Actions"
+          ],
+          "source": ".github/workflows/ci.yml"
+        },
+        {
+          "id": "defect-log",
+          "title": "Defect log + Claude rules",
+          "kind": "tool",
+          "flags": [
+            "tool",
+            "test"
+          ],
+          "summary": "About 30 spec defects logged with fixes. CLAUDE.md requires a regression test named for each ID, a pure domain layer and seeded randomness.",
+          "source": "docs/ARCHITECTURE.md; CLAUDE.md"
+        }
+      ]
+    },
+    {
+      "id": "roadmap",
+      "title": "What's next",
+      "kind": "infra",
+      "status": "coming",
+      "summary": "Open items recorded as accepted risks, plus v2 ideas kept out of v1 on purpose.",
+      "source": "docs/SECURITY.md; docs/PROJECT_PLAN.md",
+      "children": [
+        {
+          "id": "tls",
+          "title": "TLS termination",
+          "kind": "security",
+          "status": "coming",
+          "flags": [
+            "security"
+          ],
+          "summary": "nginx TLS config is written but needs a real certificate. Until then the stack must stay on localhost.",
+          "source": "docs/SECURITY.md; ops/nginx.conf"
+        },
+        {
+          "id": "v2-ideas",
+          "title": "v2 ideas",
+          "kind": "ai",
+          "status": "proposal",
+          "flags": [
+            "ai"
+          ],
+          "summary": "More dataset variants, more detectors, a temporal-GNN baseline and SHAP explanations, to be planned separately.",
+          "source": "docs/PROJECT_PLAN.md"
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "from": "inputs",
+      "to": "storage",
+      "label": "COPY into partitions"
+    },
+    {
+      "from": "api",
+      "to": "jobs",
+      "label": "enqueue job row"
+    },
+    {
+      "from": "jobs",
+      "to": "inputs",
+      "label": "ingest + build graph"
+    },
+    {
+      "from": "jobs",
+      "to": "detectors",
+      "label": "detect job"
+    },
+    {
+      "from": "detectors",
+      "to": "storage",
+      "label": "scores via COPY"
+    },
+    {
+      "from": "jobs",
+      "to": "statistics",
+      "label": "compare job"
+    },
+    {
+      "from": "statistics",
+      "to": "storage",
+      "label": "metric rows"
+    },
+    {
+      "from": "storage",
+      "to": "api",
+      "label": "indexed reads"
+    },
+    {
+      "from": "api",
+      "to": "ui",
+      "label": "OpenAPI client"
+    },
+    {
+      "from": "security",
+      "to": "api",
+      "label": "keys, limits, edge"
+    },
+    {
+      "from": "security",
+      "to": "storage",
+      "label": "role grants"
+    },
+    {
+      "from": "quality",
+      "to": "statistics",
+      "label": "known-answer tests"
+    },
+    {
+      "from": "roadmap",
+      "to": "security",
+      "label": "TLS before exposure"
+    }
+  ]
+}
