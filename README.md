@@ -10,7 +10,7 @@ index.html     the whole site: markup, styles and scripts in one file
 images/        project screenshots
 assets/        explorer.js + explorer.css: the zoomable architecture map on each project
 data/trees/    one JSON tree per project that the map draws (format: tools/trees/SCHEMA.md)
-field/         AI Space Field: breakdown posts with diagrams
+field/         AIS: breakdown posts with diagrams
 favicon.svg    site icon
 CNAME          the custom domain GitHub Pages serves from
 sitemap.xml    submitted to search engines

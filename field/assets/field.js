@@ -1,4 +1,4 @@
-/* AI Space Field — shared behavior (theme, progress, TOC, diagrams, filters). */
+/* AIS — shared behavior (theme, progress, TOC, diagrams, filters). */
 (function () {
   var root = document.documentElement;
 

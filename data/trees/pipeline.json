@@ -1,377 +1,421 @@
 {
-  "id": "portfolio-pipeline",
-  "name": "Portfolio Analytics Pipeline",
-  "tagline": "Airflow + dbt ELT from Yahoo Finance to a Metabase dashboard in Docker",
-  "children": [
+ "id": "portfolio-pipeline",
+ "name": "Portfolio Analytics Pipeline",
+ "tagline": "Airflow + dbt ELT from Yahoo Finance to a Metabase dashboard in Docker",
+ "children": [
+  {
+   "id": "sources",
+   "title": "Data sources",
+   "kind": "input",
+   "summary": "Daily stock prices from Yahoo Finance, plus a small static CSV describing the portfolio's holdings.",
+   "children": [
     {
-      "id": "sources",
-      "title": "Data sources",
-      "kind": "input",
-      "summary": "Daily stock prices from Yahoo Finance, plus a small static CSV describing the portfolio's holdings.",
-      "source": "scripts/extract_data.py; dbt_project/seeds/portfolio_holdings.csv",
-      "children": [
-        {
-          "id": "yahoo",
-          "title": "Yahoo Finance prices",
-          "kind": "input",
-          "summary": "Daily OHLCV prices for five tickers: AAPL, MSFT, GOOG, JPM and C, pulled with the yfinance library.",
-          "metric": "5 tickers",
-          "tech": ["yfinance"],
-          "source": "scripts/extract_data.py"
-        },
-        {
-          "id": "holdings-seed",
-          "title": "Holdings seed CSV",
-          "kind": "input",
-          "summary": "Shares, cost basis, purchase date and sector per ticker, loaded into the warehouse with dbt seed.",
-          "tech": ["dbt seed"],
-          "source": "dbt_project/seeds/portfolio_holdings.csv"
-        }
-      ]
+     "id": "yahoo",
+     "title": "Yahoo Finance prices",
+     "kind": "input",
+     "summary": "Daily OHLCV prices for five tickers: AAPL, MSFT, GOOG, JPM and C, pulled with the yfinance library.",
+     "metric": "5 tickers",
+     "tech": [
+      "yfinance"
+     ]
     },
     {
-      "id": "ingestion",
-      "title": "Python ingestion",
-      "kind": "process",
-      "flow": true,
-      "summary": "extract_data.py pulls prices and appends them to the raw schema as-is. Cleanup happens later inside the warehouse (ELT).",
-      "tech": ["Python", "pandas", "yfinance", "SQLAlchemy"],
-      "source": "scripts/extract_data.py",
-      "children": [
-        {
-          "id": "date-window",
-          "title": "Pick a date window",
-          "kind": "process",
-          "summary": "Defaults to the last 5 days. A --backfill flag loads a year of history, and custom start/end dates also work.",
-          "source": "scripts/extract_data.py"
-        },
-        {
-          "id": "fetch-tickers",
-          "title": "Fetch each ticker",
-          "kind": "process",
-          "summary": "Downloads one ticker at a time so a single failure is logged and skipped instead of killing the run.",
-          "source": "scripts/extract_data.py"
-        },
-        {
-          "id": "normalize",
-          "title": "Normalize columns",
-          "kind": "process",
-          "summary": "Flattens yfinance's multi-level columns, lowercases names, and stamps each row with ticker and extracted_at.",
-          "source": "scripts/extract_data.py"
-        },
-        {
-          "id": "append-raw",
-          "title": "Append to raw table",
-          "kind": "process",
-          "summary": "Creates the raw schema if needed and appends to raw.stock_prices. Duplicates are allowed here and removed in dbt.",
-          "source": "scripts/extract_data.py; dbt_project/models/staging/sources.yml"
-        }
-      ]
-    },
-    {
-      "id": "orchestration",
-      "title": "Airflow orchestration",
-      "kind": "process",
-      "flow": true,
-      "summary": "One DAG runs the four steps in order on weekdays at 18:00, labeled 6 PM EST after market close. Retries once after 2 minutes.",
-      "detail": "Cron 0 18 * * 1-5 with catchup off. Each task is a BashOperator, and dbt runs against a docker target inside the Airflow containers.",
-      "tech": ["Apache Airflow 2.7", "BashOperator"],
-      "source": "dags/portfolio_orchestrator.py",
-      "children": [
-        {
-          "id": "t-ingest",
-          "title": "ingest_stock_data",
-          "kind": "process",
-          "summary": "Runs the Python extractor against the Postgres container.",
-          "source": "dags/portfolio_orchestrator.py"
-        },
-        {
-          "id": "t-seed",
-          "title": "dbt_seed",
-          "kind": "process",
-          "summary": "Loads the holdings CSV into the analytics schema.",
-          "source": "dags/portfolio_orchestrator.py"
-        },
-        {
-          "id": "t-run",
-          "title": "dbt_run",
-          "kind": "process",
-          "summary": "Builds all five models from raw to the star schema.",
-          "source": "dags/portfolio_orchestrator.py"
-        },
-        {
-          "id": "t-test",
-          "title": "dbt_test",
-          "kind": "test",
-          "flags": ["test"],
-          "summary": "Runs the data quality tests last, so a bad load shows up as a failed task in Airflow.",
-          "source": "dags/portfolio_orchestrator.py"
-        }
-      ]
-    },
-    {
-      "id": "warehouse",
-      "title": "Postgres warehouse",
-      "kind": "store",
-      "summary": "PostgreSQL 15 with a raw schema for untouched data and an analytics schema for dbt output.",
-      "tech": ["PostgreSQL 15"],
-      "source": "docker-compose.yml; dbt_project/profiles.yml; dbt_project/models/staging/sources.yml",
-      "children": [
-        {
-          "id": "raw-schema",
-          "title": "raw schema",
-          "kind": "store",
-          "summary": "raw.stock_prices, append-only and never modified by dbt.",
-          "source": "dbt_project/models/staging/sources.yml"
-        },
-        {
-          "id": "analytics-schema",
-          "title": "analytics schema",
-          "kind": "store",
-          "summary": "Where dbt writes the seed, the views and the final tables that the dashboard reads.",
-          "source": "dbt_project/profiles.yml"
-        },
-        {
-          "id": "metabase-db",
-          "title": "Metabase app database",
-          "kind": "store",
-          "summary": "Metabase keeps its own settings and saved dashboard in Postgres too, instead of a local file.",
-          "source": "docker-compose.yml"
-        }
-      ]
-    },
-    {
-      "id": "dbt",
-      "title": "dbt medallion models",
-      "kind": "process",
-      "summary": "Five dbt models move data from Bronze (raw) to Silver (clean + enriched) to Gold (star schema). Views in the middle, tables at the end.",
-      "metric": "5 models",
-      "tech": ["dbt Core", "dbt-postgres", "SQL"],
-      "source": "dbt_project/dbt_project.yml; dbt_project/models/",
-      "flow": true,
-      "children": [
-        {
-          "id": "bronze",
-          "title": "Bronze: raw source",
-          "kind": "store",
-          "summary": "raw.stock_prices declared as a dbt source, exactly as received.",
-          "source": "dbt_project/models/staging/sources.yml"
-        },
-        {
-          "id": "silver",
-          "title": "Silver: clean + enrich",
-          "kind": "process",
-          "summary": "Staging views clean and dedupe; an intermediate view adds moving averages and daily returns.",
-          "source": "dbt_project/models/staging/; dbt_project/models/intermediate/",
-          "children": [
-            {
-              "id": "stg-prices",
-              "title": "stg_stock_prices",
-              "kind": "process",
-              "summary": "Casts types, drops null rows, and keeps only the latest load per date and ticker using row_number().",
-              "detail": "Adds a stock_id surrogate key (date + ticker). This is what makes re-running ingestion safe.",
-              "source": "dbt_project/models/staging/stg_stock_prices.sql"
-            },
-            {
-              "id": "stg-holdings",
-              "title": "stg_portfolio_holdings",
-              "kind": "process",
-              "summary": "Casts the seed's shares, cost basis and purchase date to proper types.",
-              "source": "dbt_project/models/staging/stg_portfolio_holdings.sql"
-            },
-            {
-              "id": "int-enriched",
-              "title": "int_stock_prices_enriched",
-              "kind": "process",
-              "summary": "SQL window functions add 50-day and 200-day moving averages and daily return % per ticker.",
-              "tech": ["SQL window functions"],
-              "source": "dbt_project/models/intermediate/int_stock_prices_enriched.sql"
-            }
-          ]
-        },
-        {
-          "id": "gold",
-          "title": "Gold: star schema",
-          "kind": "store",
-          "summary": "One dimension and one fact table, materialized as tables for the dashboard.",
-          "source": "dbt_project/models/marts/",
-          "children": [
-            {
-              "id": "dim-companies",
-              "title": "dim_companies",
-              "kind": "store",
-              "summary": "One row per company: ticker, name, sector and exchange (NASDAQ or NYSE).",
-              "source": "dbt_project/models/marts/dim_companies.sql"
-            },
-            {
-              "id": "fct-valuation",
-              "title": "fct_portfolio_valuation",
-              "kind": "store",
-              "summary": "One row per trading day per ticker: price, moving averages, market value, cost and unrealized P&L in dollars and %.",
-              "source": "dbt_project/models/marts/fct_portfolio_valuation.sql"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "quality",
-      "title": "dbt data tests",
-      "kind": "test",
-      "flags": ["test"],
-      "summary": "26 schema tests across all five models, run by Airflow after every build.",
-      "metric": "26 tests",
-      "tech": ["dbt test"],
-      "source": "dbt_project/models/staging/schema.yml; dbt_project/models/intermediate/schema.yml; dbt_project/models/marts/schema.yml; ROADMAP.md",
-      "children": [
-        {
-          "id": "test-unique",
-          "title": "unique",
-          "kind": "test",
-          "flags": ["test"],
-          "summary": "Keys stay unique: stock_id in staging, one holding per ticker, one row per company.",
-          "source": "dbt_project/models/staging/schema.yml; dbt_project/models/marts/schema.yml"
-        },
-        {
-          "id": "test-not-null",
-          "title": "not_null",
-          "kind": "test",
-          "flags": ["test"],
-          "summary": "Dates, tickers, prices, shares, market value and P&L can never be empty.",
-          "source": "dbt_project/models/staging/schema.yml; dbt_project/models/intermediate/schema.yml; dbt_project/models/marts/schema.yml"
-        },
-        {
-          "id": "test-accepted",
-          "title": "accepted_values",
-          "kind": "test",
-          "flags": ["test"],
-          "summary": "Tickers must be one of the five tracked symbols and exchange must be NASDAQ or NYSE.",
-          "source": "dbt_project/models/staging/schema.yml; dbt_project/models/marts/schema.yml"
-        },
-        {
-          "id": "test-relationships",
-          "title": "relationships",
-          "kind": "test",
-          "flags": ["test"],
-          "summary": "Every ticker in the fact table must exist in dim_companies, which checks the star schema's join key.",
-          "source": "dbt_project/models/marts/schema.yml"
-        }
-      ]
-    },
-    {
-      "id": "bi",
-      "title": "Metabase dashboard",
-      "kind": "ui",
-      "summary": "A Portfolio Analytics dashboard reading from the Gold tables, with five charts.",
-      "metric": "5 charts",
-      "tech": ["Metabase"],
-      "source": "README.md; ROADMAP.md",
-      "children": [
-        {
-          "id": "chart-total",
-          "title": "Total portfolio value",
-          "kind": "output",
-          "summary": "Number card with the latest day's market value.",
-          "source": "ROADMAP.md"
-        },
-        {
-          "id": "chart-over-time",
-          "title": "Value over time",
-          "kind": "output",
-          "summary": "Line chart of portfolio value across all five tickers.",
-          "source": "ROADMAP.md"
-        },
-        {
-          "id": "chart-pnl",
-          "title": "Unrealized P&L by stock",
-          "kind": "output",
-          "summary": "Bar chart of profit or loss per position.",
-          "source": "ROADMAP.md"
-        },
-        {
-          "id": "chart-ma",
-          "title": "AAPL moving averages",
-          "kind": "output",
-          "summary": "Close price against the 50-day and 200-day averages.",
-          "source": "ROADMAP.md"
-        },
-        {
-          "id": "chart-sector",
-          "title": "Sector allocation",
-          "kind": "output",
-          "summary": "Pie chart of Technology vs Financials.",
-          "source": "ROADMAP.md"
-        }
-      ]
-    },
-    {
-      "id": "infra",
-      "title": "Docker environment",
-      "kind": "infra",
-      "summary": "Everything runs locally from one docker-compose file, so the whole stack is reproducible with a single command.",
-      "tech": ["Docker Compose"],
-      "source": "docker-compose.yml; README.md",
-      "children": [
-        {
-          "id": "svc-postgres",
-          "title": "Postgres container",
-          "kind": "infra",
-          "summary": "postgres:15-alpine with a health check that the other services wait on.",
-          "source": "docker-compose.yml"
-        },
-        {
-          "id": "svc-airflow",
-          "title": "Airflow containers",
-          "kind": "infra",
-          "summary": "Init, webserver and scheduler on Airflow 2.7.2 with SequentialExecutor. DAGs, scripts and dbt project are mounted in.",
-          "detail": "Pinned multitasking==0.0.10 to fix a Python 3.8 compatibility issue, and gave webserver and scheduler a shared secret key.",
-          "source": "docker-compose.yml; ROADMAP.md"
-        },
-        {
-          "id": "svc-metabase",
-          "title": "Metabase container",
-          "kind": "infra",
-          "summary": "Serves the dashboard, backed by its own Postgres database.",
-          "source": "docker-compose.yml"
-        },
-        {
-          "id": "svc-pgadmin",
-          "title": "pgAdmin",
-          "kind": "tool",
-          "flags": ["tool"],
-          "summary": "Browser tool for poking at raw and analytics tables by hand.",
-          "source": "docker-compose.yml"
-        },
-        {
-          "id": "env-config",
-          "title": "Env-based config",
-          "kind": "security",
-          "flags": ["security"],
-          "summary": "Credentials come from a .env file that's gitignored, with a committed .env.example template.",
-          "source": ".env.example; .gitignore; ROADMAP.md"
-        },
-        {
-          "id": "claude-md",
-          "title": "Claude Code guide",
-          "kind": "tool",
-          "flags": ["tool"],
-          "summary": "CLAUDE.md gives Claude Code the architecture and house rules: explain every decision, keep patterns simple.",
-          "source": "CLAUDE.md"
-        }
-      ]
+     "id": "holdings-seed",
+     "title": "Holdings seed CSV",
+     "kind": "input",
+     "summary": "Shares, cost basis, purchase date and sector per ticker, loaded into the warehouse with dbt seed.",
+     "tech": [
+      "dbt seed"
+     ]
     }
-  ],
-  "links": [
-    { "from": "sources", "to": "ingestion", "label": "yfinance pull" },
-    { "from": "ingestion", "to": "warehouse", "label": "append raw rows" },
-    { "from": "orchestration", "to": "ingestion", "label": "triggers" },
-    { "from": "orchestration", "to": "dbt", "label": "seed + run" },
-    { "from": "orchestration", "to": "quality", "label": "dbt test" },
-    { "from": "sources", "to": "dbt", "label": "dbt seed" },
-    { "from": "warehouse", "to": "dbt", "label": "raw source" },
-    { "from": "dbt", "to": "warehouse", "label": "analytics tables" },
-    { "from": "quality", "to": "dbt", "label": "validates models" },
-    { "from": "warehouse", "to": "bi", "label": "Gold tables" },
-    { "from": "infra", "to": "orchestration", "label": "hosts Airflow" }
-  ]
+   ]
+  },
+  {
+   "id": "ingestion",
+   "title": "Python ingestion",
+   "kind": "process",
+   "flow": true,
+   "summary": "extract_data.py pulls prices and appends them to the raw schema as-is. Cleanup happens later inside the warehouse (ELT).",
+   "tech": [
+    "Python",
+    "pandas",
+    "yfinance",
+    "SQLAlchemy"
+   ],
+   "children": [
+    {
+     "id": "date-window",
+     "title": "Pick a date window",
+     "kind": "process",
+     "summary": "Defaults to the last 5 days. A --backfill flag loads a year of history, and custom start/end dates also work."
+    },
+    {
+     "id": "fetch-tickers",
+     "title": "Fetch each ticker",
+     "kind": "process",
+     "summary": "Downloads one ticker at a time so a single failure is logged and skipped instead of killing the run."
+    },
+    {
+     "id": "normalize",
+     "title": "Normalize columns",
+     "kind": "process",
+     "summary": "Flattens yfinance's multi-level columns, lowercases names, and stamps each row with ticker and extracted_at."
+    },
+    {
+     "id": "append-raw",
+     "title": "Append to raw table",
+     "kind": "process",
+     "summary": "Creates the raw schema if needed and appends to raw.stock_prices. Duplicates are allowed here and removed in dbt."
+    }
+   ]
+  },
+  {
+   "id": "orchestration",
+   "title": "Airflow orchestration",
+   "kind": "process",
+   "flow": true,
+   "summary": "One DAG runs the four steps in order on weekdays at 18:00, labeled 6 PM EST after market close. Retries once after 2 minutes.",
+   "detail": "Cron 0 18 * * 1-5 with catchup off. Each task is a BashOperator, and dbt runs against a docker target inside the Airflow containers.",
+   "tech": [
+    "Apache Airflow 2.7",
+    "BashOperator"
+   ],
+   "children": [
+    {
+     "id": "t-ingest",
+     "title": "ingest_stock_data",
+     "kind": "process",
+     "summary": "Runs the Python extractor against the Postgres container."
+    },
+    {
+     "id": "t-seed",
+     "title": "dbt_seed",
+     "kind": "process",
+     "summary": "Loads the holdings CSV into the analytics schema."
+    },
+    {
+     "id": "t-run",
+     "title": "dbt_run",
+     "kind": "process",
+     "summary": "Builds all five models from raw to the star schema."
+    },
+    {
+     "id": "t-test",
+     "title": "dbt_test",
+     "kind": "test",
+     "flags": [
+      "test"
+     ],
+     "summary": "Runs the data quality tests last, so a bad load shows up as a failed task in Airflow."
+    }
+   ]
+  },
+  {
+   "id": "warehouse",
+   "title": "Postgres warehouse",
+   "kind": "store",
+   "summary": "PostgreSQL 15 with a raw schema for untouched data and an analytics schema for dbt output.",
+   "tech": [
+    "PostgreSQL 15"
+   ],
+   "children": [
+    {
+     "id": "raw-schema",
+     "title": "raw schema",
+     "kind": "store",
+     "summary": "raw.stock_prices, append-only and never modified by dbt."
+    },
+    {
+     "id": "analytics-schema",
+     "title": "analytics schema",
+     "kind": "store",
+     "summary": "Where dbt writes the seed, the views and the final tables that the dashboard reads."
+    },
+    {
+     "id": "metabase-db",
+     "title": "Metabase app database",
+     "kind": "store",
+     "summary": "Metabase keeps its own settings and saved dashboard in Postgres too, instead of a local file."
+    }
+   ]
+  },
+  {
+   "id": "dbt",
+   "title": "dbt medallion models",
+   "kind": "process",
+   "summary": "Five dbt models move data from Bronze (raw) to Silver (clean + enriched) to Gold (star schema). Views in the middle, tables at the end.",
+   "metric": "5 models",
+   "tech": [
+    "dbt Core",
+    "dbt-postgres",
+    "SQL"
+   ],
+   "flow": true,
+   "children": [
+    {
+     "id": "bronze",
+     "title": "Bronze: raw source",
+     "kind": "store",
+     "summary": "raw.stock_prices declared as a dbt source, exactly as received."
+    },
+    {
+     "id": "silver",
+     "title": "Silver: clean + enrich",
+     "kind": "process",
+     "summary": "Staging views clean and dedupe; an intermediate view adds moving averages and daily returns.",
+     "children": [
+      {
+       "id": "stg-prices",
+       "title": "stg_stock_prices",
+       "kind": "process",
+       "summary": "Casts types, drops null rows, and keeps only the latest load per date and ticker using row_number().",
+       "detail": "Adds a stock_id surrogate key (date + ticker). This is what makes re-running ingestion safe."
+      },
+      {
+       "id": "stg-holdings",
+       "title": "stg_portfolio_holdings",
+       "kind": "process",
+       "summary": "Casts the seed's shares, cost basis and purchase date to proper types."
+      },
+      {
+       "id": "int-enriched",
+       "title": "int_stock_prices_enriched",
+       "kind": "process",
+       "summary": "SQL window functions add 50-day and 200-day moving averages and daily return % per ticker.",
+       "tech": [
+        "SQL window functions"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "gold",
+     "title": "Gold: star schema",
+     "kind": "store",
+     "summary": "One dimension and one fact table, materialized as tables for the dashboard.",
+     "children": [
+      {
+       "id": "dim-companies",
+       "title": "dim_companies",
+       "kind": "store",
+       "summary": "One row per company: ticker, name, sector and exchange (NASDAQ or NYSE)."
+      },
+      {
+       "id": "fct-valuation",
+       "title": "fct_portfolio_valuation",
+       "kind": "store",
+       "summary": "One row per trading day per ticker: price, moving averages, market value, cost and unrealized P&L in dollars and %."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "quality",
+   "title": "dbt data tests",
+   "kind": "test",
+   "flags": [
+    "test"
+   ],
+   "summary": "26 schema tests across all five models, run by Airflow after every build.",
+   "metric": "26 tests",
+   "tech": [
+    "dbt test"
+   ],
+   "children": [
+    {
+     "id": "test-unique",
+     "title": "unique",
+     "kind": "test",
+     "flags": [
+      "test"
+     ],
+     "summary": "Keys stay unique: stock_id in staging, one holding per ticker, one row per company."
+    },
+    {
+     "id": "test-not-null",
+     "title": "not_null",
+     "kind": "test",
+     "flags": [
+      "test"
+     ],
+     "summary": "Dates, tickers, prices, shares, market value and P&L can never be empty."
+    },
+    {
+     "id": "test-accepted",
+     "title": "accepted_values",
+     "kind": "test",
+     "flags": [
+      "test"
+     ],
+     "summary": "Tickers must be one of the five tracked symbols and exchange must be NASDAQ or NYSE."
+    },
+    {
+     "id": "test-relationships",
+     "title": "relationships",
+     "kind": "test",
+     "flags": [
+      "test"
+     ],
+     "summary": "Every ticker in the fact table must exist in dim_companies, which checks the star schema's join key."
+    }
+   ]
+  },
+  {
+   "id": "bi",
+   "title": "Metabase dashboard",
+   "kind": "ui",
+   "summary": "A Portfolio Analytics dashboard reading from the Gold tables, with five charts.",
+   "metric": "5 charts",
+   "tech": [
+    "Metabase"
+   ],
+   "children": [
+    {
+     "id": "chart-total",
+     "title": "Total portfolio value",
+     "kind": "output",
+     "summary": "Number card with the latest day's market value."
+    },
+    {
+     "id": "chart-over-time",
+     "title": "Value over time",
+     "kind": "output",
+     "summary": "Line chart of portfolio value across all five tickers."
+    },
+    {
+     "id": "chart-pnl",
+     "title": "Unrealized P&L by stock",
+     "kind": "output",
+     "summary": "Bar chart of profit or loss per position."
+    },
+    {
+     "id": "chart-ma",
+     "title": "AAPL moving averages",
+     "kind": "output",
+     "summary": "Close price against the 50-day and 200-day averages."
+    },
+    {
+     "id": "chart-sector",
+     "title": "Sector allocation",
+     "kind": "output",
+     "summary": "Pie chart of Technology vs Financials."
+    }
+   ]
+  },
+  {
+   "id": "infra",
+   "title": "Docker environment",
+   "kind": "infra",
+   "summary": "Everything runs locally from one docker-compose file, so the whole stack is reproducible with a single command.",
+   "tech": [
+    "Docker Compose"
+   ],
+   "children": [
+    {
+     "id": "svc-postgres",
+     "title": "Postgres container",
+     "kind": "infra",
+     "summary": "postgres:15-alpine with a health check that the other services wait on."
+    },
+    {
+     "id": "svc-airflow",
+     "title": "Airflow containers",
+     "kind": "infra",
+     "summary": "Init, webserver and scheduler on Airflow 2.7.2 with SequentialExecutor. DAGs, scripts and dbt project are mounted in.",
+     "detail": "Pinned multitasking==0.0.10 to fix a Python 3.8 compatibility issue, and gave webserver and scheduler a shared secret key."
+    },
+    {
+     "id": "svc-metabase",
+     "title": "Metabase container",
+     "kind": "infra",
+     "summary": "Serves the dashboard, backed by its own Postgres database."
+    },
+    {
+     "id": "svc-pgadmin",
+     "title": "pgAdmin",
+     "kind": "tool",
+     "flags": [
+      "tool"
+     ],
+     "summary": "Browser tool for poking at raw and analytics tables by hand."
+    },
+    {
+     "id": "env-config",
+     "title": "Env-based config",
+     "kind": "security",
+     "flags": [
+      "security"
+     ],
+     "summary": "Credentials come from a .env file that's gitignored, with a committed .env.example template."
+    },
+    {
+     "id": "claude-md",
+     "title": "Claude Code guide",
+     "kind": "tool",
+     "flags": [
+      "tool"
+     ],
+     "summary": "CLAUDE.md gives Claude Code the architecture and house rules: explain every decision, keep patterns simple."
+    }
+   ]
+  }
+ ],
+ "links": [
+  {
+   "from": "sources",
+   "to": "ingestion",
+   "label": "yfinance pull"
+  },
+  {
+   "from": "ingestion",
+   "to": "warehouse",
+   "label": "append raw rows"
+  },
+  {
+   "from": "orchestration",
+   "to": "ingestion",
+   "label": "triggers"
+  },
+  {
+   "from": "orchestration",
+   "to": "dbt",
+   "label": "seed + run"
+  },
+  {
+   "from": "orchestration",
+   "to": "quality",
+   "label": "dbt test"
+  },
+  {
+   "from": "sources",
+   "to": "dbt",
+   "label": "dbt seed"
+  },
+  {
+   "from": "warehouse",
+   "to": "dbt",
+   "label": "raw source"
+  },
+  {
+   "from": "dbt",
+   "to": "warehouse",
+   "label": "analytics tables"
+  },
+  {
+   "from": "quality",
+   "to": "dbt",
+   "label": "validates models"
+  },
+  {
+   "from": "warehouse",
+   "to": "bi",
+   "label": "Gold tables"
+  },
+  {
+   "from": "infra",
+   "to": "orchestration",
+   "label": "hosts Airflow"
+  }
+ ]
 }

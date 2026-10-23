@@ -1116,7 +1116,7 @@
     .lightbox-overlay.lightbox-overlay--wide img { max-width: 96vw; max-height: 92vh; }
     .lightbox-overlay--tall .lightbox-close { position: fixed; }
 
-    /* == AI SPACE FIELD HIGHLIGHT ON THE HOME PAGE == */
+    /* == AIS HIGHLIGHT ON THE HOME PAGE == */
     .field-home__kicker {
       font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em;
       color: var(--accent); margin-bottom: 0.4rem;
@@ -1197,7 +1197,7 @@
       <ul class="menu__list">
         <li class="menu__item"><a class="menu__link active" href="#home">Home</a></li>
         <li class="menu__item"><a class="menu__link" href="#portfolio">Projects</a></li>
-        <li class="menu__item"><a class="menu__link" href="#field">AI <span class="menu__long">Space </span>Field</a></li>
+        <li class="menu__item"><a class="menu__link" href="#field">AIS</a></li>
         <li class="menu__item"><a class="menu__link" href="#resume">Experience</a></li>
         <li class="menu__item"><a class="menu__link" href="#education">Education</a></li>
         <li class="menu__item"><a class="menu__link" href="#about">About Me</a></li>
@@ -1734,9 +1734,9 @@
         </div>
       </section>
 
-      <!-- == SECTION: FIELD (AI Space Field highlights) == -->
+      <!-- == SECTION: FIELD (AIS highlights) == -->
       <section id="field" class="inner field-home" tabindex="-1">
-        <div class="field-home__kicker reveal-item">// AI Space Field</div>
+        <div class="field-home__kicker reveal-item">// AIS</div>
         <h2 class="section-heading reveal-item">AI, broken down. Diagrams included.</h2>
         <p class="section-sub reveal-item">
           Plain-English breakdowns of AI and data architecture. Every post has an
@@ -1772,7 +1772,7 @@
           </div>
         </div>
 
-        <a href="field/" class="cta-btn field-home__all reveal-item">See every breakdown in the AI Space Field &rarr;</a>
+        <a href="field/" class="cta-btn field-home__all reveal-item">See every breakdown in AIS &rarr;</a>
       </section>
 
       <!-- == SECTION: RESUME == -->
@@ -2291,7 +2291,7 @@
       </a></li>
       <li><a class="tab-bar__link" href="#field" data-section="field">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2 7 7 2-7 2-2 7-2-7-7-2 7-2z"/></svg>
-        Field
+        AIS
       </a></li>
       <li><a class="tab-bar__link" href="#resume" data-section="resume">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -2518,7 +2518,7 @@
       cfSubmit.textContent = 'Send Message \u2192';
     });
 
-    /* == AI SPACE FIELD VIDEOS: load + play only while on screen == */
+    /* == AIS VIDEOS: load + play only while on screen == */
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     document.querySelectorAll('.field-card__video').forEach(v => {
       if (reduceMotion.matches) return; // poster only

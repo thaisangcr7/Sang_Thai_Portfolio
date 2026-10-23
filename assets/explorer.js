@@ -41,6 +41,7 @@
       this.path = [];          // ids from root's child down
       this.view = null;        // 'today' | 'proposal' for trees with views
       this.filter = null;      // flag id
+      this.mode = 'diagram';   // 'diagram' | 'tree'
       this.el.classList.add('tx');
       this.el.innerHTML = '<div class="tx__loading">Loading the architecture…</div>';
     }
@@ -69,6 +70,10 @@
         <div class="tx__bar">
           <div class="tx__crumbs" aria-live="polite"></div>
           <div class="tx__actions">
+            <div class="tx__modes" role="group" aria-label="How to show it">
+              <button type="button" class="tx__mode" data-mode="diagram">Diagram</button>
+              <button type="button" class="tx__mode" data-mode="tree">Tree</button>
+            </div>
             ${d.views ? `<div class="tx__views" role="group" aria-label="Which version">${d.views.map(v =>
               `<button type="button" class="tx__view" data-view="${esc(v.id)}">${esc(v.label)}</button>`).join('')}</div>` : ''}
             <button type="button" class="tx__full" aria-label="Open full screen" title="Full screen">
@@ -92,11 +97,13 @@
       this.el.addEventListener('mouseover', e => this.onHover(e, true));
       this.el.addEventListener('mouseout', e => this.onHover(e, false));
       let rt;
-      new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => this.drawLinks(), 60); }).observe(this.stage);
+      new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { this.drawLinks(); this.drawArrows(); }, 60); }).observe(this.stage);
     }
 
     updateChrome() {
       this.el.querySelectorAll('.tx__view').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === this.view)));
+      this.el.querySelectorAll('.tx__mode').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === this.mode)));
+      this.el.classList.toggle('tx--diagram', this.mode === 'diagram' && !this.path.length);
       // filter counts reflect what's visible in this view
       const vis = [];
       walk(this.data, n => { if (n !== this.data && this.visible(n)) vis.push(n); });
@@ -108,7 +115,7 @@
         b.setAttribute('aria-pressed', String(this.filter === f.id));
       });
       this.el.classList.toggle('tx--filtering', !!this.filter);
-      this.el.querySelector('.tx__total').textContent = `${vis.length} parts · tap any branch to zoom in`;
+      this.el.querySelector('.tx__total').textContent = `${vis.length} parts · ${this.mode === 'diagram' && !this.path.length ? 'tap a box to zoom into it' : 'tap any branch to zoom in'}`;
       const parts = [`<button type="button" class="tx__crumb" data-go="-1">${esc(this.data.name)}</button>`];
       this.path.forEach((id, i) => parts.push(`<span aria-hidden="true">›</span><button type="button" class="tx__crumb" data-go="${i}">${esc(this.byId[id].title)}</button>`));
       this.crumbs.innerHTML = parts.join('');
@@ -117,7 +124,7 @@
     /* ---------- rendering ---------- */
     render(animateFrom) {
       const node = this.path.length ? this.byId[this.path[this.path.length - 1]] : this.data;
-      const html = this.path.length ? this.focusHTML(node) : this.overviewHTML();
+      const html = this.path.length ? this.focusHTML(node) : (this.mode === 'diagram' ? this.diagramHTML() : this.overviewHTML());
       const old = this.stage.firstElementChild;
       const wrap = document.createElement('div');
       wrap.className = 'tx__view-wrap';
@@ -127,6 +134,7 @@
       this.applyFilter();
       this.clamp();
       this.drawLinks();
+      this.drawArrows();
       if (animateFrom && !reduce()) this.zoomIn(wrap, animateFrom, animateFrom === 'out');
       if (old && !animateFrom) { /* first paint */ }
     }
@@ -215,16 +223,111 @@
 
     expandAll() {
       this.expanded = true;
-      const ov = this.stage.querySelector('.tx__overview');
-      if (ov) { ov.classList.remove('is-clamped'); ov.style.maxHeight = ''; const m = ov.querySelector('.tx__more'); if (m) m.hidden = true; requestAnimationFrame(() => this.drawLinks()); }
+      const ov = this.stage.querySelector('.tx__overview, .tx__diagram');
+      if (ov) { ov.classList.remove('is-clamped'); ov.style.maxHeight = ''; const m = ov.querySelector('.tx__more'); if (m) m.hidden = true; requestAnimationFrame(() => { this.drawLinks(); this.drawArrows(); }); }
     }
 
     clamp() {
-      const ov = this.stage.querySelector('.tx__overview');
+      const ov = this.stage.querySelector('.tx__overview, .tx__diagram');
       if (!ov || this.expanded) return;
       const lim = this.el.classList.contains('tx--full') ? 1e9 : (ov.offsetWidth >= 560 ? 720 : 640);
       const more = ov.querySelector('.tx__more');
       if (ov.scrollHeight > lim + 80) { ov.classList.add('is-clamped'); ov.style.maxHeight = lim + 'px'; more.hidden = false; }
+    }
+
+    /* ---------- diagram: branches as boxes in data-flow order ---------- */
+    layout() {
+      const br = this.kids(this.data);
+      const ids = new Set(br.map(b => b.id));
+      const links = (this.data.links || []).filter(l => ids.has(l.from) && ids.has(l.to) && l.from !== l.to);
+      const inc = {}, out = {};
+      br.forEach(b => { inc[b.id] = 0; out[b.id] = 0; });
+      links.forEach(l => { inc[l.to]++; out[l.from]++; });
+      // cross-cutting branches (testing, security, tooling, ops) that only point at others sit in an "always on" band
+      const side = new Set(br.filter(b => ['test', 'security', 'tool', 'infra'].includes(b.kind) && inc[b.id] === 0 && b.status !== 'proposal').map(b => b.id)
+        .concat(br.filter(b => inc[b.id] === 0 && out[b.id] === 0).map(b => b.id)));
+      const flow = br.filter(b => !side.has(b.id));
+      const rank = {}; flow.forEach(b => { rank[b.id] = 0; });
+      for (let k = 0; k < flow.length; k++) {
+        let moved = false;
+        links.forEach(l => {
+          if (rank[l.from] === undefined || rank[l.to] === undefined) return;
+          if (rank[l.to] < rank[l.from] + 1 && rank[l.from] + 1 < flow.length) { rank[l.to] = rank[l.from] + 1; moved = true; }
+        });
+        if (!moved) break;
+      }
+      const rows = [];
+      flow.forEach(b => { (rows[rank[b.id]] = rows[rank[b.id]] || []).push(b); });
+      return { rows: rows.filter(Boolean), side: br.filter(b => side.has(b.id)), links };
+    }
+
+    diagramHTML() {
+      const { rows, side } = this.layout();
+      const box = b => {
+        const parts = this.kids(b);
+        const show = parts.slice(0, 5);
+        return `
+          <button type="button" ${this.nodeAttrs(b).replace('class="', 'class="tx__dbox ')} aria-label="Zoom into ${esc(b.title)}">
+            <span class="tx__dtop"><span class="tx__kind">${esc((KIND[b.kind] || KIND.process).n)}</span>${this.flagBadges(b)}</span>
+            <span class="tx__dtitle">${esc(b.title)} ${this.statusBadge(b)}</span>
+            ${b.metric ? `<em class="tx__dmetric">${esc(b.metric)}</em>` : ''}
+            <span class="tx__dparts">${show.map(p => `<span class="tx__dpart" data-id="${esc(p.id)}">${esc(p.title)}</span>`).join('')}${parts.length > show.length ? `<span class="tx__dmore">+${parts.length - show.length} more</span>` : ''}</span>
+          </button>`;
+      };
+      return `
+        <div class="tx__diagram">
+          <svg class="tx__arrows" aria-hidden="true"></svg>
+          <div class="tx__droot"><b>${esc(this.data.name)}</b><span>${esc(this.data.tagline || '')}</span></div>
+          ${rows.map((r, i) => `<div class="tx__drow" data-rank="${i}">${r.map(box).join('')}</div>`).join('')}
+          ${side.length ? `<div class="tx__dside"><span class="tx__dside-l">Always on</span><div class="tx__drow tx__drow--side">${side.map(box).join('')}</div></div>` : ''}
+          <button type="button" class="tx__more" hidden>Show the whole diagram ↓</button>
+        </div>`;
+    }
+
+    drawArrows() {
+      const dg = this.stage.querySelector('.tx__diagram');
+      if (!dg) return;
+      const svg = dg.querySelector('.tx__arrows');
+      const R = dg.getBoundingClientRect();
+      svg.setAttribute('width', R.width); svg.setAttribute('height', R.height);
+      svg.setAttribute('viewBox', `0 0 ${R.width} ${R.height}`);
+      const rect = id => { const el = dg.querySelector(`.tx__dbox[data-id="${CSS.escape(id)}"]`); if (!el) return null; const r = el.getBoundingClientRect(); return { l: r.left - R.left, t: r.top - R.top, r: r.right - R.left, b: r.bottom - R.top, w: r.width, h: r.height }; };
+      const { links } = this.layout();
+      const ports = {};
+      const port = (id, side) => { const k = id + side; ports[k] = (ports[k] || 0) + 1; return ports[k] - 1; };
+      const plan = links.map(l => {
+        const a = rect(l.from), b = rect(l.to);
+        if (!a || !b) return null;
+        let s1, s2;
+        if (b.t > a.b - 4) { s1 = 'b'; s2 = 't'; } else if (b.b < a.t + 4) { s1 = 't'; s2 = 'b'; } else { s1 = b.l > a.r ? 'r' : 'l'; s2 = b.l > a.r ? 'l' : 'r'; }
+        return { l, a, b, s1, s2, i1: port(l.from, s1), i2: port(l.to, s2) };
+      }).filter(Boolean);
+      const total = {}; plan.forEach(p => { total[p.l.from + p.s1] = (total[p.l.from + p.s1] || 0) + 1; total[p.l.to + p.s2] = (total[p.l.to + p.s2] || 0) + 1; });
+      const at = (r, side, i, n) => {
+        const off = (i - (n - 1) / 2);
+        if (side === 'b') return [r.l + r.w / 2 + off * Math.min(26, r.w / (n + 1)), r.b];
+        if (side === 't') return [r.l + r.w / 2 + off * Math.min(26, r.w / (n + 1)), r.t];
+        if (side === 'r') return [r.r, r.t + r.h / 2 + off * 14];
+        return [r.l, r.t + r.h / 2 + off * 14];
+      };
+      const mid = this._mid || (this._mid = 'txa' + Math.random().toString(36).slice(2, 8));
+      let g = '';
+      plan.forEach(p => {
+        const [x1, y1] = at(p.a, p.s1, p.i1, total[p.l.from + p.s1]);
+        let [x2, y2] = at(p.b, p.s2, p.i2, total[p.l.to + p.s2]);
+        const v = p.s1 === 'b' || p.s1 === 't';
+        if (p.s2 === 't') y2 -= 7; else if (p.s2 === 'b') y2 += 7; else if (p.s2 === 'l') x2 -= 7; else x2 += 7;
+        const dy = Math.max(30, Math.abs(y2 - y1) / 2), dx = Math.max(30, Math.abs(x2 - x1) / 2);
+        const c = v ? `C${x1} ${y1 + (p.s1 === 'b' ? dy : -dy)} ${x2} ${y2 + (p.s2 === 't' ? -dy : dy)} ${x2} ${y2}`
+                    : `C${x1 + (p.s1 === 'r' ? dx : -dx)} ${y1} ${x2 + (p.s2 === 'l' ? -dx : dx)} ${y2} ${x2} ${y2}`;
+        const d = `M${x1} ${y1}${c}`;
+        const lx = (x1 + x2) / 2, ly = (y1 + y2) / 2;
+        const back = p.s1 === 't';
+        g += `<g class="tx__arrow-g ${back ? 'is-back' : ''}" data-from="${esc(p.l.from)}" data-to="${esc(p.l.to)}">
+          <path class="tx__ap" d="${d}" marker-end="url(#${mid})"/>${reduce() ? '' : `<path class="tx__apulse" d="${d}"/>`}
+          ${p.l.label ? `<text x="${lx}" y="${ly}" class="tx__al">${esc(p.l.label)}</text>` : ''}</g>`;
+      });
+      svg.innerHTML = `<defs><marker id="${mid}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="tx__ah"/></marker></defs>${g}`;
     }
 
     /* ---------- desktop tree lines (root -> branches -> leaves) ---------- */
@@ -270,7 +373,10 @@
       const t = e.target.closest('button, [data-id]');
       if (!t || !this.el.contains(t)) return;
       if (t.classList.contains('tx__full')) return this.toggleFull();
-      if (t.classList.contains('tx__more')) { this.expanded = true; const ov = t.closest('.tx__overview'); ov.classList.remove('is-clamped'); ov.style.maxHeight = ''; t.hidden = true; return this.drawLinks(); }
+      if (t.classList.contains('tx__more')) { requestAnimationFrame(() => this.drawArrows()); this.expanded = true; const ov = t.closest('.tx__overview, .tx__diagram'); ov.classList.remove('is-clamped'); ov.style.maxHeight = ''; t.hidden = true; return this.drawLinks(); }
+      if (t.dataset.mode) { this.mode = t.dataset.mode; this.path = []; this.expanded = false; return this.render(false); }
+      if (t.classList.contains('tx__dbox')) { this.path = [t.dataset.id]; return this.render(t.getBoundingClientRect()); }
+      if (t.classList.contains('tx__dpart')) { const b = t.closest('.tx__dbox'); this.path = [b.dataset.id]; this.render(b.getBoundingClientRect()); const card = this.stage.querySelector(`.tx__card[data-id="${CSS.escape(t.dataset.id)}"]`); if (card) { card.classList.add('is-ping'); setTimeout(() => card.classList.remove('is-ping'), 1600); } return; }
       if (t.dataset.view) { this.view = t.dataset.view; this.path = []; return this.render(false); }
       if (t.dataset.flag) { this.filter = this.filter === t.dataset.flag ? null : t.dataset.flag; if (this.filter) this.expandAll(); this.updateChrome(); return this.applyFilter(); }
       if (t.dataset.go !== undefined) { this.path = this.path.slice(0, Number(t.dataset.go) + 1); return this.render('out'); }
@@ -294,12 +400,13 @@
     }
 
     onHover(e, on) {
-      const b = e.target.closest('.tx__branch');
+      const b = e.target.closest('.tx__branch, .tx__dbox');
       if (!b || !this.el.contains(b)) return;
       const id = b.dataset.id;
       const linked = new Set();
       (this.data.links || []).forEach(l => { if (l.from === id) linked.add(l.to); if (l.to === id) linked.add(l.from); });
-      this.stage.querySelectorAll('.tx__branch').forEach(x => x.classList.toggle('is-linked', on && linked.has(x.dataset.id)));
+      this.stage.querySelectorAll('.tx__branch, .tx__dbox').forEach(x => x.classList.toggle('is-linked', on && linked.has(x.dataset.id)));
+      this.stage.querySelectorAll('.tx__arrow-g').forEach(g => g.classList.toggle('is-on', on && (g.dataset.from === id || g.dataset.to === id)));
     }
 
     applyFilter() {
@@ -335,7 +442,7 @@
       const btn = this.el.querySelector('.tx__full');
       btn.setAttribute('aria-label', on ? 'Close full screen' : 'Open full screen');
       if (on) { this.el.setAttribute('tabindex', '-1'); this.el.focus({ preventScroll: true }); }
-      requestAnimationFrame(() => this.drawLinks());
+      requestAnimationFrame(() => { this.drawLinks(); this.drawArrows(); });
     }
   }
 

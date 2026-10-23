@@ -122,6 +122,63 @@
   .tx__bsum { -webkit-line-clamp: 2; }
 }
 
+/* ---------- diagram view ---------- */
+.tx__modes { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); }
+.tx__mode { border: 0; background: none; font: 600 0.72rem var(--font-sans); color: var(--text-muted); padding: 0.35rem 0.75rem; border-radius: 999px; cursor: pointer; }
+.tx__mode[aria-pressed="true"] { background: var(--accent); color: #fff; }
+
+.tx__diagram { position: relative; display: grid; gap: 2.6rem; padding: 0.2rem 0 0.4rem; overflow-x: clip; }
+.tx__arrows { position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 0; }
+.tx__ap { fill: none; stroke: color-mix(in srgb, var(--accent) 60%, var(--text-muted)); stroke-width: 1.6; opacity: 0.75; }
+.tx__arrow-g.is-back .tx__ap { stroke-dasharray: 5 5; opacity: 0.55; }
+.tx__apulse { fill: none; stroke: var(--accent); stroke-width: 2.6; stroke-linecap: round; stroke-dasharray: 2 34; animation: tx-flow 2.2s linear infinite; }
+.tx__ah { fill: color-mix(in srgb, var(--accent) 70%, var(--text-muted)); }
+.tx__al { font: 500 10px var(--font-mono); fill: var(--text-muted); text-anchor: middle; dominant-baseline: middle;
+  paint-order: stroke; stroke: color-mix(in srgb, var(--card) 94%, var(--surface)); stroke-width: 5px; stroke-linejoin: round; }
+.tx__arrow-g.is-on .tx__ap { stroke: var(--accent); stroke-width: 2.4; opacity: 1; }
+.tx__arrow-g.is-on .tx__al { fill: var(--accent); font-weight: 700; }
+
+.tx__droot { position: relative; z-index: 1; justify-self: center; text-align: center; max-width: 30rem;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; border-radius: 14px; padding: 0.55rem 1rem;
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--accent) 25%, transparent); margin-bottom: -1.2rem; }
+.tx__droot b { display: block; font-size: 1.05rem; font-weight: 800; letter-spacing: -0.02em; }
+.tx__droot span { display: block; font-size: 0.72rem; opacity: 0.92; }
+.tx__drow { position: relative; z-index: 1; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem 1.4rem; }
+.tx__dbox {
+  flex: 1 1 150px; max-width: 250px; min-width: 0; text-align: left; font: inherit; color: var(--text); cursor: pointer;
+  display: flex; flex-direction: column; gap: 0.2rem;
+  background: var(--card); border: 1.5px solid color-mix(in srgb, var(--k) 45%, var(--border)); border-top: 5px solid var(--k);
+  border-radius: 12px; padding: 0.5rem 0.6rem 0.55rem; box-shadow: var(--shadow-sm);
+  transition: transform .2s, box-shadow .2s, opacity .2s;
+}
+.tx__dbox:hover, .tx__dbox:focus-visible { transform: translateY(-2px); box-shadow: 0 10px 26px color-mix(in srgb, var(--k) 20%, transparent); }
+.tx__dbox.is-linked { box-shadow: 0 0 0 2px color-mix(in srgb, var(--k) 50%, transparent); }
+.tx__dbox.is-proposal { --k: #7C3AED; border-style: dashed; border-top-style: solid; background: color-mix(in srgb, #8B5CF6 6%, var(--card)); }
+.tx__dbox.is-coming { border-style: dashed; border-top-style: solid; }
+.tx__dtop { display: flex; align-items: center; gap: 0.3rem; flex-wrap: wrap; }
+.tx__dtitle { font-weight: 700; font-size: 0.86rem; letter-spacing: -0.01em; line-height: 1.25; }
+.tx__dmetric { font-style: normal; font-weight: 700; font-size: 0.72rem; color: var(--k); }
+.tx__dparts { display: flex; flex-direction: column; gap: 2px; margin-top: 0.2rem; border-top: 1px dashed var(--border); padding-top: 0.3rem; }
+.tx__dpart { font: 400 0.64rem/1.35 var(--font-mono); color: var(--text-muted); padding-left: 0.65rem; position: relative; border-radius: 4px; }
+.tx__dpart::before { content: ''; position: absolute; left: 0.1rem; top: 0.45em; width: 5px; height: 5px; border-radius: 50%; background: var(--k); opacity: 0.7; }
+.tx__dpart:hover { color: var(--text); background: color-mix(in srgb, var(--k) 8%, transparent); }
+.tx__dmore { font: 500 0.6rem var(--font-mono); color: var(--accent); padding-left: 0.65rem; }
+.tx__dside { position: relative; z-index: 1; border: 1.5px dashed var(--border); border-radius: 16px; padding: 1.1rem 0.6rem 0.7rem; background: color-mix(in srgb, var(--surface) 45%, transparent); }
+.tx__dside-l { position: absolute; top: -0.6rem; left: 1rem; font: 500 0.62rem var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); background: color-mix(in srgb, var(--card) 92%, var(--surface)); padding: 0 0.4rem; }
+.tx__diagram.is-clamped { overflow: hidden; }
+.tx__diagram.is-clamped::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 110px; z-index: 2;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--card) 96%, var(--surface)) 78%); pointer-events: none; }
+@container (max-width: 520px) {
+  .tx__diagram { gap: 2.2rem; }
+  .tx__drow { gap: 0.5rem; }
+  .tx__dbox { flex: 1 1 calc(50% - 0.5rem); max-width: none; }
+  .tx__drow > .tx__dbox:only-child { flex-basis: 70%; max-width: 75%; }
+  .tx__al { font-size: 9px; }
+}
+.tx--filtering .tx__dpart[data-id] { opacity: 0.35; box-shadow: none; }
+.tx--filtering .tx__dpart[data-id].is-hit { opacity: 1; box-shadow: none; color: var(--text); font-weight: 500; }
+@media (prefers-reduced-motion: reduce) { .tx__apulse { display: none; } .tx__dbox { transition: none; } }
+
 /* ---------- focus (zoomed-in) view ---------- */
 .tx__view-wrap { will-change: transform; }
 .tx__back { font: 600 0.75rem var(--font-sans); color: var(--accent); background: none; border: 0; padding: 0.2rem 0; cursor: pointer; margin-bottom: 0.5rem; }
@@ -176,4 +233,13 @@ html.tx-lock, html.tx-lock body { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .tx__branch, .tx__leaf { transition: none; }
   .tx__pulse { display: none; }
+}
+
+/* toolbar wraps on narrow cards (the ATLAS view toggle is long) */
+.tx__actions { flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
+@container (max-width: 520px) {
+  .tx__bar { flex-direction: column; align-items: stretch; }
+  .tx__actions { margin-left: 0; justify-content: space-between; }
+  .tx__views { order: 3; flex: 1 1 100%; }
+  .tx__view { flex: 1 1 0; white-space: normal; line-height: 1.2; }
 }
