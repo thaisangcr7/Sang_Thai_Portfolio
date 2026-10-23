@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light')})();</script>
+  <title>Not every change needs a human. Some need two. &mdash; AIS</title>
+  <meta name="description" content="How the Claude Code team runs code review (Oct 2026): verify first, AI review with a 3-round cap, a classifier sorts changes into 0, 1 or 2 human approvers. Reverted share fell over 40%. Plus Block&#x27;s two-human deploys." />
+  <link rel="canonical" href="https://sangthai.dev/field/some-changes-need-two-humans/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Not every change needs a human. Some need two." />
+  <meta property="og:description" content="Sort every change by risk: 0, 1 or 2 humans. The full review flow, an interactive diagram and every source." />
+  <meta property="og:url" content="https://sangthai.dev/field/some-changes-need-two-humans/" />
+  <meta property="og:image" content="https://sangthai.dev/field/some-changes-need-two-humans/media/og.jpg" />
+  <meta property="article:published_time" content="2026-10-23" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#F8F7FF" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/field.css" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="progress" aria-hidden="true"><span></span></div>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="../../" aria-label="Sang Thai, home">
+        <span class="brand__avatar" aria-hidden="true">ST</span>
+        <span>Sang Thai<span class="brand__sub">AIS</span></span>
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a href="../../#home">Home</a>
+        <a href="../../#about">About</a>
+        <a href="../../#resume">Experience</a>
+        <a href="../../#portfolio">Projects</a>
+        <a href="../" aria-current="page">AIS</a>
+        <a href="../../#contact">Contact</a>
+      </nav>
+      <div class="header-actions">
+        <a class="back-home" href="../">All breakdowns</a>
+        <button class="icon-btn" type="button" data-theme-toggle aria-label="Switch theme">
+          <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <section class="post-head">
+        <div class="crumbs"><a href="../">AIS</a><span aria-hidden="true">/</span><span>Scale + implement</span></div>
+        <h1>Not every change needs a human. Some need two.</h1>
+        <p class="dek">Anthropic shared how the Claude Code team reviews code now that Claude writes about 90% of it. The key move: sort every change by risk, and spend human attention where mistakes cost the most.</p>
+        <div class="meta">
+          <span class="pill">Oct 23, 2026</span>
+          <a class="pill" href="#diagram">Interactive diagram ↓</a>
+          <a class="pill" href="#sources">Sources ↓</a>
+          <a class="pill" href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer">Follow on LinkedIn ↗</a>
+        </div>
+      </section>
+
+      <div class="intro-grid" id="tldr">
+        <div class="panel tldr">
+          <span class="kicker">The short version</span>
+          <ul>
+            <li>Claude writes about <strong>90%</strong> of Claude Code's own code, so the team <strong>sorts every change by risk</strong>: <strong>0, 1 or 2</strong> human approvers.</li>
+            <li>The work is <strong>verified before anyone else looks</strong>, and after <strong>3 review rounds</strong> the reviewer asks the author to rethink the approach.</li>
+            <li>June to September: merged PRs more than doubled while the share that had to be reverted fell by <strong>more than 40%</strong>.</li>
+          </ul>
+        </div>
+        <figure class="panel video" style="margin:0">
+          <a href="media/cover.jpg" target="_blank" rel="noopener"><img src="media/cover.jpg" alt="Diagram: How the Claude Code team runs review. Change, verified, sort by risk, then 0 human approvers for low risk, 1 for medium, 2 for high, then deploy. 3 rounds: stop and rethink. Reverted changes dropped by more than 40% (the share of changes reverted)" width="1080" height="1350" /></a>
+          <figcaption>The image from the LinkedIn post (tap to open full size)</figcaption>
+        </figure>
+      </div>
+
+      <!-- ===== DIAGRAM ===== -->
+      <figure class="diagram" id="diagram" data-mode="full" aria-labelledby="diagram-cap">
+        <div class="diagram__bar">
+          <span class="diagram__title" id="diagram-cap">Fig 1 · From change to release, with human approval scaled by risk</span>
+          <div class="diagram__tools">
+            <div class="seg" role="group" aria-label="Show path">
+              <button type="button" data-mode-btn="full" data-note="Every change takes the same path until a classifier sorts it by risk.">All tiers</button>
+              <button type="button" data-mode-btn="low" data-note="Low risk: no human approval once automated review and security checks are green.">Low risk</button>
+              <button type="button" data-mode-btn="med" data-note="Medium risk: one person approves.">Medium</button>
+              <button type="button" data-mode-btn="high" data-note="High risk: two people approve.">High</button>
+            </div>
+            <button type="button" class="tool-btn" data-fullscreen><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Full screen</span></button>
+          </div>
+        </div>
+
+        <div class="diagram__stage">
+          <p class="diagram__title" data-mode-note aria-live="polite" style="text-align:center;margin:0 0 30px"></p>
+          <div class="flow">
+            <button type="button" class="node" style="--c:1;--r:1;--o:1" data-node data-path="low med high" data-num="01" data-title="Change" data-desc="About 90 percent of Claude Code&#x27;s own code is written by Claude, per Anthropic. Across Anthropic&#x27;s monorepo, changes landing per day went from about 2,500 in May to more than 30,000 in September. Claude Code has its own repo, under similar pressure.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h8M12 11v8"/></svg>Change</button>
+            <div class="arrow" style="--c:2;--r:1;--o:2" data-path="high low med" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:3;--r:1;--o:3" data-node data-path="low med high" data-num="02" data-title="Verified before anyone looks" data-desc="Give the agent something it can run (tests, a build, a screenshot to compare against the design) and ask it to show the output instead of saying it&#x27;s done. Then a subagent reviews the diff with fresh context.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 13l2 2 4-4"/></svg>Verified first</button>
+            <div class="arrow" style="--c:4;--r:1;--o:4" data-path="high low med" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:5;--r:1;--o:5" data-node data-path="low med high" data-num="03" data-title="AI review on every PR" data-desc="Runs on every pull request. After three rounds, the reviewer asks the author to step back and reconsider the approach. With that and related rules, internal PRs needing five or more rounds fell from 8.9% to 1.5%.">
+              <span class="node__badge">3 rounds max</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2 7 7 2-7 2-2 7-2-7-7-2 7-2z"/></svg>AI review</button>
+            <div class="arrow arrow--down" style="--c:5;--r:2;--o:6" data-path="high low med" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:5;--r:3;--o:7" data-node data-path="low med high" data-num="04" data-title="Security + blocking checks" data-desc="A security review that can block, plus automated checks that block. A typical CLI pull request may run dozens of checks before anyone looks at it.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Security + checks</button>
+            <div class="arrow arrow--left" style="--c:4;--r:3;--o:8" data-path="high low med" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node node--hot" style="--c:3;--r:3;--o:9" data-node data-path="low med high" data-num="05" data-title="Sort by risk" data-desc="The change sets the tier, not the author. A classifier reads the change and picks its risk tier. Only authors on the repo&#x27;s trusted list (mostly the owning team) get the lighter paths; everyone else needs a second person. An agent&#x27;s approval never counts as a person&#x27;s.">
+              <span class="node__badge">classifier</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Sort by risk</button>
+            <div class="arrow arrow--diag-l arrow--hide-sm" style="--c:2;--r:4" data-path="low" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <div class="arrow arrow--down arrow--hide-sm" style="--c:3;--r:4" data-path="med" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <div class="arrow arrow--diag arrow--hide-sm" style="--c:4;--r:4" data-path="high" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <div class="arrow arrow--down arrow--sm-only" style="--c:3;--r:4;--o:10" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <div class="trio" style="--o:11">
+              <button type="button" class="node" style="--c:1;--r:5" data-node data-path="low" data-num="06a" data-title="Low risk: no human approval" data-desc="Docs, copy, internal-only features, additive changes behind a flag. No human approval once automated review and security checks are green.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg><span class="node__txt">Low<span class="node__sub">0 humans</span></span></button>
+              <button type="button" class="node" style="--c:3;--r:5" data-node data-path="med" data-num="06b" data-title="Medium risk: one person" data-desc="Ordinary product changes, and changes to sensitive areas like caching, the auto-updater or system prompts. One person approves.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span class="node__txt">Medium<span class="node__sub">1 human</span></span></button>
+              <button type="button" class="node" style="--c:5;--r:5" data-node data-path="high" data-num="06c" data-title="High risk: two people" data-desc="The highest-risk code, plus a small set of paths that always need two people.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="9" r="2.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><path d="M15.5 14.6c3 .2 6 1.8 6 5.4"/></svg><span class="node__txt">High<span class="node__sub">2 humans</span></span></button>
+            </div>
+            <div class="arrow arrow--down arrow--hide-sm" style="--c:1;--r:6" data-path="low" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <div class="arrow arrow--down arrow--hide-sm" style="--c:3;--r:6" data-path="med" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <div class="arrow arrow--down arrow--hide-sm" style="--c:5;--r:6" data-path="high" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <div class="arrow arrow--down arrow--sm-only" style="--c:3;--r:6;--o:12" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node node--wide" style="--c:1 / 6;--r:7;--o:13" data-node data-path="low med high" data-num="07" data-title="Merge, flags, gradual release, rollback" data-desc="Merge queue, feature flags and a gradual release, then fast detection and fast rollback. From June to September, merged pull requests more than doubled while the share that had to be reverted fell by more than 40%.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 15c-1.5 1.5-2 5-2 5s3.5-.5 5-2"/><path d="M9 15l-3-3c1-4 5-9 12-9 0 7-5 11-9 12z"/><circle cx="14.5" cy="9.5" r="1.5"/></svg>Merge queue · flags · gradual release · fast rollback</button>
+          </div>
+          
+        </div>
+
+        <div class="diagram__detail" aria-live="polite">
+          <span class="num" data-detail-num>01</span>
+          <div>
+            <h3 data-detail-title>Change</h3>
+            <p data-detail-text></p>
+          </div>
+        </div>
+        <div class="diagram__hint">Tap any box to see what it does. Pick a tier above to follow its path.</div>
+      </figure>
+
+      <div class="post-body">
+        <article class="prose">
+          <h2 id="why">Why review had to change</h2>
+          <p>Across Anthropic's monorepo, changes landing per day went from about 2,500 in May to more than 30,000 in September. Claude Code lives in its own repo but feels the same pressure, and line-by-line human review at that pace is close to impossible. So they named the scarce resource: <strong>human time and attention</strong>. They track human approvals per PR, human comments and how long a PR waits on a person, with revert and incident rates as the guardrail.</p>
+          <p>Review now runs continuously, "more like spellcheck while you write," across seven layers:</p>
+          <ol>
+            <li>The work is verified before anyone else looks</li>
+            <li>AI review on every pull request</li>
+            <li>Security review that can block</li>
+            <li>Automated checks that block</li>
+            <li>Human approval, scaled by risk</li>
+            <li>Merge queue, flags and a gradual release</li>
+            <li>Fast detection, fast rollback</li>
+          </ol>
+
+          <h2 id="tiers">The tiers</h2>
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th>Risk</th><th>Examples</th><th>Human approvals</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Low</strong></td><td>Docs, copy, internal-only features, additive changes behind a flag</td><td>None, once automated review and security checks are green</td></tr>
+              <tr><td><strong>Medium</strong></td><td>Ordinary product changes, and sensitive areas like caching, the auto-updater or system prompts</td><td>One person</td></tr>
+              <tr><td><strong>High</strong></td><td>The highest-risk code, plus a small set of paths that always need two people</td><td>Two people</td></tr>
+            </tbody>
+          </table></div>
+          <blockquote>"The change sets the tier, not the author."<cite>How the Claude Code team does code review, Oct 15, 2026</cite></blockquote>
+          <p>A classifier reads the change and picks its risk tier, so nobody gets to talk their own change down to "low." Two more rules keep the light paths honest: only authors on the repo's trusted list (mostly the team that owns it) get them, and an agent's approval never counts as a person's.</p>
+
+          <h2 id="verified">Verified before anyone looks</h2>
+          <p>Their first layer is the one to copy. Give the agent something it can run (tests, a build, a screenshot to compare against the design) and ask it to show the output instead of saying it's done. Then a subagent reviews the diff with fresh context.</p>
+          <p>Per the post, Boris Cherny estimates that giving Claude a way to verify its work makes the final result two to three times better. Claude Code's best-practices guide puts it plainly: without a check it can run, "looks done" is the only signal available, and you become the verification loop.</p>
+
+          <h2 id="rounds">When review won't settle</h2>
+          <p>After three rounds, the reviewer asks the author to step back and reconsider the approach. With that cap and a few related rules, internal PRs settled in fewer rounds:</p>
+          <div class="stats">
+            <div class="stat"><b>65% → 78%</b><span>passed after one review-and-fix round</span></div>
+            <div class="stat"><b>8.9% → 1.5%</b><span>needed five or more rounds</span></div>
+            <div class="stat"><b>2.08 → 1.32</b><span>average reviews to pass</span></div>
+          </div>
+          <p>The headline result: from June to September, merged pull requests more than doubled while <strong>the share that had to be reverted fell by more than 40%</strong>.</p>
+
+          <h2 id="block">Block does it at migration scale</h2>
+          <p>Block shared a similar setup on Oct 8. In any given migration they might merge about a thousand pull requests orchestrated by Claude Fable, which directs up to dozens of smaller models like Opus or Sonnet for the individual tasks. Agent changes have to pass security checks, then two humans approve the deploy: a dual-approval layer, so no model pushes those changes alone.</p>
+
+          <h2 id="fatigue">Why tiers work</h2>
+          <p>Approve everything and the clicks stop meaning much. Claude Code's own guide says it about permission prompts: "After the tenth approval you're clicking through rather than reviewing." Tiers save human attention for the changes where it counts.</p>
+
+          <h2 id="mine">The same idea, scaled down</h2>
+          <p>My personal AI setup runs three tiers:</p>
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th>Action</th><th>What happens</th><th>Who approves</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Edits to my own files</strong></td><td>Just run</td><td>Nobody</td></tr>
+              <tr><td><strong>Drafts, like emails</strong></td><td>Get written, then wait</td><td>Me, before anything goes out</td></tr>
+              <tr><td><strong>Sends to anyone but me</strong></td><td>Need my yes; in the most hands-off mode a hook blocks them outright</td><td>Me, every time</td></tr>
+            </tbody>
+          </table></div>
+          <p><strong>Human time is limited. Spend it where mistakes cost the most.</strong> Where do you draw the line between "just do it" and "wait for me"? Tell me on <a href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer">LinkedIn</a>.</p>
+
+          <section class="sources" id="sources" aria-labelledby="sources-h">
+            <h2 id="sources-h">Sources and further reading</h2>
+            <p class="note">Every number on this page comes from these. The three-tier setup is my own.</p>
+            <ol>
+              <li><a href="https://claude.dev/blog/solving-code-review-at-anthropic/" target="_blank" rel="noopener noreferrer">How the Claude Code team does code review</a> <span class="src-meta">Addy Osmani, Morgan Westlee Lunt, Qing Wang · claude.dev blog (Anthropic) · Oct 15, 2026 · tiers, layers, round cap, revert result</span></li>
+              <li><a href="https://claude.com/resources/articles/how-block-orchestrates-claude-fable-across-thousands-of-pull-requests" target="_blank" rel="noopener noreferrer">How Block orchestrates Claude Fable across thousands of pull requests</a> <span class="src-meta">Bradley Axen (Block) · Claude resources · Oct 8, 2026 · ~1,000 PRs per migration, two-human deploy approval</span></li>
+              <li><a href="https://code.claude.com/docs/en/best-practices" target="_blank" rel="noopener noreferrer">Best practices for Claude Code</a> <span class="src-meta">Anthropic · Claude Code docs · verification loops, approval fatigue</span></li>
+            </ol>
+          </section>
+        </article>
+
+        <aside class="toc">
+          <nav class="panel" aria-label="On this page">
+            <span class="kicker">On this page</span>
+            <a href="#tldr">The short version</a>
+            <a href="#diagram">Change to release</a>
+            <a href="#why">Why review changed</a>
+            <a href="#tiers">The tiers</a>
+            <a href="#verified">Verified first</a>
+            <a href="#rounds">When review won&#x27;t settle</a>
+            <a href="#block">Block&#x27;s version</a>
+            <a href="#fatigue">Why tiers work</a>
+            <a href="#mine">Scaled down</a>
+            <a href="#sources">Sources</a>
+          </nav>
+          <div class="panel cta">
+            <h3>Talk about it on LinkedIn</h3>
+            <p>This breakdown goes with one of my LinkedIn posts. Questions and pushback live there.</p>
+            <a href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer"><strong>Follow along ↗</strong></a>
+          </div>
+        </aside>
+      </div>
+
+      <div class="post-end">
+        <a class="panel" href="../">
+          <span class="kicker">AIS</span>
+          <h3>← All breakdowns</h3>
+          <p>Plain-English AI and data architecture, diagrams included.</p>
+        </a>
+        <a class="panel" href="../agents-are-markdown-files/">
+          <span class="kicker">Next breakdown</span>
+          <h3>Agents are just markdown files now</h3>
+          <p>Claude Code, Codex, Cursor and Antigravity, and the one line that matters.</p>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>&copy; 2026 Sang Thai · <a href="../../">sangthai.dev</a></span>
+      <span class="mono">Every source linked. No hype.</span>
+    </div>
+  </footer>
+
+  <script src="../assets/field.js" defer></script>
+</body>
+</html>

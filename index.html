@@ -1156,6 +1156,20 @@
     .field-card__meta { display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); }
     .field-card__go { font-size: 0.85rem; font-weight: 600; color: var(--accent); text-decoration: none; }
     .field-card--next { grid-template-columns: minmax(0, 1fr); border-style: dashed; box-shadow: none; background: var(--surface); }
+    .field-card__img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .field-mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 0.75rem; }
+    .field-mini {
+      display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 0.9rem; align-items: center;
+      padding: 0.7rem; background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      color: inherit; text-decoration: none; transition: transform 0.25s, border-color 0.25s;
+    }
+    .field-mini:hover { transform: translateY(-2px); border-color: rgba(224,78,114,0.35); }
+    .field-mini__img { width: 72px; height: 90px; border-radius: 9px; object-fit: cover; background: #0F0E17; display: block; }
+    .field-mini__body { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+    .field-mini__tag { font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+    .field-mini__title { font-size: 0.95rem; font-weight: 700; line-height: 1.3; letter-spacing: -0.01em; }
+    .field-mini--all { grid-template-columns: minmax(0, 1fr); border-style: dashed; background: var(--surface); align-content: center; justify-items: center; text-align: center; min-height: 106px; }
+    .field-mini--all .field-mini__title { color: var(--accent); }
     .field-home__all { max-width: 460px; }
     .field-card__body > .tag { align-self: flex-start; }
     @media (max-width: 600px) {
@@ -1166,7 +1180,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       .reveal-item { transition: none; }
-      a.field-card:hover { transform: none; }
+      a.field-card:hover, .field-mini:hover { transform: none; }
     }
   </style>
   <link rel="stylesheet" href="assets/explorer.css" />
@@ -1744,35 +1758,54 @@
         </p>
 
         <div class="field-home__grid">
-          <!-- NEWEST POST FIRST. On a new post's posting day: copy this card, point it at the new post, drop the "Up next" card. -->
-          <a class="field-card reveal-item" href="field/bi-ready-vs-ai-ready/">
+          <!-- NEWEST BREAKDOWN FIRST (same order as field/index.html). Pages go live before their LinkedIn date, so nothing changes on posting day. -->
+          <a class="field-card reveal-item" href="field/grader-can-be-the-bug/">
             <div class="field-card__media">
-              <video class="field-card__video" muted loop playsinline preload="none"
-                     poster="field/bi-ready-vs-ai-ready/media/thumb.jpg"
-                     data-src="field/bi-ready-vs-ai-ready/media/post-22.mp4"
-                     aria-label="Animated end-to-end diagram: sources, ingestion, validation, lakehouse, compute, serving, dashboard, model, action, monitoring"></video>
-              <span class="field-card__play" aria-hidden="true">&#9654; Live diagram</span>
+              <img class="field-card__img" src="field/grader-can-be-the-bug/media/thumb.jpg" alt="Diagram: test cases, agent, test runner, grader (highlighted), score, tuning loop" loading="lazy" width="640" height="800" />
             </div>
             <div class="field-card__body">
-              <div><span class="field-card__new">NEW</span> <span class="tag">Architecture</span></div>
-              <h3 class="field-card__title">BI-ready vs AI-ready: does your architecture have a way back?</h3>
-              <p class="field-card__sum">A dashboard and an AI model can read the same data. They need different architecture. The difference is one arrow, and it changes three things.</p>
-              <div class="field-card__meta"><span>Oct 19, 2026</span><span>Interactive diagram</span><span>Video</span></div>
+              <div><span class="field-card__new">NEW</span> <span class="tag">Evals &amp; testing</span></div>
+              <h3 class="field-card__title">Your eval score might be lying: the grader can be the bug</h3>
+              <p class="field-card__sum">A score jumped from 66.1% to 87.9%, and part of that came from fixing broken graders. How to check the checker, with a checklist to copy.</p>
+              <div class="field-card__meta"><span>Oct 23, 2026</span><span>Interactive diagram</span><span>8 breakdowns in AIS</span></div>
               <span class="field-card__go">Read the breakdown &rarr;</span>
             </div>
           </a>
 
-          <div class="field-card field-card--next reveal-item">
-            <div class="field-card__body">
-              <span class="tag">Up next</span>
-              <h3 class="field-card__title">Prompt-only vs pipeline + AI</h3>
-              <p class="field-card__sum">Why the same spreadsheet can give you two different totals, and the pipeline that fixes it.</p>
-              <a class="field-card__go" href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer">Follow on LinkedIn to catch it &rarr;</a>
-            </div>
+          <div class="field-mini-grid">
+          <a class="field-mini reveal-item" href="field/agent-said-done-database-said-no/">
+            <img class="field-mini__img" src="field/agent-said-done-database-said-no/media/thumb.jpg" alt="" loading="lazy" width="72" height="90" />
+            <span class="field-mini__body"><span class="field-mini__tag">Agents &amp; reliability</span><span class="field-mini__title">The agent said done. The database said no.</span></span>
+          </a>
+          <a class="field-mini reveal-item" href="field/some-changes-need-two-humans/">
+            <img class="field-mini__img" src="field/some-changes-need-two-humans/media/thumb.jpg" alt="" loading="lazy" width="72" height="90" />
+            <span class="field-mini__body"><span class="field-mini__tag">Scale + implement</span><span class="field-mini__title">Not every change needs a human. Some need two.</span></span>
+          </a>
+          <a class="field-mini reveal-item" href="field/agents-are-markdown-files/">
+            <img class="field-mini__img" src="field/agents-are-markdown-files/media/thumb.jpg" alt="" loading="lazy" width="72" height="90" />
+            <span class="field-mini__body"><span class="field-mini__tag">AI coding agents</span><span class="field-mini__title">Agents are just markdown files now</span></span>
+          </a>
+          <a class="field-mini reveal-item" href="field/approved-the-tool-then-it-changed/">
+            <img class="field-mini__img" src="field/approved-the-tool-then-it-changed/media/thumb.jpg" alt="" loading="lazy" width="72" height="90" />
+            <span class="field-mini__body"><span class="field-mini__tag">Agents &amp; guardrails</span><span class="field-mini__title">You approved the tool. Then the tool changed.</span></span>
+          </a>
+          <a class="field-mini reveal-item" href="field/scheduled-agents-fail-quietly/">
+            <img class="field-mini__img" src="field/scheduled-agents-fail-quietly/media/thumb.jpg" alt="" loading="lazy" width="72" height="90" />
+            <span class="field-mini__body"><span class="field-mini__tag">Tools in practice</span><span class="field-mini__title">Scheduled agents fail quietly. Silence isn't success.</span></span>
+          </a>
+          <a class="field-mini reveal-item" href="field/prompt-only-vs-pipeline-ai/">
+            <img class="field-mini__img" src="field/prompt-only-vs-pipeline-ai/media/thumb.jpg" alt="" loading="lazy" width="72" height="90" />
+            <span class="field-mini__body"><span class="field-mini__tag">Architecture</span><span class="field-mini__title">Prompt-only vs pipeline + AI: code computes, AI explains</span></span>
+          </a>
+          <a class="field-mini reveal-item" href="field/bi-ready-vs-ai-ready/">
+            <img class="field-mini__img" src="field/bi-ready-vs-ai-ready/media/thumb.jpg" alt="" loading="lazy" width="72" height="90" />
+            <span class="field-mini__body"><span class="field-mini__tag">Architecture</span><span class="field-mini__title">BI-ready vs AI-ready: does your architecture have a way back?</span></span>
+          </a>
+          <a class="field-mini field-mini--all reveal-item" href="field/">
+            <span class="field-mini__body"><span class="field-mini__tag">All 8, with topic filters</span><span class="field-mini__title">See every breakdown in AIS &rarr;</span></span>
+          </a>
           </div>
         </div>
-
-        <a href="field/" class="cta-btn field-home__all reveal-item">See every breakdown in AIS &rarr;</a>
       </section>
 
       <!-- == SECTION: RESUME == -->

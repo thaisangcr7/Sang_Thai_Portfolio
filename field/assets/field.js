@@ -66,8 +66,14 @@
     if (start) pick(start);
 
     var modeBtns = Array.prototype.slice.call(fig.querySelectorAll('[data-mode-btn]'));
+    var pathEls = Array.prototype.slice.call(fig.querySelectorAll('[data-path]'));
     function setMode(m) {
       fig.setAttribute('data-mode', m);
+      /* Generic path dimming: any mode name works; "full" shows everything. */
+      pathEls.forEach(function (el) {
+        var on = m === 'full' || (' ' + el.getAttribute('data-path') + ' ').indexOf(' ' + m + ' ') > -1;
+        el.classList.toggle('is-dim', !on);
+      });
       modeBtns.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-mode-btn') === m ? 'true' : 'false'); });
       fig.querySelectorAll('[data-label-' + m + ']').forEach(function (el) {
         el.textContent = el.getAttribute('data-label-' + m);

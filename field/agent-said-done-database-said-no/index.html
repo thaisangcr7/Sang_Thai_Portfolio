@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light')})();</script>
+  <title>The agent said done. The database said no. &mdash; AIS</title>
+  <meta name="description" content="ThinkingBox (Microsoft, Oct 2026) runs 507 business workflows 20 times each and grades database state. Kimi-K3: 93.89% at least once, 13.41% every time; 67.24% of failed runs ended cleanly." />
+  <link rel="canonical" href="https://sangthai.dev/field/agent-said-done-database-said-no/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="The agent said done. The database said no." />
+  <meta property="og:description" content="A trajectory is a claim. Database state is the evidence. The numbers, an interactive diagram and every source." />
+  <meta property="og:url" content="https://sangthai.dev/field/agent-said-done-database-said-no/" />
+  <meta property="og:image" content="https://sangthai.dev/field/agent-said-done-database-said-no/media/og.jpg" />
+  <meta property="article:published_time" content="2026-10-23" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#F8F7FF" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/field.css" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="progress" aria-hidden="true"><span></span></div>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="../../" aria-label="Sang Thai, home">
+        <span class="brand__avatar" aria-hidden="true">ST</span>
+        <span>Sang Thai<span class="brand__sub">AIS</span></span>
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a href="../../#home">Home</a>
+        <a href="../../#about">About</a>
+        <a href="../../#resume">Experience</a>
+        <a href="../../#portfolio">Projects</a>
+        <a href="../" aria-current="page">AIS</a>
+        <a href="../../#contact">Contact</a>
+      </nav>
+      <div class="header-actions">
+        <a class="back-home" href="../">All breakdowns</a>
+        <button class="icon-btn" type="button" data-theme-toggle aria-label="Switch theme">
+          <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <section class="post-head">
+        <div class="crumbs"><a href="../">AIS</a><span aria-hidden="true">/</span><span>Agents &amp; reliability</span></div>
+        <h1>The agent said done. The database said no.</h1>
+        <p class="dek">Microsoft&#x27;s ThinkingBox grades AI agents on the records they leave behind, not on what they say they did. The gap between &quot;solved once&quot; and &quot;solved every time&quot; is the whole story.</p>
+        <div class="meta">
+          <span class="pill">Oct 23, 2026</span>
+          <a class="pill" href="#diagram">Interactive diagram ↓</a>
+          <a class="pill" href="#sources">Sources ↓</a>
+          <a class="pill" href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer">Follow on LinkedIn ↗</a>
+        </div>
+      </section>
+
+      <div class="intro-grid" id="tldr">
+        <div class="panel tldr">
+          <span class="kicker">The short version</span>
+          <ul>
+            <li>ThinkingBox runs <strong>507 business workflows, 20 times each</strong>, and grades the <strong>database state</strong> at the end, not the transcript.</li>
+            <li>Kimi-K3 solved <strong>93.89%</strong> of workflows at least once, but only <strong>13.41%</strong> on all 20 runs.</li>
+            <li>Across 12 models, <strong>67.24%</strong> of failed runs ended cleanly: a state-changing call, no final tool error, then a stop.</li>
+          </ul>
+        </div>
+        <figure class="panel video" style="margin:0">
+          <a href="media/cover.jpg" target="_blank" rel="noopener"><img src="media/cover.jpg" alt="Diagram: workflow, agent, database, end state (highlighted), 20 runs, proof, with stats 93.89% Kimi-K3 at least once, 13.41% all 20 runs, 67.24% of failed runs ended cleanly across 12 models" width="1080" height="1350" /></a>
+          <figcaption>The image from the LinkedIn post (tap to open full size)</figcaption>
+        </figure>
+      </div>
+
+      <!-- ===== DIAGRAM ===== -->
+      <figure class="diagram" id="diagram" data-mode="state" aria-labelledby="diagram-cap">
+        <div class="diagram__bar">
+          <span class="diagram__title" id="diagram-cap">Fig 1 · Grade the end state, not the story</span>
+          <div class="diagram__tools">
+            <div class="seg" role="group" aria-label="Show path">
+              <button type="button" data-mode-btn="state" data-note="ThinkingBox&#x27;s way: check the records the agent left behind, 20 times.">Grade the end state</button>
+              <button type="button" data-mode-btn="talk" data-note="The shortcut: trust what the agent says it did.">Grade the transcript</button>
+            </div>
+            <button type="button" class="tool-btn" data-fullscreen><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Full screen</span></button>
+          </div>
+        </div>
+
+        <div class="diagram__stage">
+          <p class="diagram__title" data-mode-note aria-live="polite" style="text-align:center;margin:0 0 30px"></p>
+          <div class="flow">
+            <button type="button" class="node" style="--c:1;--r:1;--o:1" data-node data-path="state talk" data-num="01" data-title="Workflow" data-desc="A stateful business workflow with a simulated user. ThinkingBox has 507 of them across retail, auto insurance, travel, a neobank and consulting.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h8M12 11v8"/></svg>Workflow</button>
+            <div class="arrow" style="--c:2;--r:1;--o:2" data-path="state talk" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:3;--r:1;--o:3" data-node data-path="state talk" data-num="02" data-title="Agent" data-desc="Plans and calls tools. Every attempt runs in its own isolated session.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>Agent</button>
+            <div class="arrow" style="--c:4;--r:1;--o:4" data-path="state talk" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:5;--r:1;--o:5" data-node data-path="state talk" data-num="03" data-title="Tool calls" data-desc="The transcript. In the post&#x27;s opening case, the agent made nine correct-looking calls on a $745 appliance delivery and closed the ticket as resolved.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M9 10.5h.01M12 10.5h.01M15 10.5h.01"/></svg>Tool calls</button>
+            <div class="arrow arrow--down" style="--c:5;--r:2;--o:6" data-path="state" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:5;--r:3;--o:7" data-node data-path="state" data-num="04" data-title="Database" data-desc="Where the work actually lands: records, fields and side effects. In that case, the carrier exception was still open.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Database</button>
+            <div class="arrow arrow--left" style="--c:4;--r:3;--o:8" data-path="state" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node node--hot" style="--c:3;--r:3;--o:9" data-node data-path="state" data-num="05" data-title="End-state check" data-desc="Deterministic judges compare the final records to what should be true, and the evaluator stays separate from the agent. The $745 ticket should have been on hold, not resolved.">
+              <span class="node__badge">the evidence</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 13l2 2 4-4"/></svg>End-state check</button>
+            <div class="arrow arrow--left" style="--c:2;--r:3;--o:10" data-path="state" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:1;--r:3;--o:11" data-node data-path="state" data-num="06" data-title="Run it 20 times" data-desc="One success can be luck. Every workflow runs 20 times per model.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>Run it 20 times</button>
+            <div class="arrow arrow--down" style="--c:1;--r:4;--o:12" data-path="state" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:1;--r:5;--o:13" data-node data-path="state" data-num="07" data-title="At least once (pass@20)" data-desc="Kimi-K3 solved 93.89% of workflows at least once: 476 of 507. That&#x27;s coverage.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg><span class="node__txt">At least once<span class="node__sub">pass@20</span></span></button>
+            <div class="arrow" style="--c:2;--r:5;--o:14" data-path="state" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node node--hot" style="--c:3;--r:5;--o:15" data-node data-path="state" data-num="08" data-title="Every time (20/20)" data-desc="Only 13.41% (68 of 507) succeeded on all 20 attempts. That&#x27;s reliability, and it&#x27;s the number to build on.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span class="node__txt">Every time<span class="node__sub">20 / 20</span></span></button>
+            <div class="arrow" style="--c:4;--r:5;--o:16" data-path="state" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:5;--r:5;--o:17" data-node data-path="state" data-num="09" data-title="Decide" data-desc="Pick models and design guardrails on the every-time number. ThinkingBox&#x27;s advice: treat 20/20 as a design input, and always say whether a score is best-of-k or every-of-k.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>Decide</button>
+          </div>
+          <div class="lane" data-path="talk">
+            <div class="lane__label">The shortcut: transcript-only grading</div>
+            <div class="lane__row">
+              <button type="button" class="node" style="--c:1;--o:1" data-node data-num="A" data-title="Agent says &quot;done&quot;" data-desc="The final message says the task is finished, and the tool calls look tidy.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M9 10.5h.01M12 10.5h.01M15 10.5h.01"/></svg>Agent says “done”</button>
+              <div class="arrow" style="--c:2;--o:2" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+              <button type="button" class="node" style="--c:3;--o:3" data-node data-num="B" data-title="Grader reads the transcript" data-desc="It checks the words and the tool-call format, not the records the agent changed.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Grader reads the transcript</button>
+              <div class="arrow" style="--c:4;--o:4" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+              <button type="button" class="node" style="--c:5;--o:5;min-height:0;padding:14px" data-node data-num="C" data-title="Looks like a pass" data-desc="Across 12 models, 67.24% of 79,853 failed attempts still ended cleanly, with no final tool error. An error check on the transcript would have found nothing to flag.">
+              <span class="runs" style="width:100%"><span class="run">No error <b>looks done</b></span><span class="run">Wrong field? <b>unseen</b></span><span class="run">Missing effect? <b>unseen</b></span></span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="diagram__detail" aria-live="polite">
+          <span class="num" data-detail-num>01</span>
+          <div>
+            <h3 data-detail-title>Workflow</h3>
+            <p data-detail-text></p>
+          </div>
+        </div>
+        <div class="diagram__hint">Tap any box to see what it does. Switch between the two ways of grading above.</div>
+      </figure>
+
+      <div class="post-body">
+        <article class="prose">
+          <h2 id="story">Nine good-looking steps, one wrong ending</h2>
+          <p>The ThinkingBox write-up opens with a late-delivery case: a $745 appliance delivery stuck in a carrier exception. The agent makes nine correct-looking tool calls, then closes the ticket as resolved. But the carrier exception was still open, so the right state was "on hold." Read the transcript and it looks fine. Read the database and it's wrong.</p>
+          <blockquote>"A trajectory is a claim. Database state is the evidence."<cite>ThinkingBox, Microsoft, on the Hugging Face blog (Oct 3, 2026)</cite></blockquote>
+
+          <h2 id="how">How ThinkingBox grades</h2>
+          <ul>
+            <li><strong>507 stateful business workflows</strong> across retail, auto insurance, travel, a neobank and consulting.</li>
+            <li>Every workflow runs <strong>20 times per model</strong>, each attempt in its own isolated session with a simulated user.</li>
+            <li><strong>Deterministic judges</strong> check the final backend state and side effects. The evaluator stays separate from the agent.</li>
+          </ul>
+          <p>Same idea as Anthropic's January guide to agent evals: the outcome is the final state of the environment, and it's often better to grade what the agent produced, not the path it took.</p>
+
+          <h2 id="numbers">Three numbers, three different questions</h2>
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th>Metric</th><th>The question it answers</th><th>Kimi-K3</th></tr></thead>
+            <tbody>
+              <tr><td><strong>pass@1</strong></td><td>How often does one run work, on average?</td><td>57.37%</td></tr>
+              <tr><td><strong>pass@20</strong></td><td>Did it work at least once in 20 tries?</td><td>93.89% (476 of 507)</td></tr>
+              <tr><td><strong>20 / 20</strong></td><td>Does it work every single time?</td><td>13.41% (68 of 507)</td></tr>
+            </tbody>
+          </table></div>
+          <p>Breadth and consistency pull apart. Kimi-K3 has the widest coverage and among the lowest consistency. Opus 5 is more consistent but solves fewer tasks at least once. And even the best overall pass@1 in their table, Claude Opus 5.5, is 67.16%.</p>
+          <p>The idea isn't new. The 2024 τ-bench paper proposed pass^k to measure reliability over repeated trials, and found gpt-4o function-calling agents were quite inconsistent: pass^8 under 25% in retail. ThinkingBox's 20/20 asks the same question, harder.</p>
+
+          <h2 id="clean">Clean exits are the dangerous ones</h2>
+          <div class="stats">
+            <div class="stat"><b>121,680</b><span>valid trials across 12 models</span></div>
+            <div class="stat"><b>79,853</b><span>failed the executable checks</span></div>
+            <div class="stat stat--hot"><b>67.24%</b><span>of those failures still ended cleanly, with no final tool error</span></div>
+          </div>
+          <p>A clean exit with wrong field values, extra effects or missing effects is the worst kind of failure, because nothing flags it. ThinkingBox's read on all failed runs: about four in five were tool handling, not reasoning (each share is an average of per-model shares):</p>
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th>Failure signature</th><th>Share</th></tr></thead>
+            <tbody>
+              <tr><td>Tool usage (errors, failed preconditions, empty lookups)</td><td><strong>79.9%</strong></td></tr>
+              <tr><td>Wrong state updates</td><td>10.3%</td></tr>
+              <tr><td>Incomplete user resolutions</td><td>7.0%</td></tr>
+              <tr><td>No state-changing action</td><td>2.9%</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="mine">Same rule, my setup</h2>
+          <p>I use the same rule on my personal AI setup. When I ran its acceptance tests, the score was <strong>6 pass, 1 partial, 3 not verified, 0 fail</strong>. "Not verified" means it may have worked, but it left nothing on disk to check at check time. No trace, no pass.</p>
+          <p>One example: a test sent the setup a short note by text and expected a new file plus a log line. When I checked, nothing on disk had changed, so it went in the not-verified column instead of the pass column.</p>
+
+          <h2 id="apply">How to put it to work</h2>
+          <ul class="checks">
+            <li>Grade the end state, not the transcript.</li>
+            <li>Run it many times. One success is luck, 20 out of 20 is reliability.</li>
+            <li>Treat a clean exit as unproven until the data agrees.</li>
+            <li>Give "not verified" its own column.</li>
+            <li>From ThinkingBox's own list: check the end state before committing an action, sort tool errors so retries go after the recoverable ones, keep the tool list to what the workflow needs, and get human approval for changes that are hard to undo.</li>
+          </ul>
+          <p><strong>"Done" is a claim. The data is the proof.</strong> How do you prove an agent actually did what it says it did? Tell me on <a href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer">LinkedIn</a>.</p>
+
+          <section class="sources" id="sources" aria-labelledby="sources-h">
+            <h2 id="sources-h">Sources and further reading</h2>
+            <p class="note">Every number on this page comes from these. The acceptance-test score is my own.</p>
+            <ol>
+              <li><a href="https://huggingface.co/blog/microsoft/thinkingbox" target="_blank" rel="noopener noreferrer">The Agent Said It Was Done. The Database Disagreed.</a> <span class="src-meta">Tuhin Kundu (Microsoft) · Hugging Face blog · Oct 3, 2026 · ThinkingBox: 507 workflows × 20 runs, database-state grading, all ThinkingBox numbers here</span></li>
+              <li><a href="https://arxiv.org/abs/2406.12045" target="_blank" rel="noopener noreferrer">τ-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains</a> <span class="src-meta">S. Yao, N. Shinn, P. Razavi, K. Narasimhan · arXiv · 2024 · introduced pass^k for reliability</span></li>
+              <li><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank" rel="noopener noreferrer">Demystifying evals for AI agents</a> <span class="src-meta">Anthropic Engineering · Jan 9, 2026 · grade the outcome, not the path</span></li>
+            </ol>
+          </section>
+        </article>
+
+        <aside class="toc">
+          <nav class="panel" aria-label="On this page">
+            <span class="kicker">On this page</span>
+            <a href="#tldr">The short version</a>
+            <a href="#diagram">Grade the end state</a>
+            <a href="#story">One wrong ending</a>
+            <a href="#how">How ThinkingBox grades</a>
+            <a href="#numbers">Three numbers</a>
+            <a href="#clean">Clean exits</a>
+            <a href="#mine">My setup</a>
+            <a href="#apply">Put it to work</a>
+            <a href="#sources">Sources</a>
+          </nav>
+          <div class="panel cta">
+            <h3>Talk about it on LinkedIn</h3>
+            <p>This breakdown goes with one of my LinkedIn posts. Questions and pushback live there.</p>
+            <a href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer"><strong>Follow along ↗</strong></a>
+          </div>
+        </aside>
+      </div>
+
+      <div class="post-end">
+        <a class="panel" href="../">
+          <span class="kicker">AIS</span>
+          <h3>← All breakdowns</h3>
+          <p>Plain-English AI and data architecture, diagrams included.</p>
+        </a>
+        <a class="panel" href="../some-changes-need-two-humans/">
+          <span class="kicker">Next breakdown</span>
+          <h3>Not every change needs a human. Some need two.</h3>
+          <p>How the Claude Code team sorts every change by risk.</p>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>&copy; 2026 Sang Thai · <a href="../../">sangthai.dev</a></span>
+      <span class="mono">Every source linked. No hype.</span>
+    </div>
+  </footer>
+
+  <script src="../assets/field.js" defer></script>
+</body>
+</html>

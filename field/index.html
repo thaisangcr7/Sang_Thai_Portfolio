@@ -11,7 +11,7 @@
   <meta property="og:title" content="AIS &mdash; AI, broken down" />
   <meta property="og:description" content="Plain-English breakdowns of AI and data architecture, with real end-to-end diagrams and every source linked." />
   <meta property="og:url" content="https://sangthai.dev/field/" />
-  <meta property="og:image" content="https://sangthai.dev/field/bi-ready-vs-ai-ready/media/og.jpg" />
+  <meta property="og:image" content="https://sangthai.dev/field/grader-can-be-the-bug/media/og.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="theme-color" content="#F8F7FF" />
   <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
@@ -54,7 +54,7 @@
         <h1>AI, broken down. <em>Diagrams included.</em></h1>
         <p>Plain-English breakdowns of what's new in AI and data architecture: agents, guardrails, pipelines and the tools people actually use. Every post has a real end-to-end diagram you can click through, and links to the original sources so you can check it yourself.</p>
         <div class="actions">
-          <a class="btn btn--primary" href="bi-ready-vs-ai-ready/">Read the latest breakdown</a>
+          <a class="btn btn--primary" href="grader-can-be-the-bug/">Read the latest breakdown</a>
           <a class="btn btn--ghost" href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer">Follow on LinkedIn</a>
         </div>
         <div class="promise" aria-label="What every post has">
@@ -71,37 +71,87 @@
         </div>
 
         <div class="grid">
-          <!-- NEWEST POST FIRST. The first card gets card--featured. -->
-          <!-- Next card: uncomment on its posting day, move card--featured to it, drop the "Up next" card.
-          <article class="card card--featured" data-tags="architecture data-engineering">
+          <!-- ORDER: newest site date first; same-day ties follow the LinkedIn calendar order. The first card gets card--featured.
+               Pages go live BEFORE their LinkedIn date (rule since 2026-10-23), so there is no "Up next" card and nothing to change on posting day. -->
+          <article class="card card--featured" data-tags="evals">
+            <div class="card__media"><img src="grader-can-be-the-bug/media/thumb.jpg" alt="Diagram: test cases, agent, test runner, grader, score, tuning loop" width="640" height="800" /></div>
+            <div class="card__body">
+              <div><span class="badge-new">NEW</span> <span class="tag">Evals &amp; testing</span></div>
+              <h3 class="card__title"><a href="grader-can-be-the-bug/">Your eval score might be lying: the grader can be the bug</a></h3>
+              <p class="card__sum">A score jumped from 66.1% to 87.9%, and part of that came from fixing broken graders. How to check the checker, with a checklist to copy.</p>
+              <div class="card__meta"><span>Oct 23, 2026</span><span>Interactive diagram</span><span>Image</span></div>
+            </div>
+          </article>
+
+          <article class="card" data-tags="evals agents">
+            <div class="card__media"><img src="agent-said-done-database-said-no/media/thumb.jpg" alt="Diagram: workflow, agent, database, end state, 20 runs, proof" loading="lazy" width="640" height="800" /></div>
+            <div class="card__body">
+              <div><span class="tag">Agents &amp; reliability</span></div>
+              <h3 class="card__title"><a href="agent-said-done-database-said-no/">The agent said done. The database said no.</a></h3>
+              <p class="card__sum">Microsoft's ThinkingBox grades agents on the records they leave behind. 93.89% solved at least once, 13.41% every time.</p>
+              <div class="card__meta"><span>Oct 23, 2026</span><span>Interactive diagram</span><span>Image</span></div>
+            </div>
+          </article>
+
+          <article class="card" data-tags="guardrails coding-agents">
+            <div class="card__media"><img src="some-changes-need-two-humans/media/thumb.jpg" alt="Diagram: change, verified, sort by risk, then 0, 1 or 2 human approvers, deploy" loading="lazy" width="640" height="800" /></div>
+            <div class="card__body">
+              <div><span class="tag">Scale + implement</span></div>
+              <h3 class="card__title"><a href="some-changes-need-two-humans/">Not every change needs a human. Some need two.</a></h3>
+              <p class="card__sum">How the Claude Code team sorts every change by risk: 0, 1 or 2 human approvers, verified before anyone looks.</p>
+              <div class="card__meta"><span>Oct 23, 2026</span><span>Interactive diagram</span><span>Image</span></div>
+            </div>
+          </article>
+
+          <article class="card" data-tags="coding-agents agents">
+            <div class="card__media"><img src="agents-are-markdown-files/media/thumb.jpg" alt="Infographic: Claude Code, Codex, Cursor and Antigravity agent features" loading="lazy" width="640" height="800" /></div>
+            <div class="card__body">
+              <div><span class="tag">AI coding agents</span></div>
+              <h3 class="card__title"><a href="agents-are-markdown-files/">Agents are just markdown files now</a></h3>
+              <p class="card__sum">What changed in Claude Code, Codex, Cursor and Antigravity this fall, and the one line in an agent file that deserves real thought.</p>
+              <div class="card__meta"><span>Oct 23, 2026</span><span>Interactive diagram</span><span>Image</span></div>
+            </div>
+          </article>
+
+          <article class="card" data-tags="guardrails agents">
+            <div class="card__media"><img src="approved-the-tool-then-it-changed/media/thumb.jpg" alt="Diagram: MCP server, tool description, agent, safety check, action, approval, next update" loading="lazy" width="640" height="800" /></div>
+            <div class="card__body">
+              <div><span class="tag">Agents &amp; guardrails</span></div>
+              <h3 class="card__title"><a href="approved-the-tool-then-it-changed/">You approved the tool. Then the tool changed.</a></h3>
+              <p class="card__sum">An approval is a moment. A tool is a stream. The Deadbugz MCP case and the defenses that keep up with it.</p>
+              <div class="card__meta"><span>Oct 23, 2026</span><span>Interactive diagram</span><span>Video</span></div>
+            </div>
+          </article>
+
+          <article class="card" data-tags="agents">
+            <div class="card__media"><img src="scheduled-agents-fail-quietly/media/thumb.jpg" alt="Diagram: schedule, permissions, agent runs, spend cap, send, output" loading="lazy" width="640" height="800" /></div>
+            <div class="card__body">
+              <div><span class="tag">Tools in practice</span></div>
+              <h3 class="card__title"><a href="scheduled-agents-fail-quietly/">Scheduled agents fail quietly. Silence isn't success.</a></h3>
+              <p class="card__sum">When an agent runs while you sleep, a failed run can look exactly like a quiet day. Anthropic's playbook for unattended runs.</p>
+              <div class="card__meta"><span>Oct 23, 2026</span><span>Interactive diagram</span><span>Image</span></div>
+            </div>
+          </article>
+
+          <article class="card" data-tags="architecture">
             <div class="card__media"><img src="prompt-only-vs-pipeline-ai/media/thumb.jpg" alt="Diagram: file, load, validate, store, compute, serve, AI explains, dashboard, monitor" loading="lazy" width="640" height="800" /></div>
             <div class="card__body">
-              <div><span class="badge-new">NEW</span> <span class="tag">Architecture</span></div>
+              <div><span class="tag">Architecture</span></div>
               <h3 class="card__title"><a href="prompt-only-vs-pipeline-ai/">Prompt-only vs pipeline + AI: code computes, AI explains</a></h3>
               <p class="card__sum">Upload a spreadsheet to a chat and the totals can change between runs. Here's the pipeline that keeps the numbers the same, with the AI still doing the part it's great at.</p>
               <div class="card__meta"><span>Oct 21, 2026</span><span>Interactive diagram</span><span>Video</span></div>
             </div>
           </article>
-          -->
 
-          <article class="card card--featured" data-tags="architecture data-engineering">
-            <div class="card__media"><img src="bi-ready-vs-ai-ready/media/thumb.jpg" alt="Diagram: sources, ingestion, validation, lakehouse, compute, serving, dashboard, model, action, monitoring, with the way back into the lakehouse" width="640" height="800" /></div>
+          <article class="card" data-tags="architecture">
+            <div class="card__media"><img src="bi-ready-vs-ai-ready/media/thumb.jpg" alt="Diagram: sources, ingestion, validation, lakehouse, compute, serving, dashboard, model, action, monitoring, with the way back into the lakehouse" loading="lazy" width="640" height="800" /></div>
             <div class="card__body">
-              <div><span class="badge-new">NEW</span> <span class="tag">Architecture</span></div>
+              <div><span class="tag">Architecture</span></div>
               <h3 class="card__title"><a href="bi-ready-vs-ai-ready/">BI-ready vs AI-ready: does your architecture have a way back?</a></h3>
               <p class="card__sum">A dashboard and an AI model can read the same data. They need different architecture. The difference is one arrow, and it changes three things.</p>
               <div class="card__meta"><span>Oct 19, 2026</span><span>Interactive diagram</span><span>Video</span></div>
             </div>
           </article>
-
-          <div class="card card--next" aria-label="Coming next">
-            <div class="card__body">
-              <span class="tag">Up next · Wed Oct 21</span>
-              <h3 class="card__title">Prompt-only vs pipeline + AI</h3>
-              <p class="card__sum">Why the same spreadsheet can give you two different totals, and the pipeline that fixes it.</p>
-              <div class="card__meta"><span>Follow on LinkedIn to catch it</span></div>
-            </div>
-          </div>
         </div>
         <p class="empty" data-empty hidden>Nothing in this topic yet. The next one is on the way.</p>
       </div>

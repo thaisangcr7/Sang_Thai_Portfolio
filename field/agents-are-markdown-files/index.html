@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light')})();</script>
+  <title>Agents are just markdown files now &mdash; AIS</title>
+  <meta name="description" content="Fall 2026 in AI coding agents: per-call effort for subagents in Claude Code, an /agents view in the Codex CLI, Cursor&#x27;s coordinator that doesn&#x27;t code, custom agents in Antigravity&#x27;s Google plugins. The tools line is what matters." />
+  <link rel="canonical" href="https://sangthai.dev/field/agents-are-markdown-files/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Agents are just markdown files now" />
+  <meta property="og:description" content="A name, a job, and a short list of tools. Four tools compared, an interactive diagram and every source." />
+  <meta property="og:url" content="https://sangthai.dev/field/agents-are-markdown-files/" />
+  <meta property="og:image" content="https://sangthai.dev/field/agents-are-markdown-files/media/og.jpg" />
+  <meta property="article:published_time" content="2026-10-23" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#F8F7FF" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/field.css" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="progress" aria-hidden="true"><span></span></div>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="../../" aria-label="Sang Thai, home">
+        <span class="brand__avatar" aria-hidden="true">ST</span>
+        <span>Sang Thai<span class="brand__sub">AIS</span></span>
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a href="../../#home">Home</a>
+        <a href="../../#about">About</a>
+        <a href="../../#resume">Experience</a>
+        <a href="../../#portfolio">Projects</a>
+        <a href="../" aria-current="page">AIS</a>
+        <a href="../../#contact">Contact</a>
+      </nav>
+      <div class="header-actions">
+        <a class="back-home" href="../">All breakdowns</a>
+        <button class="icon-btn" type="button" data-theme-toggle aria-label="Switch theme">
+          <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <section class="post-head">
+        <div class="crumbs"><a href="../">AIS</a><span aria-hidden="true">/</span><span>AI coding agents</span></div>
+        <h1>Agents are just markdown files now</h1>
+        <p class="dek">A name, a job, and a short list of tools it&#x27;s allowed to touch. That&#x27;s the shape AI coding tools have settled on, and this fall each one added to it. Here&#x27;s what changed in Claude Code, Codex, Cursor and Antigravity, and the one line that deserves real thought.</p>
+        <div class="meta">
+          <span class="pill">Oct 23, 2026</span>
+          <a class="pill" href="#diagram">Interactive diagram ↓</a>
+          <a class="pill" href="#sources">Sources ↓</a>
+          <a class="pill" href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer">Follow on LinkedIn ↗</a>
+        </div>
+      </section>
+
+      <div class="intro-grid" id="tldr">
+        <div class="panel tldr">
+          <span class="kicker">The short version</span>
+          <ul>
+            <li>More and more agents are defined in <strong>short markdown files</strong>: a name, a description and the tools they may use.</li>
+            <li>This fall: <strong>effort set per subagent call</strong> (Claude Code), an <strong>/agents view</strong> (Codex CLI), a <strong>coordinator that doesn't code</strong> (Cursor), <strong>custom agents shipped in Google plugins</strong> (Antigravity).</li>
+            <li>Writing the file got easy. <strong>The tools line</strong> is the part to think hard about.</li>
+          </ul>
+        </div>
+        <figure class="panel video" style="margin:0">
+          <a href="media/cover.jpg" target="_blank" rel="noopener"><img src="media/cover.jpg" alt="Infographic: Agents are just markdown files now. Table of Claude Code (agent files and effort per subagent), Codex (/agents view in the CLI), Cursor (a coordinator that delegates and doesn&#x27;t code), Antigravity (markdown agents with a plan-only mode, as shown on the image)" width="1080" height="1350" /></a>
+          <figcaption>The image from the LinkedIn post (tap to open full size)</figcaption>
+        </figure>
+      </div>
+
+      <!-- ===== DIAGRAM ===== -->
+      <figure class="diagram" id="diagram" data-mode="full" aria-labelledby="diagram-cap">
+        <div class="diagram__bar">
+          <span class="diagram__title" id="diagram-cap">Fig 1 · How a small agent team runs, and what each tool just changed</span>
+          <div class="diagram__tools">
+            <div class="seg" role="group" aria-label="Show path">
+              <button type="button" data-mode-btn="full" data-note="The whole flow. Pick a tool to see which part its update touched.">All four</button>
+              <button type="button" data-mode-btn="cc" data-note="Claude Code 2.1.292 (Oct 6): a sub-agent runs at the effort level you ask for.">Claude Code</button>
+              <button type="button" data-mode-btn="codex" data-note="OpenAI DevDay (Sep 29): a new /agents view in the Codex CLI to delegate and track tasks.">Codex</button>
+              <button type="button" data-mode-btn="cursor" data-note="Cursor Projects (Sep 10): a coordinator that plans and delegates, and doesn&#x27;t write code itself.">Cursor</button>
+              <button type="button" data-mode-btn="ag" data-note="Google Antigravity (Sep 28): Google teams now ship custom agents inside official plugins; the example is a markdown file set to permissionMode: plan.">Antigravity</button>
+            </div>
+            <button type="button" class="tool-btn" data-fullscreen><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Full screen</span></button>
+          </div>
+        </div>
+
+        <div class="diagram__stage">
+          <p class="diagram__title" data-mode-note aria-live="polite" style="text-align:center;margin:0 0 30px"></p>
+          <div class="flow">
+            <button type="button" class="node" style="--c:1;--r:1;--o:1" data-node data-path="cc codex cursor ag" data-num="01" data-title="Your task" data-desc="You describe the work once.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Your task</button>
+            <div class="arrow" style="--c:2;--r:1;--o:2" data-path="codex cursor" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:3;--r:1;--o:3" data-node data-path="cursor codex" data-num="02" data-title="Coordinator" data-desc="Plans the work and hands it out. In Cursor Projects (Sep 10), the coordinator doesn&#x27;t write code itself: it plans, delegates to agents that implement, and brings the finished work back for you to check.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="9" r="2.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><path d="M15.5 14.6c3 .2 6 1.8 6 5.4"/></svg>Coordinator</button>
+            <div class="arrow" style="--c:4;--r:1;--o:4" data-path="flow" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:5;--r:1;--o:5" data-node data-path="cc ag" data-num="03" data-title="Agent file (.md)" data-desc="A short markdown file: a name, a description of when to use it, and the tools it may touch. Claude Code keeps them in .claude/agents/. Antigravity&#x27;s plugin example is saved at .agents/agents/play-release-audit.md.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h8M12 11v8"/></svg>Agent file (.md)</button>
+            <div class="arrow arrow--down" style="--c:5;--r:2;--o:6" data-path="ag cc" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node node--hot node--badge-low" style="--c:5;--r:3;--o:7" data-node data-path="cc ag" data-num="04" data-title="Tools + permissions" data-desc="What the agent may touch. In Claude Code, leave the tools line out and the agent inherits every tool available to subagents, and a subagent&#x27;s permissionMode is ignored when the main session runs in auto, acceptEdits or bypass mode. Antigravity&#x27;s example sets permissionMode: plan and tells the agent it works read-only.">
+              <span class="node__badge">the line that matters</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Tools + permissions</button>
+            <div class="arrow arrow--left" style="--c:4;--r:3;--o:8" data-path="cc" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:3;--r:3;--o:9" data-node data-path="cc" data-num="05" data-title="Model + effort" data-desc="Which model, and how hard it thinks. Agent files already had an effort field; since Claude Code 2.1.292 (Oct 6), the Agent tool also takes an effort setting per call, so a quick checker doesn&#x27;t think as hard as a planner.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Model + effort</button>
+            <div class="arrow arrow--left" style="--c:2;--r:3;--o:10" data-path="cc" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:1;--r:3;--o:11" data-node data-path="cc cursor codex" data-num="06" data-title="Agents run" data-desc="Each one works in its own context with its own tools. Cursor&#x27;s coordinator runs as many in parallel as the work needs.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>Agents run</button>
+            <div class="arrow arrow--down" style="--c:1;--r:4;--o:12" data-path="codex" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:1;--r:5;--o:13" data-node data-path="codex" data-num="07" data-title="Track the work" data-desc="With several agents going, you need one place to see them. The Codex CLI&#x27;s new /agents view (OpenAI DevDay, Sep 29) is built to delegate work and track multiple tasks at once.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>Track the work</button>
+            <div class="arrow" style="--c:2;--r:5;--o:14" data-path="codex" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:3;--r:5;--o:15" data-node data-path="cursor codex" data-num="08" data-title="Results come back" data-desc="Finished work comes back to one place for review, instead of scattered across chats.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="12" r="2.5"/><path d="M6 8.5v7M8.3 7.2c4 .8 6.7 2.4 7.4 3.6"/></svg>Results come back</button>
+            <div class="arrow" style="--c:4;--r:5;--o:16" data-path="codex cursor" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:5;--r:5;--o:17" data-node data-path="cc codex cursor ag" data-num="09" data-title="You check" data-desc="The last step is still yours: read the result, and reread the tools line any time you add a tool.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>You check</button>
+          </div>
+          
+        </div>
+
+        <div class="diagram__detail" aria-live="polite">
+          <span class="num" data-detail-num>01</span>
+          <div>
+            <h3 data-detail-title>Your task</h3>
+            <p data-detail-text></p>
+          </div>
+        </div>
+        <div class="diagram__hint">Tap any box to see what it does. Pick a tool above to see what its update changed.</div>
+      </figure>
+
+      <div class="post-body">
+        <article class="prose">
+          <h2 id="file">What an agent file looks like</h2>
+          <p>Here's the shape, using the fields Claude Code's docs list. This one is my own example, written for this page:</p>
+<pre class="code"><span class="d">---</span>
+<span class="k">name:</span> release-checker
+<span class="k">description:</span> Checks a release branch against the checklist. Use before tagging a release.
+<span class="k">tools:</span> Read, Grep, Glob
+<span class="k">model:</span> sonnet
+<span class="k">effort:</span> low
+<span class="k">permissionMode:</span> plan
+<span class="d">---</span>
+You check. You don't change anything.
+Report what's missing, with file paths.</pre>
+          <p class="code-cap">Example agent file (Claude Code fields). It lives in .claude/agents/ for one project, or ~/.claude/agents/ for all of them.</p>
+          <ul>
+            <li><code>name</code> and <code>description</code> are required. The description tells the main agent when to hand work to this one.</li>
+            <li><code>tools</code> is the allowlist. <strong>Leave it out and the agent inherits every tool available to subagents.</strong></li>
+            <li><code>model</code>, <code>effort</code> and <code>permissionMode</code> are optional: which model, how hard it thinks (low to max, depending on the model), and what it may do without asking. <code>plan</code> is one of the modes, but Claude Code ignores a subagent's <code>permissionMode</code> when the main session runs in auto, acceptEdits or bypass mode.</li>
+          </ul>
+
+          <h2 id="new">What's new, tool by tool</h2>
+          <div class="compare">
+            <div><h3>Claude Code</h3><span class="flowline">2.1.292 · Oct 6, 2026</span>Agent files could already set an effort level. Now the Agent tool takes an effort setting per call, so a sub-agent runs at the effort level you ask for. A quick checker doesn't need to think as hard as a planner.</div>
+            <div><h3>OpenAI Codex</h3><span class="flowline">DevDay · Sep 29, 2026</span>The Codex CLI got a new /agents view to delegate work and track multiple tasks at once. The Agents API also added computer use.</div>
+            <div><h3>Cursor</h3><span class="flowline">Projects (beta) · Sep 10, 2026</span>A project's coordinator agent doesn't write code itself. It plans, delegates to agents that implement, and brings the finished work back for you to check.</div>
+            <div><h3>Google Antigravity</h3><span class="flowline">Custom agents in Google plugins · Sep 28, 2026</span>Google teams started packaging custom agents into official plugins. The Play example is a markdown file saved at .agents/agents/play-release-audit.md; it sets <code>permissionMode: plan</code> and tells the agent it works read-only.</div>
+          </div>
+
+          <h2 id="pattern">The pattern</h2>
+          <p>Small agents with focused jobs, and their powers written down where you can read them. A coordinator that plans but doesn't touch the code. Workers with a short tools list. One place to watch them all.</p>
+          <p>I use Claude Code and Codex on personal projects, and most of my agents there are markdown files now. Writing them got easy. The line that deserves real thought is the tools list: what each agent is allowed to touch.</p>
+
+          <h2 id="questions">Three questions for the tools line</h2>
+          <ul class="checks">
+            <li><strong>Does it need to write anything, or only read?</strong> If it only reads, give it read tools only. In Claude Code, a subagent's <code>permissionMode: plan</code> is ignored when your main session runs in auto, acceptEdits or bypass mode, so the tools list is the guard that always holds.</li>
+            <li><strong>Does it need a shell or the network?</strong> Those are the tools that turn a mistake into a real-world action.</li>
+            <li><strong>What happens if you leave the list out?</strong> In Claude Code, it gets every tool subagents can use. Write the list on purpose.</li>
+          </ul>
+          <div class="compare">
+            <div><h3>Tools line left out</h3><span class="flowline">name: release-checker<br>description: Checks a release branch…</span>Inherits every tool available to subagents, shell and connected tools included. One bad instruction and a "checker" can change things.</div>
+            <div><h3>Tools line written</h3><span class="flowline">tools: Read, Grep, Glob</span>Can read and search, nothing else, whatever mode the main session is in. The worst a bad instruction can do is a wrong report.</div>
+          </div>
+          <p><strong>The file is short. The permissions line is the one that matters.</strong> If you've tried more than one of these, which setup fits how you actually work? Tell me on <a href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer">LinkedIn</a>.</p>
+
+          <section class="sources" id="sources" aria-labelledby="sources-h">
+            <h2 id="sources-h">Sources and further reading</h2>
+            <p class="note">Each tool&#x27;s claim comes from its own changelog, docs or announcement. I use Claude Code and Codex; Cursor and Antigravity are described from their changelog and blog.</p>
+            <ol>
+              <li><a href="https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Claude Code changelog (2.1.292)</a> <span class="src-meta">Anthropic · GitHub · released Oct 6, 2026 (npm) · effort setting on the Agent tool</span></li>
+              <li><a href="https://code.claude.com/docs/en/sub-agents" target="_blank" rel="noopener noreferrer">Subagents</a> <span class="src-meta">Anthropic · Claude Code docs · where agent files live, frontmatter fields, what happens when tools is left out</span></li>
+              <li><a href="https://openai.com/index/devday-2026-recap/" target="_blank" rel="noopener noreferrer">DevDay 2026 recap</a> <span class="src-meta">OpenAI · Sep 29, 2026 · /agents view in the Codex CLI, computer use in the Agents API</span></li>
+              <li><a href="https://cursor.com/changelog" target="_blank" rel="noopener noreferrer">Cursor changelog: Cursor Projects</a> <span class="src-meta">Cursor · Sep 10, 2026 · a coordinator that plans and delegates and doesn&#x27;t write code</span></li>
+              <li><a href="https://antigravity.google/blog/custom-agents-in-google-plugins" target="_blank" rel="noopener noreferrer">Custom agents in Google plugins</a> <span class="src-meta">Nohe · Google Antigravity blog · Sep 28, 2026 · agents as markdown, permissionMode: plan</span></li>
+            </ol>
+          </section>
+        </article>
+
+        <aside class="toc">
+          <nav class="panel" aria-label="On this page">
+            <span class="kicker">On this page</span>
+            <a href="#tldr">The short version</a>
+            <a href="#diagram">How it runs</a>
+            <a href="#file">What an agent file looks like</a>
+            <a href="#new">What&#x27;s new</a>
+            <a href="#pattern">The pattern</a>
+            <a href="#questions">Three questions</a>
+            <a href="#sources">Sources</a>
+          </nav>
+          <div class="panel cta">
+            <h3>Talk about it on LinkedIn</h3>
+            <p>This breakdown goes with one of my LinkedIn posts. Questions and pushback live there.</p>
+            <a href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer"><strong>Follow along ↗</strong></a>
+          </div>
+        </aside>
+      </div>
+
+      <div class="post-end">
+        <a class="panel" href="../">
+          <span class="kicker">AIS</span>
+          <h3>← All breakdowns</h3>
+          <p>Plain-English AI and data architecture, diagrams included.</p>
+        </a>
+        <a class="panel" href="../approved-the-tool-then-it-changed/">
+          <span class="kicker">Next breakdown</span>
+          <h3>You approved the tool. Then the tool changed.</h3>
+          <p>An approval is a moment. A tool is a stream.</p>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>&copy; 2026 Sang Thai · <a href="../../">sangthai.dev</a></span>
+      <span class="mono">Every source linked. No hype.</span>
+    </div>
+  </footer>
+
+  <script src="../assets/field.js" defer></script>
+</body>
+</html>
