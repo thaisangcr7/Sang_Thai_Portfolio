@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light')})();</script>
+  <title>Scheduled agents fail quietly. Silence isn&#x27;t success. &mdash; AIS</title>
+  <meta name="description" content="When an agent runs on a schedule, silence and success look the same. Anthropic&#x27;s Oct 2026 automation guide: name unreadable sources, count sends only when confirmed, cap spend at 3-5x, read-only preferences." />
+  <link rel="canonical" href="https://sangthai.dev/field/scheduled-agents-fail-quietly/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Scheduled agents fail quietly. Silence isn&#x27;t success." />
+  <meta property="og:description" content="Quiet isn&#x27;t the same as fine. The full unattended run, an interactive diagram and every source." />
+  <meta property="og:url" content="https://sangthai.dev/field/scheduled-agents-fail-quietly/" />
+  <meta property="og:image" content="https://sangthai.dev/field/scheduled-agents-fail-quietly/media/og.jpg" />
+  <meta property="article:published_time" content="2026-10-23" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#F8F7FF" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/field.css" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="progress" aria-hidden="true"><span></span></div>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="../../" aria-label="Sang Thai, home">
+        <span class="brand__avatar" aria-hidden="true">ST</span>
+        <span>Sang Thai<span class="brand__sub">AIS</span></span>
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a href="../../#home">Home</a>
+        <a href="../../#about">About</a>
+        <a href="../../#resume">Experience</a>
+        <a href="../../#portfolio">Projects</a>
+        <a href="../" aria-current="page">AIS</a>
+        <a href="../../#contact">Contact</a>
+      </nav>
+      <div class="header-actions">
+        <a class="back-home" href="../">All breakdowns</a>
+        <button class="icon-btn" type="button" data-theme-toggle aria-label="Switch theme">
+          <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <section class="post-head">
+        <div class="crumbs"><a href="../">AIS</a><span aria-hidden="true">/</span><span>Tools in practice</span></div>
+        <h1>Scheduled agents fail quietly. Silence isn&#x27;t success.</h1>
+        <p class="dek">Anthropic&#x27;s guide to agent automations is a practical playbook for runs nobody watches. Here&#x27;s where a failed run looks exactly like a quiet day, and the fixes.</p>
+        <div class="meta">
+          <span class="pill">Oct 23, 2026</span>
+          <a class="pill" href="#diagram">Interactive diagram ↓</a>
+          <a class="pill" href="#sources">Sources ↓</a>
+          <a class="pill" href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer">Follow on LinkedIn ↗</a>
+        </div>
+      </section>
+
+      <div class="intro-grid" id="tldr">
+        <div class="panel tldr">
+          <span class="kicker">The short version</span>
+          <ul>
+            <li>When an agent runs on a schedule, <strong>"nothing new" and "something broke" can look identical</strong>.</li>
+            <li>Anthropic's Oct 8 guide: name what it <strong>couldn't read</strong>, count a send <strong>only when confirmed</strong>, cap spend at <strong>3-5x a normal run</strong>, keep preferences <strong>read-only</strong>, set permissions <strong>before</strong> the run.</li>
+            <li>Two of my scheduled tasks hit usage limits and stopped with no alert. Another waited for an approval nobody was there to give.</li>
+          </ul>
+        </div>
+        <figure class="panel video" style="margin:0">
+          <a href="media/cover.jpg" target="_blank" rel="noopener"><img src="media/cover.jpg" alt="Diagram: schedule, permissions, agent runs, spend cap, send, output, ending in two boxes: I couldn&#x27;t read it is not the same as nothing happened today" width="1080" height="1350" /></a>
+          <figcaption>The image from the LinkedIn post (tap to open full size)</figcaption>
+        </figure>
+      </div>
+
+      <!-- ===== DIAGRAM ===== -->
+      <figure class="diagram" id="diagram" data-mode="full" aria-labelledby="diagram-cap">
+        <div class="diagram__bar">
+          <span class="diagram__title" id="diagram-cap">Fig 1 · One unattended run, start to finish</span>
+          <div class="diagram__tools">
+            <div class="seg" role="group" aria-label="Show path">
+              <button type="button" data-mode-btn="full" data-note="One scheduled run, end to end, with nobody watching.">The run</button>
+              <button type="button" data-mode-btn="quiet" data-note="Four spots where a failed run looks exactly like a quiet day.">Where it goes quiet</button>
+            </div>
+            <button type="button" class="tool-btn" data-fullscreen><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Full screen</span></button>
+          </div>
+        </div>
+
+        <div class="diagram__stage">
+          <p class="diagram__title" data-mode-note aria-live="polite" style="text-align:center;margin:0 0 30px"></p>
+          <div class="flow">
+            <button type="button" class="node" style="--c:1;--r:1;--o:1" data-node data-path="flow" data-num="01" data-title="Schedule" data-desc="A cron schedule kicks off the run. The guide&#x27;s tip: work out every date in the reader&#x27;s time zone.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Schedule</button>
+            <div class="arrow" style="--c:2;--r:1;--o:2" data-path="quiet" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:3;--r:1;--o:3" data-node data-path="quiet" data-num="02" data-title="Permissions, set before the run" data-desc="Nobody&#x27;s there to click approve. In the guide&#x27;s example, MCP tools ask for approval by default, so the GitHub tools are set to always allow and the token is read-only. Miss this and the tool needs an approval nobody is there to give.">
+              <span class="node__badge">set before</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Permissions</button>
+            <div class="arrow" style="--c:4;--r:1;--o:4" data-path="quiet" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:5;--r:1;--o:5" data-node data-path="quiet" data-num="03" data-title="Sources" data-desc="Slack channels and GitHub pull requests in the guide&#x27;s template, read from a bookmark. If a server is down or its token expired, the run still starts without those tools, and the agent can report &quot;nothing new.&quot; The fix: name what it couldn&#x27;t read.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Sources</button>
+            <div class="arrow arrow--down" style="--c:5;--r:2;--o:6" data-path="quiet" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node node--badge-low" style="--c:5;--r:3;--o:7" data-node data-path="quiet" data-num="04" data-title="Agent" data-desc="Follows its run steps in agent.md and re-checks items before posting. A spend cap protects you from runaway cost: start at 3-5x a normal run, then tighten. In the guide&#x27;s setup, a run that hits the cap pauses instead of failing, so a cap set too low looks like a quiet day.">
+              <span class="node__badge">spend cap</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>Agent</button>
+            <div class="arrow arrow--left" style="--c:4;--r:3;--o:8" data-path="quiet" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:3;--r:3;--o:9" data-node data-path="quiet" data-num="05" data-title="Send" data-desc="Posts to one channel. It counts as sent only when Slack returns &quot;ok&quot;: true and a message timestamp. If the result is unclear, the run is marked &quot;maybe posted&quot; and nothing else changes.">
+              <span class="node__badge">confirm</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>Send</button>
+            <div class="arrow arrow--left" style="--c:2;--r:3;--o:10" data-path="quiet" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:1;--r:3;--o:11" data-node data-path="flow" data-num="06" data-title="Ledger + bookmarks" data-desc="Bookmarks and the ledger move only after a confirmed send. Move them early and items get skipped for good. Post again when unsure and readers get the same brief twice.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4z"/><path d="M8 8h8M8 12h8"/></svg>Ledger</button>
+            <div class="arrow arrow--down" style="--c:1;--r:4;--o:12" data-path="flow" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:1;--r:5;--o:13" data-node data-path="flow" data-num="07" data-title="The brief" data-desc="What a person reads. If a source failed, the brief ends with one line naming it, like &quot;pull requests unavailable this run.&quot;">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/><path d="M8 12h8M8 16h5"/></svg>The brief</button>
+            <div class="arrow" style="--c:2;--r:5;--o:14" data-path="flow" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:3;--r:5;--o:15" data-node data-path="flow" data-num="08" data-title="Heartbeat" data-desc="The guide&#x27;s guardrails picture: caps on turns, time and spend, and a heartbeat that someone watches.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg>Heartbeat</button>
+            <div class="arrow" style="--c:4;--r:5;--o:16" data-path="flow" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:5;--r:5;--o:17" data-node data-path="flow" data-num="09" data-title="You" data-desc="Silence should mean &quot;nothing happened,&quot; never &quot;something broke and nobody said.&quot;">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>You</button>
+          </div>
+          <div class="lane" data-path="mem">
+            <div class="lane__label">Memory + guardrails</div>
+            <div class="lane__row">
+              <button type="button" class="node" style="--c:1;--o:1" data-node data-num="M1" data-title="Preferences (read-only to the agent)" data-desc="Yours: which channels and repos to read, what to leave out, the length cap, the destination. Read fresh every run. If it can&#x27;t be read, stop and say so instead of running on defaults.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="node__txt">Preferences<span class="node__sub">read-only to the agent</span></span></button>
+              <div style="--c:2;--o:2" aria-hidden="true"></div>
+              <button type="button" class="node" style="--c:3;--o:3" data-node data-num="M2" data-title="State (read-write)" data-desc="The agent&#x27;s own notes between runs: the bookmarks, the ledger, a record per run and notes on how each source behaves.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4z"/><path d="M8 8h8M8 12h8"/></svg><span class="node__txt">State<span class="node__sub">read-write</span></span></button>
+              <div style="--c:4;--o:4" aria-hidden="true"></div>
+              <button type="button" class="node" style="--c:5;--o:5" data-node data-num="M3" data-title="Guardrails" data-desc="Read-only access wherever it only reads, an allowlist of hosts, and caps on turns, time and spend. A planted instruction can still change what the brief says, but it can&#x27;t write to GitHub or edit your rules.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span class="node__txt">Guardrails<span class="node__sub">caps + allowlist</span></span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="diagram__detail" aria-live="polite">
+          <span class="num" data-detail-num>01</span>
+          <div>
+            <h3 data-detail-title>Schedule</h3>
+            <p data-detail-text></p>
+          </div>
+        </div>
+        <div class="diagram__hint">Tap any box to see what it does. Switch to &quot;Where it goes quiet&quot; to see the four weak spots.</div>
+      </figure>
+
+      <div class="post-body">
+        <article class="prose">
+          <h2 id="quiet">Four ways a run goes quiet</h2>
+          <ol>
+            <li><strong>A source fails.</strong> If an MCP server is down or its token has expired, the run still starts, just without that server's tools. The session logs an error, but the agent sees nothing from that source and reports "nothing new."</li>
+            <li><strong>The spend cap hits.</strong> In the guide's setup, a run that hits its cap pauses instead of failing, so a cap set too low looks like a brief that went quiet.</li>
+            <li><strong>An approval is needed.</strong> MCP tools ask for approval by default, and nobody is there to give it.</li>
+            <li><strong>The send can't be confirmed.</strong> Guess "sent" and those items never get reported; guess "not sent" and readers get the brief twice. The guide marks the run "maybe posted" and changes nothing else.</li>
+          </ol>
+          <div class="callout">
+            <span class="kicker">The point</span>
+            "I couldn't read it" is a different result than "nothing happened today." Make the agent say which one it is.
+          </div>
+
+          <h2 id="parts">The six parts of an automation</h2>
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th>Part</th><th>In the guide's template</th><th>What to get right</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Sources</strong></td><td>Slack channels and GitHub pull requests, read from a bookmark</td><td>Name any source it couldn't read</td></tr>
+              <tr><td><strong>Destination</strong></td><td>One Slack channel, a dated post each run</td><td>Count a post only when it's confirmed</td></tr>
+              <tr><td><strong>Agent</strong></td><td>The model, tools and run steps in <code>agent.md</code></td><td>Re-check items before posting</td></tr>
+              <tr><td><strong>Schedule</strong></td><td>Cron, set in <code>deployment.md</code></td><td>Work out dates in the reader's time zone</td></tr>
+              <tr><td><strong>Memory</strong></td><td>Preferences (read-only) and state (read-write)</td><td>Read preferences fresh every run</td></tr>
+              <tr><td><strong>Guardrails</strong></td><td>Limits on what it can do and spend</td><td>Set the cap from real runs</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="confirm">Count a send only when it's confirmed</h2>
+          <p>Both ways of getting this wrong hurt. Record a post that never landed, and the bookmarks move on, so those items are never reported. Post again because you aren't sure, and readers get the same brief twice.</p>
+          <p>The guide's rule: a post counts as sent only if Slack returns <code>"ok": true</code> and a message timestamp. The ledger and bookmarks update only after that. If the result is unclear, the run is marked "maybe posted" and nothing else changes, so nothing is lost.</p>
+
+          <h2 id="memory">Preferences the agent can't edit</h2>
+          <p>The guide splits memory in two. <strong>Preferences</strong> are yours and read-only to the agent: which channels and repos to read, what to leave out, the length cap, the destination. <strong>State</strong> is the agent's: the bookmarks, the ledger, a record per run and notes on how each source behaves.</p>
+          <p>One trap to avoid: a copy of the preferences baked into the prompt keeps applying rules you've already changed. Have the agent read the file fresh every run, and if it can't, stop and say so instead of running on defaults.</p>
+
+          <h2 id="guardrails">Guardrails for runs nobody watches</h2>
+          <ul class="checks">
+            <li>Read-only access wherever the agent only reads. In the example, the GitHub token and the preferences store are read-only.</li>
+            <li>A spend cap: start at three to five times the cost of a normal run, then tighten it as you see real numbers.</li>
+            <li>An allowlist of hosts the environment can reach.</li>
+            <li>Caps on turns, time and spend, and a heartbeat someone actually watches.</li>
+            <li>Approvals decided up front. Claude Code's own guide does the same for batch runs: pre-approve the tools the job needs, and use <code>dontAsk</code> mode to deny anything else that would need approval.</li>
+          </ul>
+          <p>The payoff, in the guide's words: a planted instruction can still change what the brief says, including through the notes the agent keeps between runs, but it can't write to GitHub or edit your rules.</p>
+
+          <h2 id="mine">What happened to mine</h2>
+          <p>My personal AI setup showed this recently. Two scheduled tasks hit usage limits and stopped. No alert. The output simply wasn't there. Another reached a step that needed my approval and waited for someone who wasn't there.</p>
+          <p>That task now has the step allowed ahead of time, with a guard that only lets it message me. There's no alert yet, so I check the output myself.</p>
+          <div class="callout">
+            <span class="kicker">The rule I'm taking from it</span>
+            Every run should end by writing one status line: OK, or which source it couldn't read. A run that hits its cap or stalls on an approval never gets there, so a missing line is the alarm, and silence stops looking like success. It's the same lesson as "<a href="../agent-said-done-database-said-no/">The agent said done. The database said no.</a>" A clean exit still needs proof.
+          </div>
+          <p><strong>Quiet isn't the same as fine.</strong> If an agent runs while you sleep, how do you find out it didn't? Tell me on <a href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer">LinkedIn</a>.</p>
+
+          <section class="sources" id="sources" aria-labelledby="sources-h">
+            <h2 id="sources-h">Sources and further reading</h2>
+            <p class="note">The playbook details come from Anthropic&#x27;s guide. The scheduled-task story is my own.</p>
+            <ol>
+              <li><a href="https://claude.dev/blog/building-effective-agent-automations/" target="_blank" rel="noopener noreferrer">Building effective agent automations</a> <span class="src-meta">Lance Martin, CJ Avilla · claude.dev blog (Anthropic) · Oct 8, 2026 · the six parts, quiet failures, confirmed sends, spend caps, read-only preferences</span></li>
+              <li><a href="https://code.claude.com/docs/en/best-practices" target="_blank" rel="noopener noreferrer">Best practices for Claude Code</a> <span class="src-meta">Anthropic · Claude Code docs · pre-approved tools and dontAsk mode for unattended batch runs</span></li>
+            </ol>
+          </section>
+        </article>
+
+        <aside class="toc">
+          <nav class="panel" aria-label="On this page">
+            <span class="kicker">On this page</span>
+            <a href="#tldr">The short version</a>
+            <a href="#diagram">One unattended run</a>
+            <a href="#quiet">Four ways it goes quiet</a>
+            <a href="#parts">The six parts</a>
+            <a href="#confirm">Confirmed sends</a>
+            <a href="#memory">Read-only preferences</a>
+            <a href="#guardrails">Guardrails</a>
+            <a href="#mine">What happened to mine</a>
+            <a href="#sources">Sources</a>
+          </nav>
+          <div class="panel cta">
+            <h3>Talk about it on LinkedIn</h3>
+            <p>This breakdown goes with one of my LinkedIn posts. Questions and pushback live there.</p>
+            <a href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer"><strong>Follow along ↗</strong></a>
+          </div>
+        </aside>
+      </div>
+
+      <div class="post-end">
+        <a class="panel" href="../">
+          <span class="kicker">AIS</span>
+          <h3>← All breakdowns</h3>
+          <p>Plain-English AI and data architecture, diagrams included.</p>
+        </a>
+        <a class="panel" href="../bi-ready-vs-ai-ready/">
+          <span class="kicker">Next breakdown</span>
+          <h3>BI-ready vs AI-ready: does your architecture have a way back?</h3>
+          <p>Back to the first breakdown: same data, different architecture.</p>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>&copy; 2026 Sang Thai · <a href="../../">sangthai.dev</a></span>
+      <span class="mono">Every source linked. No hype.</span>
+    </div>
+  </footer>
+
+  <script src="../assets/field.js" defer></script>
+</body>
+</html>

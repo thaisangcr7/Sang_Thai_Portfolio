@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light')})();</script>
+  <title>Your eval score might be lying: the grader can be the bug &mdash; AIS</title>
+  <meta name="description" content="Anthropic&#x27;s Sep 2026 eval post took a score from 66.1% to 87.9%, partly by fixing broken graders. How to check the checker: run the grader twice, hold out a test set, break your code on purpose." />
+  <link rel="canonical" href="https://sangthai.dev/field/grader-can-be-the-bug/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Your eval score might be lying: the grader can be the bug" />
+  <meta property="og:description" content="The thing grading your agent can be the bug. The full loop, an interactive diagram and every source." />
+  <meta property="og:url" content="https://sangthai.dev/field/grader-can-be-the-bug/" />
+  <meta property="og:image" content="https://sangthai.dev/field/grader-can-be-the-bug/media/og.jpg" />
+  <meta property="article:published_time" content="2026-10-23" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#F8F7FF" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/field.css" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="progress" aria-hidden="true"><span></span></div>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="../../" aria-label="Sang Thai, home">
+        <span class="brand__avatar" aria-hidden="true">ST</span>
+        <span>Sang Thai<span class="brand__sub">AIS</span></span>
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a href="../../#home">Home</a>
+        <a href="../../#about">About</a>
+        <a href="../../#resume">Experience</a>
+        <a href="../../#portfolio">Projects</a>
+        <a href="../" aria-current="page">AIS</a>
+        <a href="../../#contact">Contact</a>
+      </nav>
+      <div class="header-actions">
+        <a class="back-home" href="../">All breakdowns</a>
+        <button class="icon-btn" type="button" data-theme-toggle aria-label="Switch theme">
+          <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <section class="post-head">
+        <div class="crumbs"><a href="../">AIS</a><span aria-hidden="true">/</span><span>Evals &amp; testing</span></div>
+        <h1>Your eval score might be lying: the grader can be the bug</h1>
+        <p class="dek">An AI eval score can jump without the agent getting any better. Here&#x27;s where the grader hides bugs, how Anthropic&#x27;s own tuning loop catches them, and a checklist to copy.</p>
+        <div class="meta">
+          <span class="pill">Oct 23, 2026</span>
+          <a class="pill" href="#diagram">Interactive diagram ↓</a>
+          <a class="pill" href="#sources">Sources ↓</a>
+          <a class="pill" href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer">Follow on LinkedIn ↗</a>
+        </div>
+      </section>
+
+      <div class="intro-grid" id="tldr">
+        <div class="panel tldr">
+          <span class="kicker">The short version</span>
+          <ul>
+            <li>Anthropic's Sep 28 eval post: a score went from <strong>66.1% to 87.9%</strong>, and part of that came from <strong>fixing broken graders</strong>, not a smarter model.</li>
+            <li>Check the checker first: <strong>run the grader twice</strong>, check the plumbing, and keep a <strong>held-out test set</strong>.</li>
+            <li>Then check your tests: <strong>break your code on purpose</strong> and see if a test goes red.</li>
+          </ul>
+        </div>
+        <figure class="panel video" style="margin:0">
+          <a href="media/cover.jpg" target="_blank" rel="noopener"><img src="media/cover.jpg" alt="Diagram: test cases, your agent, test runner, grader (highlighted), score, tuning loop, with notes: hand-write sneaky cases, crash detector dead code, run it twice, keep some test cases out, Anthropic 66.1% to 87.9%, break your code on purpose, 15 of 34 slipped past" width="1080" height="1350" /></a>
+          <figcaption>The image from the LinkedIn post (tap to open full size)</figcaption>
+        </figure>
+      </div>
+
+      <!-- ===== DIAGRAM ===== -->
+      <figure class="diagram" id="diagram" data-mode="full" aria-labelledby="diagram-cap">
+        <div class="diagram__bar">
+          <span class="diagram__title" id="diagram-cap">Fig 1 · The tuning loop, and where the checking can break</span>
+          <div class="diagram__tools">
+            <div class="seg" role="group" aria-label="Show path">
+              <button type="button" data-mode-btn="full" data-note="The whole tuning loop, end to end. The grader sits in the middle of it.">The loop</button>
+              <button type="button" data-mode-btn="bugs" data-note="Four places the checking can be wrong while the score still looks fine.">Where bugs hide</button>
+              <button type="button" data-mode-btn="checker" data-note="Break the code on purpose and see if a test goes red.">Check the checker</button>
+            </div>
+            <button type="button" class="tool-btn" data-fullscreen><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Full screen</span></button>
+          </div>
+        </div>
+
+        <div class="diagram__stage">
+          <p class="diagram__title" data-mode-note aria-live="polite" style="text-align:center;margin:0 0 30px"></p>
+          <div class="flow">
+            <button type="button" class="node" style="--c:1;--r:1;--o:1" data-node data-path="bugs" data-num="01" data-title="Test cases" data-desc="Where cases come from matters. Anthropic&#x27;s order: real production transcripts first, then bug reports and support tickets, then five to ten you write by hand, then cases made from your codebase. A flawed case is a bug too: one asked for code that catches one error type while its grader wanted a chain of three.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h8M12 11v8"/></svg>Test cases</button>
+            <div class="arrow" style="--c:2;--r:1;--o:2" data-path="bugs" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:3;--r:1;--o:3" data-node data-path="flow" data-num="02" data-title="Train / test split" data-desc="Split the cases at random. The tuning loop may read the train set. The test set stays unseen, so it can tell you when you&#x27;re only fitting the cases you can see.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v6"/><path d="M12 9l-6 6v6M12 9l6 6v6"/></svg>Train / test split</button>
+            <div class="arrow" style="--c:4;--r:1;--o:4" data-path="flow" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:5;--r:1;--o:5" data-node data-path="flow" data-num="03" data-title="Your agent" data-desc="The thing you&#x27;re tuning: a prompt, a skill, a model or an effort setting.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>Your agent</button>
+            <div class="arrow arrow--down" style="--c:5;--r:2;--o:6" data-path="bugs checker" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node node--badge-low" style="--c:5;--r:3;--o:7" data-node data-path="bugs checker" data-num="04" data-title="Test runner" data-desc="Runs every case. Check the plumbing here: timeouts, API errors and cut-off answers shouldn&#x27;t pass as model variance. On a personal project, the runner&#x27;s crash detector was dead code, so a crash could get counted as a caught bug.">
+              <span class="node__badge">plumbing</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Test runner</button>
+            <div class="arrow arrow--left" style="--c:4;--r:3;--o:8" data-path="bugs checker" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node node--hot" style="--c:3;--r:3;--o:9" data-node data-path="bugs checker" data-num="05" data-title="Grader" data-desc="Decides pass or fail. Run it twice on the same output. If the verdict changes, fix the grader before you trust any score. In Anthropic&#x27;s example, one grader&#x27;s instructions contradicted their own docs, and testing the real API showed the docs were right.">
+              <span class="node__badge">run it twice</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 13l2 2 4-4"/></svg>Grader</button>
+            <div class="arrow arrow--left" style="--c:2;--r:3;--o:10" data-path="bugs" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:1;--r:3;--o:11" data-node data-path="bugs" data-num="06" data-title="Score" data-desc="Only as honest as the grader behind it. A case that fails on every run, however many times you repeat it, usually points at an impossible or ambiguous case, not the agent.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 16v-4M12 16V8M16 16v-6"/></svg>Score</button>
+            <div class="arrow arrow--down" style="--c:1;--r:4;--o:12" data-path="bugs" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:1;--r:5;--o:13" data-node data-path="flow" data-num="07" data-title="Held-out check" data-desc="Score the unseen test set too. On a 44-ticket support benchmark with 14 held out, the final setup scored 90.5% on those 14 vs 78.6% for the original, at about a fifth of the cost.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Held-out check</button>
+            <div class="arrow" style="--c:2;--r:5;--o:14" data-path="flow" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:3;--r:5;--o:15" data-node data-path="flow" data-num="08" data-title="Keep or revert" data-desc="Keep a change only when train and test both go up. Train up while test stays flat is the classic overfitting sign: revert.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>Keep or revert</button>
+            <div class="arrow" style="--c:4;--r:5;--o:16" data-path="flow" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:5;--r:5;--o:17" data-node data-path="flow" data-num="09" data-title="Next round" data-desc="One change per round, aimed at the most common failure. When the score stalls for two or three rounds, read every remaining failure and sort it by cause before changing anything else.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>Next round</button>
+            <div class="loop" style="--c:6;--r:1 / 6" data-path="loop">
+              <button type="button" class="loop__label" data-node data-num="↺" data-title="Back into the loop" data-desc="The next round starts from the agent with one new change. The loop is only as good as the score that drives it, and the score is only as good as the grader.">next round</button>
+            </div>
+            <button type="button" class="loop-note" data-node data-path="loop" data-num="↺" data-title="Back into the loop" data-desc="The next round starts from the agent with one new change. The loop is only as good as the score that drives it, and the score is only as good as the grader.">↺ next round: back to your agent</button>
+          </div>
+          <div class="lane" data-path="checker">
+            <div class="lane__label">Check the checker: mutation testing</div>
+            <div class="lane__row">
+              <button type="button" class="node" style="--c:1;--o:1" data-node data-num="A" data-title="Break it on purpose" data-desc="Make small deliberate bugs in your own code, one at a time: flip a comparison, drop a line, return the wrong value. Each broken copy is a mutant.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="7" width="8" height="12" rx="4"/><path d="M12 7V4M9 4l1.5 2M15 4l-1.5 2M4 11h4M16 11h4M4 17h4M16 17h4"/></svg>Break it on purpose</button>
+              <div class="arrow" style="--c:2;--o:2" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+              <button type="button" class="node" style="--c:3;--o:3" data-node data-num="B" data-title="Run your tests" data-desc="Run the normal test suite against each mutant.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Run your tests</button>
+              <div class="arrow" style="--c:4;--o:4" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+              <button type="button" class="node" style="--c:5;--o:5;min-height:0;padding:14px" data-node data-num="C" data-title="Did a test go red?" data-desc="Every mutant should make at least one test fail for a real reason. A crash isn&#x27;t a catch. On a personal project, 15 of 34 hand-made subtle mutants slipped past the first tests. Each one now has a test.">
+              <span class="runs" style="width:100%"><span class="run">Caught <b>a test failed</b></span><span class="run">Slipped past <b>a test is missing</b></span><span class="run">Crashed <b>not a catch</b></span></span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="diagram__detail" aria-live="polite">
+          <span class="num" data-detail-num>01</span>
+          <div>
+            <h3 data-detail-title>Test cases</h3>
+            <p data-detail-text></p>
+          </div>
+        </div>
+        <div class="diagram__hint">Tap any box (or the orange arrow) to see what it does. Switch views above.</div>
+      </figure>
+
+      <div class="post-body">
+        <article class="prose">
+          <h2 id="number">The number worth knowing</h2>
+          <p>Anthropic's Sep 28 post on automating eval design walks through tuning one of their own skills against an eval. The score went from <strong>66.1% to 87.9%</strong> in three phases of work. The last phase was <strong>fixing graders</strong>, plus more skill edits.</p>
+          <div class="stats" style="--n:4;--n-sm:2">
+            <div class="stat"><b>66.1%</b><span>where the skill started</span></div>
+            <div class="stat"><b>74% → 77%</b><span>added missing sections for eight features, then fixed C# and Java type tables</span></div>
+            <div class="stat"><b>80%</b><span>fixed how the skill tells Claude to write code (it kept writing older API shapes)</span></div>
+            <div class="stat stat--hot"><b>87.9%</b><span>fixed broken graders, plus more skill edits</span></div>
+          </div>
+          <p>Two of the broken pieces, as they describe them: one task asked for code that catches one error type, while its grader wanted a chain of at least three. Another grader's instructions contradicted their own docs, and testing the real API showed the docs were right.</p>
+          <div class="callout">
+            <span class="kicker">The point</span>
+            The thing grading your agent can be the bug. A higher score after a grader fix isn't a smarter agent. It's a more honest measurement.
+          </div>
+
+          <h2 id="tells">How to spot a broken grader (or case)</h2>
+          <ul class="checks">
+            <li><strong>A case that fails every run</strong>, no matter how many times you repeat it. Anthropic calls that a common tell of an impossible or ambiguous task.</li>
+            <li><strong>A case that never improves</strong>, even after you fix the obvious gaps. That one is a tell that the case or the grader is flawed.</li>
+            <li><strong>Verdicts that flip.</strong> Their eval builder runs the grader twice on the same output and reports whether the verdict changed.</li>
+            <li><strong>Infrastructure noise.</strong> Timeouts, API errors and cut-off answers can pass as model variance if nobody checks the plumbing.</li>
+          </ul>
+          <p>Anthropic's January guide to agent evals says the same thing from the other side: you won't know if your graders are working unless you read the transcripts and grades from many trials.</p>
+
+          <h2 id="holdout">Keep some cases out of the loop</h2>
+          <p>Tuning against an eval is a loop: read the failures, make one change, run it again, keep it or revert it. The danger is fitting the cases you can see. The fix is a split: a train set the loop may read, and a test set it never sees.</p>
+          <ol>
+            <li>Each round makes <strong>one change</strong>, aimed at the most common failure.</li>
+            <li>Train and test both go up: keep it. Train up, test flat: that's overfitting, so revert.</li>
+            <li>Score stalls for two or three rounds: read every remaining failure and sort it by cause first.</li>
+            <li>Finish on the version that did best on the <strong>test</strong> set, not the train set.</li>
+          </ol>
+          <p>Their cost example shows why it matters. A support benchmark had 44 tickets: 30 for the search, 14 held out. On the 14 it never saw, the final setup scored <strong>90.5% vs 78.6%</strong> for the original, at about a fifth of the cost.</p>
+
+          <h2 id="mutation">Break your code on purpose</h2>
+          <p>Graders aren't the only checks that can check nothing. Your tests can too. Mutation testing finds out: make small deliberate bugs in your code (mutants) and see whether a test goes red. Google wrote up running it inside code review back in 2018, for 6,000 engineers on the changes they author or review.</p>
+          <p>I hit both problems on a personal project. The crash detector in my mutation runner was dead code, so a crash could get counted as a caught bug (fixed since: a crash never counts). And <strong>15 of 34</strong> hand-made subtle mutants slipped past my first tests. Each one now has a test that catches it.</p>
+          <p>Here's what a subtle mutant looks like. This is a made-up example, not from that project:</p>
+<pre class="code"><span class="d"># the code</span>
+<span class="k">if</span> retries &gt; max_retries: stop()
+<span class="d"># the mutant: one operator changed</span>
+<span class="k">if</span> retries &gt;= max_retries: stop()
+<span class="d"># a test that only checks "it stops eventually" passes both.</span>
+<span class="d"># the test that catches it checks the edge:</span>
+<span class="k">assert</span> not stopped_after(retries=max_retries)</pre>
+
+          <h2 id="checklist">The checklist to copy</h2>
+          <ul class="checks">
+            <li>Run the grader twice. If it disagrees with itself, fix the grader first.</li>
+            <li>A crash is a fail, never a pass.</li>
+            <li>Keep some test cases out of the tuning loop.</li>
+            <li>Break your code on purpose (mutation testing) and see if a test goes red.</li>
+            <li>Hand-write a few sneaky cases, not just obvious ones.</li>
+          </ul>
+          <p><strong>A score is only as honest as the grader behind it.</strong> What's the last check you found that was checking nothing? Tell me on <a href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer">LinkedIn</a>.</p>
+
+          <section class="sources" id="sources" aria-labelledby="sources-h">
+            <h2 id="sources-h">Sources and further reading</h2>
+            <p class="note">Every number on this page comes from these. The personal-project details are my own.</p>
+            <ol>
+              <li><a href="https://claude.dev/blog/automating-eval-design-and-hillclimbing/" target="_blank" rel="noopener noreferrer">Automating eval design and hillclimbing with Claude</a> <span class="src-meta">Lance Martin · claude.dev blog (Anthropic) · Sep 28, 2026 · the 66.1% → 87.9% example, grader checks, train/test loop, cost example</span></li>
+              <li><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank" rel="noopener noreferrer">Demystifying evals for AI agents</a> <span class="src-meta">M. Grace, J. Hadfield, R. Olivares, J. De Jonghe · Anthropic Engineering · Jan 9, 2026 · read transcripts before trusting graders</span></li>
+              <li><a href="https://research.google/pubs/state-of-mutation-testing-at-google/" target="_blank" rel="noopener noreferrer">State of Mutation Testing at Google</a> <span class="src-meta">G. Petrović, M. Ivanković · ICSE (SEIP track) · 2018 · mutation testing at code-review time</span></li>
+            </ol>
+          </section>
+        </article>
+
+        <aside class="toc">
+          <nav class="panel" aria-label="On this page">
+            <span class="kicker">On this page</span>
+            <a href="#tldr">The short version</a>
+            <a href="#diagram">The loop</a>
+            <a href="#number">The number worth knowing</a>
+            <a href="#tells">Spot a broken grader</a>
+            <a href="#holdout">Keep cases out</a>
+            <a href="#mutation">Break your code on purpose</a>
+            <a href="#checklist">The checklist</a>
+            <a href="#sources">Sources</a>
+          </nav>
+          <div class="panel cta">
+            <h3>Talk about it on LinkedIn</h3>
+            <p>This breakdown goes with one of my LinkedIn posts. Questions and pushback live there.</p>
+            <a href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer"><strong>Follow along ↗</strong></a>
+          </div>
+        </aside>
+      </div>
+
+      <div class="post-end">
+        <a class="panel" href="../">
+          <span class="kicker">AIS</span>
+          <h3>← All breakdowns</h3>
+          <p>Plain-English AI and data architecture, diagrams included.</p>
+        </a>
+        <a class="panel" href="../agent-said-done-database-said-no/">
+          <span class="kicker">Next breakdown</span>
+          <h3>The agent said done. The database said no.</h3>
+          <p>Microsoft&#x27;s ThinkingBox grades agents on the records they leave behind.</p>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>&copy; 2026 Sang Thai · <a href="../../">sangthai.dev</a></span>
+      <span class="mono">Every source linked. No hype.</span>
+    </div>
+  </footer>
+
+  <script src="../assets/field.js" defer></script>
+</body>
+</html>

@@ -66,8 +66,14 @@
     if (start) pick(start);
 
     var modeBtns = Array.prototype.slice.call(fig.querySelectorAll('[data-mode-btn]'));
+    var pathEls = Array.prototype.slice.call(fig.querySelectorAll('[data-path]'));
     function setMode(m) {
       fig.setAttribute('data-mode', m);
+      /* Generic path dimming: any mode name works; "full" shows everything. */
+      pathEls.forEach(function (el) {
+        var on = m === 'full' || (' ' + el.getAttribute('data-path') + ' ').indexOf(' ' + m + ' ') > -1;
+        el.classList.toggle('is-dim', !on);
+      });
       modeBtns.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-mode-btn') === m ? 'true' : 'false'); });
       fig.querySelectorAll('[data-label-' + m + ']').forEach(function (el) {
         el.textContent = el.getAttribute('data-label-' + m);
@@ -98,6 +104,21 @@
   /* == LISTING FILTERS (built from the cards' data-tags) == */
   var chipWrap = document.querySelector('[data-filters]');
   var cards = Array.prototype.slice.call(document.querySelectorAll('[data-tags]'));
+
+  /* A card left alone on the last row stretches across it (no lonely card). */
+  function balance() {
+    var shown = cards.filter(function (c) { return !c.hidden; });
+    cards.forEach(function (c) { c.classList.remove('card--wide'); });
+    var last = shown[shown.length - 1], prev = shown[shown.length - 2];
+    if (last && prev && !last.classList.contains('card--featured') && last.offsetTop > prev.offsetTop + 4) {
+      last.classList.add('card--wide');
+    }
+  }
+  if (cards.length) {
+    balance();
+    var rt;
+    window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(balance, 120); });
+  }
   if (chipWrap && cards.length) {
     var labels = {};
     cards.forEach(function (c) {
@@ -121,6 +142,7 @@
             c.hidden = !ok; if (ok) shown++;
           });
           if (empty) empty.hidden = shown > 0;
+          balance();
         });
         chipWrap.appendChild(b);
       };

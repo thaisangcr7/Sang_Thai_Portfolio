@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light')})();</script>
+  <title>You approved the tool. Then the tool changed. &mdash; AIS</title>
+  <meta name="description" content="An approval is a moment; a tool is a stream. Pillar Security&#x27;s Deadbugz (Aug 2026) changed its MCP tool descriptions after the third call. Defenses: pin tool definitions, re-approve on change, make broken checks block." />
+  <link rel="canonical" href="https://sangthai.dev/field/approved-the-tool-then-it-changed/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="You approved the tool. Then the tool changed." />
+  <meta property="og:description" content="An approval is a moment. A tool is a stream. The Deadbugz case, an interactive diagram and every source." />
+  <meta property="og:url" content="https://sangthai.dev/field/approved-the-tool-then-it-changed/" />
+  <meta property="og:image" content="https://sangthai.dev/field/approved-the-tool-then-it-changed/media/og.jpg" />
+  <meta property="article:published_time" content="2026-10-23" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#F8F7FF" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/field.css" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="progress" aria-hidden="true"><span></span></div>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="../../" aria-label="Sang Thai, home">
+        <span class="brand__avatar" aria-hidden="true">ST</span>
+        <span>Sang Thai<span class="brand__sub">AIS</span></span>
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a href="../../#home">Home</a>
+        <a href="../../#about">About</a>
+        <a href="../../#resume">Experience</a>
+        <a href="../../#portfolio">Projects</a>
+        <a href="../" aria-current="page">AIS</a>
+        <a href="../../#contact">Contact</a>
+      </nav>
+      <div class="header-actions">
+        <a class="back-home" href="../">All breakdowns</a>
+        <button class="icon-btn" type="button" data-theme-toggle aria-label="Switch theme">
+          <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <section class="post-head">
+        <div class="crumbs"><a href="../">AIS</a><span aria-hidden="true">/</span><span>Agents &amp; guardrails</span></div>
+        <h1>You approved the tool. Then the tool changed.</h1>
+        <p class="dek">An approval happens once. A tool keeps talking to your agent every time it runs. A real August case shows why that gap matters, and what defenders now recommend.</p>
+        <div class="meta">
+          <span class="pill">Oct 23, 2026</span>
+          <a class="pill" href="#diagram">Interactive diagram ↓</a>
+          <a class="pill" href="#sources">Sources ↓</a>
+          <a class="pill" href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer">Follow on LinkedIn ↗</a>
+        </div>
+      </section>
+
+      <div class="intro-grid" id="tldr">
+        <div class="panel tldr">
+          <span class="kicker">The short version</span>
+          <ul>
+            <li><strong>An approval is a moment. A tool is a stream</strong>: descriptions, outputs and updates reach your agent on every run.</li>
+            <li>In August, Pillar Security disclosed <strong>Deadbugz</strong>, a malicious MCP server whose tool descriptions changed <strong>after the third call</strong> to steer the agent.</li>
+            <li>Defenses: turn off what you don't use, <strong>make broken checks block</strong>, treat tool text as input, and <strong>look again after updates</strong>.</li>
+          </ul>
+        </div>
+        <figure class="panel video" style="margin:0">
+          <video controls playsinline preload="none" poster="media/cover.jpg" width="1080" height="1350">
+            <source src="media/post-20.mp4" type="video/mp4" />
+          </video>
+          <figcaption>The 25-second version (no sound)</figcaption>
+        </figure>
+      </div>
+
+      <!-- ===== DIAGRAM ===== -->
+      <figure class="diagram" id="diagram" data-mode="habit" aria-labelledby="diagram-cap">
+        <div class="diagram__bar">
+          <span class="diagram__title" id="diagram-cap">Fig 1 · One approval, many calls</span>
+          <div class="diagram__tools">
+            <div class="seg" role="group" aria-label="Show path">
+              <button type="button" data-mode-btn="habit" data-note="Treat a changed tool like a new tool, and make broken checks block.">Keep checking</button>
+              <button type="button" data-mode-btn="once" data-note="The usual setup: one approval, then trust forever. The change slips straight through.">Approve once</button>
+            </div>
+            <button type="button" class="tool-btn" data-fullscreen><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Full screen</span></button>
+          </div>
+        </div>
+
+        <div class="diagram__stage">
+          <p class="diagram__title" data-mode-note aria-live="polite" style="text-align:center;margin:0 0 30px"></p>
+          <div class="flow">
+            <button type="button" class="node" style="--c:1;--r:1;--o:1" data-node data-path="once habit" data-num="01" data-title="MCP server" data-desc="A plug-in that gives your agent tools. In the Deadbugz case, the MCP config arrived through public GitHub pull requests to unrelated AI and developer-tool projects (23 identified).">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2v5M15 2v5"/><path d="M6 7h12v4a6 6 0 0 1-12 0z"/><path d="M12 17v5"/></svg>MCP server</button>
+            <div class="arrow" style="--c:2;--r:1;--o:2" data-path="habit once" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:3;--r:1;--o:3" data-node data-path="once habit" data-num="02" data-title="Tool description" data-desc="The text that tells the agent what each tool does. The agent reads it on every run, not just the day you approved it.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h8M12 11v8"/></svg>Tool description</button>
+            <div class="arrow" style="--c:4;--r:1;--o:4" data-path="habit once" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:5;--r:1;--o:5" data-node data-path="once habit" data-num="03" data-title="Approval" data-desc="You look at the tool once and say yes. Deadbugz behaved like an ordinary text-formatting utility for its first three tool calls, so a one-time look saw the clean version.">
+              <span class="node__badge">a moment</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 13l2 2 4-4"/></svg>Approval</button>
+            <div class="arrow arrow--down" style="--c:5;--r:2;--o:6" data-path="habit once" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node node--badge-low" style="--c:5;--r:3;--o:7" data-node data-path="once habit" data-num="04" data-title="Agent reads it" data-desc="Tool text flows into the agent&#x27;s context every time it runs: descriptions, outputs, whatever ships in the next update.">
+              <span class="node__badge">every call</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>Agent reads it</button>
+            <div class="arrow arrow--left" style="--c:4;--r:3;--o:8" data-path="habit" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:3;--r:3;--o:9" data-node data-path="habit" data-num="05" data-title="Safety check" data-desc="A hook or guard that can stop an action. Claude Code 2.1.295 (Oct 8) added an opt-in onFailure: &quot;block&quot; for command and HTTP hooks: with it set, a hook that can&#x27;t start, times out or exits with an unexpected code blocks the action instead of letting it through. The same release fixed a mod&#x27;s hook being handed a deeply nested tool input cut short with no error.">
+              <span class="node__badge">fail closed</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Safety check</button>
+            <div class="arrow arrow--left" style="--c:2;--r:3;--o:10" data-path="habit" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:1;--r:3;--o:11" data-node data-path="once habit" data-num="06" data-title="Action" data-desc="The agent does the thing. Pillar&#x27;s advice: sensitive actions like credential access and running code should stay policy-enforced, not follow instructions that arrive in tool text.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>Action</button>
+            <div class="arrow arrow--down" style="--c:1;--r:4;--o:12" data-path="habit once" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:1;--r:5;--o:13" data-node data-path="once habit" data-num="07" data-title="Next call or update" data-desc="Deadbugz kept a per-client count of tool calls. Once it reached three, its tool metadata changed.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2 7 7 2-7 2-2 7-2-7-7-2 7-2z"/></svg>Next call or update</button>
+            <div class="arrow" style="--c:2;--r:5;--o:14" data-path="habit once" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node node--hot" style="--c:3;--r:5;--o:15" data-node data-path="once habit" data-num="08" data-title="Description changes" data-desc="The new text pushed the agent to look for sensitive information and to hide that from the user. Nothing about the approval changed. The tool did.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>Description changes</button>
+            <div class="arrow" style="--c:4;--r:5;--o:16" data-path="habit" aria-hidden="true"><svg viewBox="0 0 30 18"><path d="M2 9h24"/><path d="M20 3l6 6-6 6"/></svg></div>
+            <button type="button" class="node" style="--c:5;--r:5;--o:17" data-node data-path="habit" data-num="09" data-title="Compare to the approved copy" data-desc="Keep a known-good fingerprint of each approved server&#x27;s tool schemas and descriptions (CSA). If the text changes, treat it as a security event and ask a human again before sensitive actions.">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M8 3h8l-1 6 3 4H6l3-4z"/></svg>Compare to approved copy</button>
+            <div class="loop" style="--c:6;--r:1 / 6" data-path="habit">
+              <button type="button" class="loop__label" data-node data-num="↺" data-title="Back to approval" data-desc="A change in the tool definition of an already-approved server is a meaningful security event (Pillar). Send it back through approval instead of trusting the old yes.">re-approve</button>
+            </div>
+            <button type="button" class="loop-note" data-node data-path="habit" data-num="↺" data-title="Back to approval" data-desc="A change in the tool definition of an already-approved server is a meaningful security event (Pillar). Send it back through approval instead of trusting the old yes.">↺ re-approve: back to approval</button>
+          </div>
+          
+        </div>
+
+        <div class="diagram__detail" aria-live="polite">
+          <span class="num" data-detail-num>01</span>
+          <div>
+            <h3 data-detail-title>MCP server</h3>
+            <p data-detail-text></p>
+          </div>
+        </div>
+        <div class="diagram__hint">Tap any box (or the orange arrow) to see what it does. Switch to &quot;Approve once&quot; to see the gap.</div>
+      </figure>
+
+      <div class="post-body">
+        <article class="prose">
+          <h2 id="stream">A moment vs a stream</h2>
+          <p>When you approve a tool, you approve what it looked like that day. But your agent doesn't read the tool once. It reads the tool's description, its outputs and whatever ships in its next update, every time it runs. MCP servers are the plug-ins agents use to get tools, so this applies to every one you add.</p>
+          <div class="callout">
+            <span class="kicker">The point</span>
+            An approval is a moment. A tool is a stream.
+          </div>
+
+          <h2 id="case">The Deadbugz case</h2>
+          <p>A defender-level summary, no attack details:</p>
+          <ul>
+            <li><strong>How it spread:</strong> public GitHub pull requests that added or changed MCP configuration in unrelated AI, MCP and developer-tool projects. Pillar identified 23 campaign pull requests; at review time 19 were closed and four were still open.</li>
+            <li><strong>How it hid:</strong> the server behaved like an ordinary text-formatting utility for its first three tool calls. It kept a per-client count of calls, and once that reached three, its tool metadata changed.</li>
+            <li><strong>What it did next:</strong> the new text pushed the agent to look for sensitive information and to hide that from the user.</li>
+          </ul>
+          <p>Pillar calls it runtime-gated MCP metadata poisoning, and the Cloud Security Alliance's Sep 2 research note adds that it isn't a straightforward rug pull: the switch is tied to how many times the tool was called. A one-time look at install time only ever sees the clean version. OWASP's Top 10 for Agentic Applications (Dec 2025) already lists Tool Misuse and Agentic Supply Chain Vulnerabilities among the top risks.</p>
+
+          <h2 id="defend">What the researchers recommend</h2>
+          <blockquote>"Clients should treat a change in the tool definition of an already-approved server as a meaningful security event, make that change visible to the operator, and require renewed approval before the changed tool can influence sensitive actions."<cite>Pillar Security, Aug 12, 2026</cite></blockquote>
+          <ul class="checks">
+            <li>Keep a known-good fingerprint of each approved server's tool schemas and descriptions (CSA).</li>
+            <li>Pin tool definitions by hash, and allowlist the servers you use (CSA).</li>
+            <li>Ask a human again before the agent acts on a changed tool for sensitive operations (CSA).</li>
+            <li>Keep sensitive actions like credential access and running code policy-enforced, not something tool text can switch on (Pillar).</li>
+          </ul>
+
+          <h2 id="failclosed">Checks that fail closed</h2>
+          <p>The other half is the guard itself. Claude Code's Oct 8 update (2.1.295) added an opt-in <code>onFailure: "block"</code> setting for command and HTTP hooks. With it set, a hook that can't start, times out or exits with an unexpected code blocks the action instead of letting it through. Leave it unset and the action usually still goes ahead, so it's worth turning on for the checks that matter.</p>
+          <p>The same release fixed a case where a mod's hook (mods are Claude Code add-ons) was handed a deeply nested tool input cut short with no error, so a guard could pass content it never saw. A check that quietly sees less is a check that waves things through.</p>
+
+          <h2 id="mine">My setup</h2>
+          <p>In my personal setup, I turned off whole connectors I don't use, so the agent sees <strong>286 tools instead of 446</strong>. Fewer tools, fewer descriptions that can change under you. Pinning tool descriptions is my next step. The CSA idea fits in a few lines:</p>
+<pre class="code"><span class="d"># sketch of the idea, not a real library</span>
+approved = load(<span class="k">"approved_tools.json"</span>)   <span class="d"># tool name -> hash, saved when you said yes</span>
+<span class="k">for</span> tool <span class="k">in</span> server.list_tools():
+    <span class="k">if</span> sha256(tool.description + tool.schema) != approved.get(tool.name):
+        pause_and_ask_a_human(tool.name)     <span class="d"># changed since approval</span></pre>
+
+          <h2 id="checklist">The short list</h2>
+          <ul class="checks">
+            <li>Turn off what you don't need, so it isn't running at all.</li>
+            <li>A broken check should block, not wave through.</li>
+            <li>Treat tool text as input, not orders.</li>
+            <li>Look again after updates.</li>
+          </ul>
+          <p><strong>Saying yes takes a second. Staying sure takes a habit.</strong> Do you look at a tool again after you approve it, or only once? Tell me on <a href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer">LinkedIn</a>.</p>
+
+          <section class="sources" id="sources" aria-labelledby="sources-h">
+            <h2 id="sources-h">Sources and further reading</h2>
+            <p class="note">Defender-level only. The tool counts are from my own setup.</p>
+            <ol>
+              <li><a href="https://www.pillar.security/blog/deadbugz-currently-active-mcp-supply-chain-campaign" target="_blank" rel="noopener noreferrer">Deadbugz: Currently Active MCP Supply-Chain Campaign</a> <span class="src-meta">Ariel Fogel · Pillar Security blog · Aug 12, 2026 · the primary write-up</span></li>
+              <li><a href="https://labs.cloudsecurityalliance.org/research/csa-research-note-deadbugz-mcp-metadata-poisoning-20260902-c/" target="_blank" rel="noopener noreferrer">Deadbugz: Runtime-Gated MCP Metadata Poisoning as Supply-Chain Attack</a> <span class="src-meta">Cloud Security Alliance AI Safety Initiative · Sep 2, 2026 · fingerprinting, hash pinning, re-approval</span></li>
+              <li><a href="https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Claude Code changelog (2.1.295)</a> <span class="src-meta">Anthropic · GitHub · released Oct 8, 2026 (npm) · onFailure: &quot;block&quot; and the nested-input fix</span></li>
+              <li><a href="https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-security-in-the-age-of-autonomous-ai/" target="_blank" rel="noopener noreferrer">OWASP Top 10 for Agentic Applications – The Benchmark for Agentic Security in the Age of Autonomous AI</a> <span class="src-meta">John Sotiropoulos · OWASP GenAI Security Project · Dec 9, 2025 · background: Tool Misuse (ASI02), Agentic Supply Chain (ASI04)</span></li>
+            </ol>
+          </section>
+        </article>
+
+        <aside class="toc">
+          <nav class="panel" aria-label="On this page">
+            <span class="kicker">On this page</span>
+            <a href="#tldr">The short version</a>
+            <a href="#diagram">One approval, many calls</a>
+            <a href="#stream">A moment vs a stream</a>
+            <a href="#case">The Deadbugz case</a>
+            <a href="#defend">What researchers recommend</a>
+            <a href="#failclosed">Checks that fail closed</a>
+            <a href="#mine">My setup</a>
+            <a href="#checklist">The short list</a>
+            <a href="#sources">Sources</a>
+          </nav>
+          <div class="panel cta">
+            <h3>Talk about it on LinkedIn</h3>
+            <p>This breakdown goes with one of my LinkedIn posts. Questions and pushback live there.</p>
+            <a href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer"><strong>Follow along ↗</strong></a>
+          </div>
+        </aside>
+      </div>
+
+      <div class="post-end">
+        <a class="panel" href="../">
+          <span class="kicker">AIS</span>
+          <h3>← All breakdowns</h3>
+          <p>Plain-English AI and data architecture, diagrams included.</p>
+        </a>
+        <a class="panel" href="../scheduled-agents-fail-quietly/">
+          <span class="kicker">Next breakdown</span>
+          <h3>Scheduled agents fail quietly. Silence isn&#x27;t success.</h3>
+          <p>Where an unattended run looks exactly like a quiet day.</p>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>&copy; 2026 Sang Thai · <a href="../../">sangthai.dev</a></span>
+      <span class="mono">Every source linked. No hype.</span>
+    </div>
+  </footer>
+
+  <script src="../assets/field.js" defer></script>
+</body>
+</html>
