@@ -168,7 +168,7 @@
           </ul>
 
           <h2 id="failclosed">Checks that fail closed</h2>
-          <p>The other half is the guard itself. Claude Code's Oct 8 update (2.1.295) added an opt-in <code>onFailure: "block"</code> setting for command and HTTP hooks. With it set, a hook that can't start, times out or exits with an unexpected code blocks the action instead of letting it through. Leave it unset and the action still goes ahead, so it's worth turning on for the checks that matter.</p>
+          <p>The other half is the guard itself. Claude Code's Oct 8 update (2.1.295) added an opt-in <code>onFailure: "block"</code> setting for command and HTTP hooks. With it set, a hook that can't start, times out or exits with an unexpected code blocks the action instead of letting it through. Leave it unset and the action usually still goes ahead, so it's worth turning on for the checks that matter.</p>
           <p>The same release fixed a case where a mod's hook (mods are Claude Code add-ons) was handed a deeply nested tool input cut short with no error, so a guard could pass content it never saw. A check that quietly sees less is a check that waves things through.</p>
 
           <h2 id="mine">My setup</h2>

@@ -213,6 +213,12 @@ a.pill:hover { color: var(--text); border-color: var(--accent); }
   .card--featured .card__media img { object-position: center 38%; }
   .card--featured .card__body { padding: 24px 22px 26px; }
 }
+@media (min-width: 761px) {
+  .card--wide { grid-column: 1 / -1; flex-direction: row; }
+  .card--wide .card__media { flex: 0 0 min(34%, 360px); aspect-ratio: auto; min-height: 220px; }
+  .card--wide .card__body { padding: 28px 30px; justify-content: center; }
+  .card--wide .card__sum { flex-grow: 0; }
+}
 .card--next { border-style: dashed; background: transparent; box-shadow: none; }
 .card--next:hover { transform: none; }
 .card--next .card__body { justify-content: center; }

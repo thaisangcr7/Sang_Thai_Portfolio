@@ -153,7 +153,7 @@
             <li><strong>A source fails.</strong> If an MCP server is down or its token has expired, the run still starts, just without that server's tools. The session logs an error, but the agent sees nothing from that source and reports "nothing new."</li>
             <li><strong>The spend cap hits.</strong> In the guide's setup, a run that hits its cap pauses instead of failing, so a cap set too low looks like a brief that went quiet.</li>
             <li><strong>An approval is needed.</strong> MCP tools ask for approval by default, and nobody is there to give it.</li>
-            <li><strong>The send can't be confirmed.</strong> If the post may not have landed, the guide marks the run "maybe posted" and changes nothing else, instead of guessing either way.</li>
+            <li><strong>The send can't be confirmed.</strong> Guess "sent" and those items never get reported; guess "not sent" and readers get the brief twice. The guide marks the run "maybe posted" and changes nothing else.</li>
           </ol>
           <div class="callout">
             <span class="kicker">The point</span>
@@ -196,7 +196,7 @@
           <p>That task now has the step allowed ahead of time, with a guard that only lets it message me. There's no alert yet, so I check the output myself.</p>
           <div class="callout">
             <span class="kicker">The rule I'm taking from it</span>
-            Every run should end by writing one status line: OK, source unreadable, capped, or waiting for approval. Then a missing line is the alarm, and silence stops looking like success. Same lesson as <a href="../agent-said-done-database-said-no/">The agent said done. The database said no.</a>: a clean exit still needs proof.
+            Every run should end by writing one status line: OK, or which source it couldn't read. A run that hits its cap or stalls on an approval never gets there, so a missing line is the alarm, and silence stops looking like success. It's the same lesson as "<a href="../agent-said-done-database-said-no/">The agent said done. The database said no.</a>" A clean exit still needs proof.
           </div>
           <p><strong>Quiet isn't the same as fine.</strong> If an agent runs while you sleep, how do you find out it didn't? Tell me on <a href="https://www.linkedin.com/in/sang-thai" target="_blank" rel="noopener noreferrer">LinkedIn</a>.</p>
 
